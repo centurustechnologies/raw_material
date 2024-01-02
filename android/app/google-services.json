@@ -1,0 +1,142 @@
+{
+  "project_info": {
+    "project_number": "207694629480",
+    "project_id": "shriumeshsonsapp",
+    "storage_bucket": "shriumeshsonsapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:207694629480:android:84e4663a009483140bc9dd",
+        "android_client_info": {
+          "package_name": "com.centurus.shriumeshsons_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "207694629480-ap01j851o46m4fishd5o60jreejjrcgc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.centurus.shriumeshsons_app",
+            "certificate_hash": "523f56094912839947f2e4e250e7468d10651b54"
+          }
+        },
+        {
+          "client_id": "207694629480-eetokudb6h1cf3he128kq9bactaej7ud.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.centurus.shriumeshsons_app",
+            "certificate_hash": "41ab0a71848cb33fd4149857bef20d20e1c0dd55"
+          }
+        },
+        {
+          "client_id": "207694629480-ft5ktbv9vb2o00um1bq1odgr3r7t5bvk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.centurus.shriumeshsons_app",
+            "certificate_hash": "d5368c8b7c7dc38258fd80edc88134923f86fb1e"
+          }
+        },
+        {
+          "client_id": "207694629480-ebi8nddoiobdr59njs5iqmk5dp95t4k9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJ2OkufSqPmreM3NjCZX78TjffxirTHaM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "207694629480-ebi8nddoiobdr59njs5iqmk5dp95t4k9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "207694629480-drdvfoigdtaoetu73qtc4l8tqvs3pk8j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.centurus.umeshsons"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:207694629480:android:8aa92396267d0ea30bc9dd",
+        "android_client_info": {
+          "package_name": "com.example.delivery"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "207694629480-ebi8nddoiobdr59njs5iqmk5dp95t4k9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJ2OkufSqPmreM3NjCZX78TjffxirTHaM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "207694629480-ebi8nddoiobdr59njs5iqmk5dp95t4k9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "207694629480-drdvfoigdtaoetu73qtc4l8tqvs3pk8j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.centurus.umeshsons"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:207694629480:android:232e3abbf2c513080bc9dd",
+        "android_client_info": {
+          "package_name": "com.example.raw_material"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "207694629480-ebi8nddoiobdr59njs5iqmk5dp95t4k9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJ2OkufSqPmreM3NjCZX78TjffxirTHaM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "207694629480-ebi8nddoiobdr59njs5iqmk5dp95t4k9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "207694629480-drdvfoigdtaoetu73qtc4l8tqvs3pk8j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.centurus.umeshsons"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
