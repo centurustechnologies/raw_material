@@ -36,7 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => AccountDetail(),
+                      builder: (context) => const AccountDetail(),
                     ),
                   );
                 },
@@ -58,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 // },
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             Align(
@@ -74,7 +74,83 @@ class _MyHomePageState extends State<MyHomePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Historypage(),
+                      builder: (context) => const AccountDetail(),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Generate From yesterday bill',
+                  style: GoogleFonts.poppins(
+                    color: whiteColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                // onPressed: () {
+                //   if (userid.text.isNotEmpty &&
+                //       password.text.isNotEmpty) {
+                //     // setState(() {
+                //     //   id = userid.text;
+                //     // });
+                //     getadmindata(userid.text);
+                //   }
+                // },
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Align(
+              alignment: Alignment.center,
+              child: MaterialButton(
+                minWidth: 280,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.all(20),
+                color: greenLightShadeColor,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AccountDetail(),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Item List',
+                  style: GoogleFonts.poppins(
+                    color: whiteColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                // onPressed: () {
+                //   if (userid.text.isNotEmpty &&
+                //       password.text.isNotEmpty) {
+                //     // setState(() {
+                //     //   id = userid.text;
+                //     // });
+                //     getadmindata(userid.text);
+                //   }
+                // },
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Align(
+              alignment: Alignment.center,
+              child: MaterialButton(
+                minWidth: 280,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.all(20),
+                color: greenLightShadeColor,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const Historypage(),
                     ),
                   );
                 },

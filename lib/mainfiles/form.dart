@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:lottie/lottie.dart';
+import 'package:raw_material/helpers/app_constants.dart';
 
 import 'homepage.dart';
 
@@ -139,7 +140,7 @@ class _AccountDetailState extends State<AccountDetail> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 8, 71, 123),
         title: const Text(
-          'Generate Bill',
+          'Create Bill',
           style: TextStyle(
               fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white),
         ),
@@ -147,538 +148,315 @@ class _AccountDetailState extends State<AccountDetail> {
       body: Column(
         children: [
           SingleChildScrollView(
-            physics: ScrollPhysics(),
-            child: Column(
+            physics: const ScrollPhysics(),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Container(
-                  height: MediaQuery.of(context).size.height - 176,
-                  child: ListView(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    children: [
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: Center(
-                          child: Text(
-                            'Billing detail',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black.withOpacity(0.9),
-                            ),
-                            textAlign: TextAlign.left,
-                          ),
-                        ),
-                      ),
-                      const Row(
-                        children: [
-                          Text(
-                            "Name",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w400,
-                              color: Color.fromARGB(255, 8, 71, 123),
-                            ),
-                          ),
-                          Text(
-                            '*',
-                            style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.red),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 30),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Container(
-                              height: 35,
-                              width: 120,
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.only(left: 0, bottom: 6),
-                                child: TextField(
-                                  controller: billfirstnameController,
-                                  decoration: const InputDecoration(
-                                    // border: InputBorder.none,
-                                    hintText: "First name",
-                                    hintStyle: TextStyle(
-                                        color: Colors.grey, fontSize: 14),
+                Column(
+                  children: [
+                    StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('billing_products')
+                          .snapshots(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<QuerySnapshot> snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const CircularProgressIndicator(); // or any other loading indicator
+                        }
+
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        }
+
+                        // Here, you can process the data from the snapshot and build your UI accordingly.
+                        List<DocumentSnapshot> documents = snapshot.data!.docs;
+
+                        return SizedBox(
+                          height: MediaQuery.of(context).size.height - 170,
+                          width: MediaQuery.of(context).size.height / 6,
+                          child: ListView(
+                            children:
+                                documents.map((DocumentSnapshot document) {
+                              // Access data from the document using document.data()
+                              String name = document[
+                                  'product_name']; // Replace 'name' with the actual field name in your collection
+
+                              return Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color:
+                                        Colors.black, // Customize border color
+                                    width: 1.0,
+                                    // Customize border width
                                   ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 28,
-                            ),
-                            Container(
-                              height: 35,
-                              width: 120,
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.only(left: 0, bottom: 6),
-                                child: TextField(
-                                  controller: billlastnameController,
-                                  decoration: const InputDecoration(
-                                    // border: InputBorder.none,
-                                    hintText: "last name",
-                                    hintStyle: TextStyle(
-                                        color: Colors.grey, fontSize: 14),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 16,
-                      ),
-                      info(
-                          'Mobile Number',
-                          'Enter',
-                          billmobilenumberController,
-                          TextInputType.emailAddress,
-                          [LengthLimitingTextInputFormatter(30)]),
-                      info(
-                          'House and Street Number',
-                          'Enter no.',
-                          billcurrentadressController,
-                          TextInputType.emailAddress,
-                          [LengthLimitingTextInputFormatter(50)]),
-                      info(
-                          'Landmark',
-                          'Enter',
-                          billlandmarkController,
-                          TextInputType.emailAddress,
-                          [LengthLimitingTextInputFormatter(30)]),
-                      info(
-                          'City Name',
-                          'Enter no.',
-                          billcurrentadressController1,
-                          TextInputType.emailAddress,
-                          [LengthLimitingTextInputFormatter(30)]),
-                      const SizedBox(
-                        height: 16,
-                      ),
-                      Column(
-                        children: [
-                          const Row(
-                            children: [
-                              Text(
-                                "Location",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w400,
-                                  color: Color.fromARGB(255, 8, 71, 123),
-                                ),
-                              ),
-                              Text(
-                                '*',
-                                style: TextStyle(
+                                padding: const EdgeInsets.all(
+                                    10.0), // Add padding inside the box
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal:
+                                        10.0), // Add margin around the box
+                                child: Text(
+                                  name,
+                                  style: const TextStyle(
                                     fontSize: 15,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.red),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                height: 60,
-                                width: 130,
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.only(left: 0, bottom: 6),
-                                  child: TextField(
-                                    controller: billstateController,
-                                    decoration: const InputDecoration(
-                                      // border: InputBorder.none,
-                                      labelText: "State",
-                                      hintText: "Enter Your State",
-                                      hintStyle: TextStyle(
-                                          color: Colors.grey, fontSize: 12),
-                                    ),
+                                    fontWeight: FontWeight.w700,
+                                    color: Color.fromARGB(255, 8, 71, 123),
                                   ),
+                                  softWrap:
+                                      true, // Allow text to wrap to the next line
+                                  maxLines:
+                                      2, // Limit the number of lines initially displayed (adjust as needed)
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                              Container(
-                                height: 60,
-                                width: 130,
-                                child: const Padding(
-                                  padding: EdgeInsets.only(left: 0, bottom: 6),
-                                  child: TextField(
-                                    //controller: placeofbirthController,
+                              );
+                            }).toList(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                Column(
+                  children: [
+                    StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('products')
+                          .snapshots(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<QuerySnapshot> snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const CircularProgressIndicator(); // or any other loading indicator
+                        }
 
-                                    decoration: InputDecoration(
-                                      // border: InputBorder.none,
-                                      labelText: "Country",
-                                      hintText: "Enter Your Country",
-                                      hintStyle: TextStyle(
-                                          color: Colors.grey, fontSize: 12),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 16,
-                      ),
-                      info(
-                          'Pin Code',
-                          'Enter',
-                          billpincodeController,
-                          TextInputType.number,
-                          [LengthLimitingTextInputFormatter(6)]),
-                      const SizedBox(
-                        height: 25,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: Center(
-                          child: Text(
-                            'Shipping detail',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black.withOpacity(0.9),
-                            ),
-                            textAlign: TextAlign.left,
-                          ),
-                        ),
-                      ),
-                      const Row(
-                        children: [
-                          Text(
-                            "Same as Billing",
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Color.fromARGB(255, 8, 71, 123),
-                            ),
-                          ),
-                          Text(
-                            '',
-                            style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.red),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 40,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 150,
-                              height: 35,
-                              child: RadioListTile(
-                                title: Text("Yes",
-                                    style:
-                                        TextStyle(color: Colors.grey.shade700)),
-                                value: "Yes",
-                                groupValue: gender1,
-                                onChanged: (value) {
-                                  setState(() {
-                                    gender1 = value.toString();
-                                    hascard = true;
-                                  });
-                                },
-                              ),
-                            ),
-                            SizedBox(
-                              width: 170,
-                              height: 35,
-                              child: RadioListTile(
-                                title: Text(
-                                  "No",
-                                  style: TextStyle(color: Colors.grey.shade700),
-                                ),
-                                value: "No",
-                                groupValue: gender1,
-                                onChanged: (value) {
-                                  setState(() {
-                                    gender1 = value.toString();
-                                    hascard = false;
-                                  });
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        }
 
-                      hascard
-                          ? Column(
-                              children: [
-                                const SizedBox(
-                                  height: 25,
-                                ),
-                                const Row(
-                                  children: [
-                                    Text(
-                                      "Name",
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w400,
-                                        color: Color.fromARGB(255, 8, 71, 123),
-                                      ),
-                                    ),
-                                    Text(
-                                      '*',
-                                      style: TextStyle(
+                        // Here, you can process the data from the snapshot and build your UI accordingly.
+                        List<DocumentSnapshot> documents = snapshot.data!.docs;
+
+                        return SizedBox(
+                          height: MediaQuery.of(context).size.height - 170,
+                          width: MediaQuery.of(context).size.height / 3,
+                          child: ListView(
+                            children:
+                                documents.map((DocumentSnapshot document) {
+                              // Access data from the document using document.data()
+                              String name = document[
+                                  'product_name']; // Replace 'name' with the actual field name in your collection
+
+                              return Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: SizedBox(
+                                      width: 300,
+                                      child: Text(
+                                        name,
+                                        style: const TextStyle(
                                           fontSize: 15,
-                                          fontWeight: FontWeight.w400,
-                                          color: Colors.red),
+                                          fontWeight: FontWeight.w800,
+                                          color:
+                                              Color.fromARGB(255, 8, 71, 123),
+                                        ),
+                                      ),
                                     ),
-                                  ],
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 30),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
+                                  ),
+                                  Row(
                                     children: [
-                                      Container(
-                                        height: 35,
-                                        width: 120,
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 0, bottom: 6),
-                                          child: TextField(
-                                            controller: shipfirstnameController,
-                                            decoration: const InputDecoration(
-                                              // border: InputBorder.none,
-                                              hintText: "First name",
-                                              hintStyle: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 14),
+                                      const Padding(
+                                        padding: EdgeInsets.only(right: 8),
+                                        child: SizedBox(
+                                          width: 50,
+                                          child: Text(
+                                            "5 pcs",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w400,
+                                              color: Color.fromARGB(
+                                                  255, 8, 71, 123),
                                             ),
+                                            softWrap:
+                                                true, // Allow text to wrap to the next line
+                                            maxLines:
+                                                3, // Limit the number of lines initially displayed (adjust as needed)
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                       ),
-                                      SizedBox(
-                                        width: 28,
-                                      ),
-                                      Container(
-                                        height: 35,
-                                        width: 120,
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 0, bottom: 6),
-                                          child: TextField(
-                                            controller: shiplastnameController,
-                                            decoration: const InputDecoration(
-                                              // border: InputBorder.none,
-                                              hintText: "last name",
-                                              hintStyle: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 14),
+                                      const Padding(
+                                        padding: EdgeInsets.only(right: 2),
+                                        child: SizedBox(
+                                          width: 50,
+                                          child: Text(
+                                            "200 rs",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w400,
+                                              color: Color.fromARGB(
+                                                  255, 8, 71, 123),
                                             ),
+                                            softWrap:
+                                                true, // Allow text to wrap to the next line
+                                            maxLines:
+                                                3, // Limit the number of lines initially displayed (adjust as needed)
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                       ),
+                                      MaterialButton(
+                                        color: mainColor,
+                                        padding: EdgeInsets.zero,
+                                        minWidth: 0,
+                                        height: 0,
+                                        onPressed: () {
+                                          // insertCartWithQuantity(
+                                          //   securityKey,
+                                          //   widget.userId,
+                                          //   cartData[index]['product_id'],
+                                          //   cartData[index]['current_price'],
+                                          //   cartData[index]['categery_id'],
+                                          //   int.parse(cartData[index]
+                                          //           ['cart_product_quantity']) +
+                                          //       1,
+                                          // );
+                                          // setState(() {
+                                          //   getCart(securityKey, userId);
+                                          // });
+                                        },
+                                        child: Icon(
+                                          Icons.add,
+                                          color: whiteColor,
+                                        ),
+                                      ),
+                                      const Padding(
+                                        padding:
+                                            EdgeInsets.only(right: 8, left: 8),
+                                        child: SizedBox(
+                                          width: 20,
+                                          child: Text(
+                                            "23",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w400,
+                                              color: Color.fromARGB(
+                                                  255, 8, 71, 123),
+                                            ),
+                                            softWrap:
+                                                true, // Allow text to wrap to the next line
+                                            maxLines:
+                                                3, // Limit the number of lines initially displayed (adjust as needed)
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ),
+                                      MaterialButton(
+                                          color: mainColor,
+                                          padding: EdgeInsets.zero,
+                                          minWidth: 0,
+                                          height: 0,
+                                          onPressed: () {},
+                                          child: InkWell(
+                                            onTap: () {
+                                              // removeCart(
+                                              //   securityKey,
+                                              //   cartData[index]['cart_id'],
+                                              // );
+                                              // setState(() {
+                                              //   getCart(
+                                              //     securityKey,
+                                              //     widget.userId,
+                                              //   );
+                                              //   cartData.length <= 1
+                                              //       ? log(
+                                              //           'cart length is smaller ${cartData.length}')
+                                              //       : log(
+                                              //           'cart length is greater ${cartData.length}');
+                                              // });
+                                            },
+                                            child: Icon(
+                                              Icons.delete,
+                                              color: whiteColor,
+                                            ),
+                                          )
+                                          // : Icon(
+                                          //     Icons.remove,
+                                          //     color: whiteColor,
+                                          //   ),
+                                          ),
                                     ],
                                   ),
-                                ),
-                                const SizedBox(
-                                  height: 16,
-                                ),
-                                info(
-                                    'Mobile Number',
-                                    'Enter',
-                                    shipmobilenumberController,
-                                    TextInputType.emailAddress,
-                                    [LengthLimitingTextInputFormatter(30)]),
-                                info(
-                                    'House and Street Number',
-                                    'Enter no.',
-                                    shipcurrentadressController,
-                                    TextInputType.emailAddress,
-                                    [LengthLimitingTextInputFormatter(50)]),
-                                info(
-                                    'Landmark',
-                                    'Enter',
-                                    shiplandmarkController,
-                                    TextInputType.emailAddress,
-                                    [LengthLimitingTextInputFormatter(30)]),
-                                info(
-                                    'City Name',
-                                    'Enter no.',
-                                    shipcurrentadressController1,
-                                    TextInputType.emailAddress,
-                                    [LengthLimitingTextInputFormatter(30)]),
-                                const SizedBox(
-                                  height: 16,
-                                ),
-                                Column(
-                                  children: [
-                                    const Row(
-                                      children: [
-                                        Text(
-                                          "Location",
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w400,
-                                            color:
-                                                Color.fromARGB(255, 8, 71, 123),
-                                          ),
-                                        ),
-                                        Text(
-                                          '*',
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w400,
-                                              color: Colors.red),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Container(
-                                          height: 60,
-                                          width: 130,
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 0, bottom: 6),
-                                            child: TextField(
-                                              controller: shipstateController,
-                                              decoration: const InputDecoration(
-                                                // border: InputBorder.none,
-                                                labelText: "State",
-                                                hintText: "Enter Your State",
-                                                hintStyle: TextStyle(
-                                                    color: Colors.grey,
-                                                    fontSize: 12),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          height: 60,
-                                          width: 130,
-                                          child: const Padding(
-                                            padding: EdgeInsets.only(
-                                                left: 0, bottom: 6),
-                                            child: TextField(
-                                              //controller: placeofbirthController,
-
-                                              decoration: InputDecoration(
-                                                // border: InputBorder.none,
-                                                labelText: "Country",
-                                                hintText: "Enter Your Country",
-                                                hintStyle: TextStyle(
-                                                    color: Colors.grey,
-                                                    fontSize: 12),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(
-                                  height: 16,
-                                ),
-                                info(
-                                    'Pin Code',
-                                    'Enter',
-                                    shippincodeController,
-                                    TextInputType.number,
-                                    [LengthLimitingTextInputFormatter(6)]),
-                                const SizedBox(
-                                  height: 25,
-                                ),
-                              ],
-                            )
-                          : Container(),
-
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: Center(
-                          child: Text(
-                            'Product Informations',
-                            style: TextStyle(
+                                ],
+                              );
+                            }).toList(),
+                          ),
+                        );
+                      },
+                    ),
+                    const Row(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(right: 2),
+                          child: SizedBox(
+                            width: 100,
+                            child: Text(
+                              "Grand Total",
+                              style: TextStyle(
                                 fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black.withOpacity(0.9)),
+                                fontWeight: FontWeight.w900,
+                                color: Color.fromARGB(255, 8, 71, 123),
+                              ),
+                              softWrap:
+                                  true, // Allow text to wrap to the next line
+                              maxLines:
+                                  3, // Limit the number of lines initially displayed (adjust as needed)
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ),
-                      ),
-                      // Row(
-                      //   children: [
-                      //     Text(
-                      //       "Are You a",
-                      //       style: TextStyle(
-                      //         fontSize: 15,
-                      //         fontWeight: FontWeight.w400,
-                      //         color: Color.fromARGB(255, 8, 71, 123),
-                      //       ),
-                      //     ),
-                      //     const Text(
-                      //       '*',
-                      //       style: TextStyle(
-                      //           fontSize: 15,
-                      //           fontWeight: FontWeight.w400,
-                      //           color: Colors.red),
-                      //     ),
-                      //   ],
-                      // ),
-
-                      const SizedBox(
-                        height: 16,
-                      ),
-                      info(
-                          'Product Name',
-                          'item name',
-                          itemnameController,
-                          TextInputType.emailAddress,
-                          [LengthLimitingTextInputFormatter(30)]),
-                      info(
-                          'Quantity',
-                          'Enter ',
-                          itemquantityController,
-                          TextInputType.emailAddress,
-                          [LengthLimitingTextInputFormatter(30)]),
-                      info(
-                          'HSN/SAC',
-                          'Enter',
-                          hsnController,
-                          TextInputType.emailAddress,
-                          [LengthLimitingTextInputFormatter(30)]),
-                      info(
-                          'Price',
-                          'Enter price',
-                          priceController,
-                          TextInputType.emailAddress,
-                          [LengthLimitingTextInputFormatter(30)]),
-                      info(
-                          'Enter Hypothecation By',
-                          'Enter ',
-                          hypothecationController,
-                          TextInputType.emailAddress,
-                          [LengthLimitingTextInputFormatter(30)]),
-
-                      info(
-                          'Payment Terms',
-                          'Enter ',
-                          paymentermController,
-                          TextInputType.emailAddress,
-                          [LengthLimitingTextInputFormatter(30)]),
-                    ],
-                  ),
+                        Padding(
+                          padding: EdgeInsets.only(right: 2),
+                          child: SizedBox(
+                            width: 80,
+                            child: Text(
+                              "50 items",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                                color: Color.fromARGB(255, 8, 71, 123),
+                              ),
+                              softWrap:
+                                  true, // Allow text to wrap to the next line
+                              maxLines:
+                                  3, // Limit the number of lines initially displayed (adjust as needed)
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(right: 2),
+                          child: SizedBox(
+                            width: 70,
+                            child: Text(
+                              "200000 rs",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                                color: Color.fromARGB(255, 8, 71, 123),
+                              ),
+                              softWrap:
+                                  true, // Allow text to wrap to the next line
+                              maxLines:
+                                  3, // Limit the number of lines initially displayed (adjust as needed)
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -686,7 +464,7 @@ class _AccountDetailState extends State<AccountDetail> {
         ],
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
         child: Container(
           height: 40,
           decoration: BoxDecoration(
@@ -699,15 +477,6 @@ class _AccountDetailState extends State<AccountDetail> {
           child: MaterialButton(
             onPressed: () {
               if (billfirstnameController.text.isNotEmpty &&
-                  billlastnameController.text.isNotEmpty &&
-                  billcurrentadressController.text.isNotEmpty &&
-                  billcurrentadressController1.text.isNotEmpty &&
-                  billmobilenumberController.text.isNotEmpty &&
-                  billpincodeController.text.isNotEmpty &&
-                  billstateController.text.isNotEmpty &&
-                  billlandmarkController.text.isNotEmpty &&
-                  hsnController.text.isNotEmpty &&
-                  hypothecationController.text.isNotEmpty &&
                   priceController.text.isNotEmpty &&
                   paymentermController.text.isNotEmpty) {
                 dialog(context);
@@ -735,7 +504,7 @@ class _AccountDetailState extends State<AccountDetail> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Submit',
+                    'Generate',
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
