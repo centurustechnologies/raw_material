@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:raw_material/mainfiles/product_page.dart';
+import 'package:raw_material/mainfiles/user.dart';
 
 import 'logins/login.dart';
-import 'mainfiles/homepage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +28,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: LoginPage(),
+      debugShowCheckedModeBanner: false,
+      home: product_list(),
     );
   }
 }
