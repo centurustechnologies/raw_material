@@ -1,7 +1,8 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'package:lottie/lottie.dart';
@@ -182,7 +183,14 @@ class _GenerateYesterdayBillState extends State<GenerateYesterdayBill> {
   }
 
   Widget build(BuildContext context) {
-    return Scaffold(
+    return
+        // WillPopScope(
+        //   onWillPop: () async {
+        //     Navigator.popUntil(context, ModalRoute.withName('/first'));
+        //     return true;
+        //   },
+        //   child:
+        Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 8, 71, 123),
@@ -193,7 +201,7 @@ class _GenerateYesterdayBillState extends State<GenerateYesterdayBill> {
         ),
         leading: Builder(builder: (BuildContext context) {
           return IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.menu,
               color: Colors.white, // Change the color here
             ),
@@ -203,7 +211,7 @@ class _GenerateYesterdayBillState extends State<GenerateYesterdayBill> {
           );
         }),
       ),
-      drawer: MyDrawer(),
+      drawer: const MyDrawer(),
       body: Column(
         children: [
           SingleChildScrollView(
@@ -560,6 +568,7 @@ class _GenerateYesterdayBillState extends State<GenerateYesterdayBill> {
           ),
         ),
       ),
+      // ),
     );
   }
 

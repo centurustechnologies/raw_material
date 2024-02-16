@@ -1,12 +1,12 @@
-// ignore_for_file: must_be_immutable
+// ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:raw_material/mainfiles/create_bills.dart';
 import 'package:raw_material/mainfiles/product_page.dart';
 import 'package:raw_material/mainfiles/category_page.dart';
+import 'package:raw_material/mainfiles/profile.dart';
 import 'package:raw_material/mainfiles/user.dart';
-
 import '../helpers/app_constants.dart';
 import 'generate_yesterday_bill.dart';
 import 'bill_history.dart';
@@ -25,7 +25,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         leading: Builder(builder: (BuildContext context) {
           return IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.menu,
               color: Colors.white, // Change the color here
             ),
@@ -34,23 +34,13 @@ class _MyHomePageState extends State<MyHomePage> {
             },
           );
         }),
-        title: Text(
+        title: const Text(
           "Home",
           style: TextStyle(color: Colors.white),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 15),
-            child: const Image(
-              image: AssetImage('assets/images/Logo-10.png'),
-              height: 35,
-              fit: BoxFit.cover,
-            ),
-          ),
-        ],
-        backgroundColor: Color.fromARGB(255, 8, 71, 123),
+        backgroundColor: const Color.fromARGB(255, 8, 71, 123),
       ),
-      drawer: MyDrawer(),
+      drawer: const MyDrawer(),
       body: Container(
         height: MediaQuery.of(context).size.height,
         decoration: const BoxDecoration(
@@ -63,8 +53,8 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(20),
+            const Padding(
+              padding: EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -206,19 +196,27 @@ class MyDrawer extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(
+          DrawerHeader(
+            decoration: const BoxDecoration(
               color: Color.fromARGB(255, 8, 71, 123),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                CircleAvatar(
-                  radius: 45,
-                  backgroundImage: AssetImage('assets/images/Logo-10.png'),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ProfilePage()));
+                  },
+                  child: const CircleAvatar(
+                    radius: 45,
+                    backgroundImage: AssetImage('assets/images/Logo-10.png'),
+                  ),
                 ),
-                SizedBox(height: 10),
-                Text(
+                const SizedBox(height: 10),
+                const Text(
                   'shriiumeshsons@gmail.com',
                   style: TextStyle(
                     color: Colors.white,
@@ -229,10 +227,9 @@ class MyDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: Icon(Icons.home),
-            title: Text('Home'),
+            leading: const Icon(Icons.home),
+            title: const Text('Home'),
             onTap: () {
-              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const MyHomePage()),
@@ -240,10 +237,9 @@ class MyDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.person_add),
-            title: Text('User'),
+            leading: const Icon(Icons.person_add),
+            title: const Text('User'),
             onTap: () {
-              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const UserPage()),
@@ -251,10 +247,9 @@ class MyDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.list_alt),
-            title: Text('Category List'),
+            leading: const Icon(Icons.list_alt),
+            title: const Text('Category List'),
             onTap: () {
-              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const CategoryPage()),
@@ -262,10 +257,9 @@ class MyDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.propane),
-            title: Text('Product'),
+            leading: const Icon(Icons.propane),
+            title: const Text('Product'),
             onTap: () {
-              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const product_list()),
@@ -273,10 +267,9 @@ class MyDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.file_present),
-            title: Text('Generate New bill'),
+            leading: const Icon(Icons.file_present),
+            title: const Text('New bill'),
             onTap: () {
-              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const create_bill()),
@@ -284,10 +277,9 @@ class MyDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.file_copy),
-            title: Text('Generate From yesterday bill'),
+            leading: const Icon(Icons.file_copy),
+            title: const Text('My Order'),
             onTap: () {
-              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -296,35 +288,12 @@ class MyDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.history_sharp),
-            title: Text('Show bills history'),
+            leading: const Icon(Icons.history_sharp),
+            title: const Text('Bills history'),
             onTap: () {
-              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const Historypage()),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.help),
-            title: Text('Help'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => HelpPage()),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.settings),
-            title: Text('Settings'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => SettingsPage()),
               );
             },
           ),
@@ -336,18 +305,20 @@ class MyDrawer extends StatelessWidget {
 
 // help Page of Drawer
 class HelpPage extends StatelessWidget {
+  const HelpPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 8, 71, 123),
-        title: Text(
+        backgroundColor: const Color.fromARGB(255, 8, 71, 123),
+        title: const Text(
           'Help',
           style: TextStyle(color: Colors.white),
         ),
         leading: Builder(builder: (BuildContext context) {
           return IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.menu,
               color: Colors.white, // Change the color here
             ),
@@ -357,8 +328,8 @@ class HelpPage extends StatelessWidget {
           );
         }),
       ),
-      drawer: MyDrawer(),
-      body: SingleChildScrollView(
+      drawer: const MyDrawer(),
+      body: const SingleChildScrollView(
         padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -405,24 +376,32 @@ class FAQItem extends StatelessWidget {
   final String question;
   final String answer;
 
-  FAQItem({required this.question, required this.answer});
+  const FAQItem({super.key, required this.question, required this.answer});
 
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(
+    return
+        // WillPopScope(
+        //   onWillPop: () async {
+        //     Navigator.popUntil(context, ModalRoute.withName('/first'));
+        //     return true;
+        //   },
+        //   child:
+        ExpansionTile(
       title: Text(
         question,
-        style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
       ),
       children: <Widget>[
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Text(
             answer,
-            style: TextStyle(fontSize: 16.0, color: Colors.blue),
+            style: const TextStyle(fontSize: 16.0, color: Colors.blue),
           ),
         ),
       ],
+      //   ),
     );
   }
 }
@@ -430,7 +409,10 @@ class FAQItem extends StatelessWidget {
 // Setting page of Drawer
 
 class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _SettingsPageState createState() => _SettingsPageState();
 }
 
@@ -441,16 +423,23 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return
+        // WillPopScope(
+        //   onWillPop: () async {
+        //     Navigator.popUntil(context, ModalRoute.withName('/first'));
+        //     return true;
+        //   },
+        //   child:
+        Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 8, 71, 123),
-        title: Text(
+        backgroundColor: const Color.fromARGB(255, 8, 71, 123),
+        title: const Text(
           'Setting',
           style: TextStyle(color: Colors.white),
         ),
         leading: Builder(builder: (BuildContext context) {
           return IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.menu,
               color: Colors.white, // Change the color here
             ),
@@ -460,12 +449,12 @@ class _SettingsPageState extends State<SettingsPage> {
           );
         }),
       ),
-      drawer: MyDrawer(),
+      drawer: const MyDrawer(),
       body: ListView(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         children: [
           SwitchListTile(
-            title: Text('Enable Notifications'),
+            title: const Text('Enable Notifications'),
             value: _notificationsEnabled,
             onChanged: (value) {
               setState(() {
@@ -474,7 +463,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           ListTile(
-            title: Text('Language'),
+            title: const Text('Language'),
             trailing: DropdownButton<String>(
               value: _selectedLanguage,
               onChanged: (value) {
@@ -492,7 +481,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           ListTile(
-            title: Text('Theme'),
+            title: const Text('Theme'),
             trailing: DropdownButton<int>(
               value: _selectedThemeIndex,
               onChanged: (value) {
@@ -500,7 +489,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   _selectedThemeIndex = value!;
                 });
               },
-              items: [
+              items: const [
                 DropdownMenuItem<int>(
                   value: 0,
                   child: Text('Light'),
@@ -512,11 +501,11 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
             ),
           ),
-          ExpansionTile(
+          const ExpansionTile(
             title: Text('Privacy Policy'),
             children: [
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.0),
                 child: Text(
                   'This is the privacy policy of our app. We value your privacy and are committed to protecting your personal information.',
                   style: TextStyle(fontSize: 16.0),
@@ -526,6 +515,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ],
       ),
+      //   ),
     );
   }
 }

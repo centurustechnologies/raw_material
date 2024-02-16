@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:io';
 import 'dart:math';
 
@@ -39,7 +41,7 @@ class _product_listState extends State<product_list> {
       FirebaseFirestore.instance.collection('raw_category');
 
   Future<void> addProductToFirestore() async {
-    FirebaseFirestore.instance.collection('raw_billing_product').add({
+    FirebaseFirestore.instance.collection('raw_billing_product').doc().set({
       'category': categoryController,
       'product_name': productController.text,
       'product_price': priceController.text,
@@ -74,7 +76,15 @@ class _product_listState extends State<product_list> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return
+        // WillPopScope(
+        //   onWillPop: () async {
+        //     Navigator.popUntil(context, ModalRoute.withName('/first'));
+        //     return true;
+        //   },
+        //   child:
+        Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 8, 71, 123),
         title: const Text(
@@ -198,6 +208,7 @@ class _product_listState extends State<product_list> {
           ),
         ),
       ),
+      //   ),
     );
   }
 
@@ -206,269 +217,201 @@ class _product_listState extends State<product_list> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text(''),
-          content: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(
-                    left: 18, right: 18, top: 5, bottom: 10),
-                child: Column(
+          title: const Text(
+            'Add Product',
+            style:
+                TextStyle(fontWeight: FontWeight.bold, color: Colors.black54),
+          ),
+          titlePadding: EdgeInsets.only(left: 80, top: 15),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  height: 44,
+                  width: 120,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                        colors: [Colors.blue, Color.fromARGB(255, 2, 52, 93)],
+                        begin: Alignment.bottomLeft,
+                        end: Alignment.topRight),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: MaterialButton(
+                    onPressed: () {
+                      addProductToFirestore();
+                    },
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(26),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      // ignore: prefer_const_literals_to_create_immutables
+                      children: [
+                        Text(
+                          'Save',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          content: Container(
+            height: 365,
+            child: Column(
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            getImageFromGallery();
+                          },
+                          child: Container(
+                            width: 220,
+                            height: 160,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                            child: _image != null
+                                ? Image.file(
+                                    _image!,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Icon(
+                                    Icons.camera_alt,
+                                    size: 70,
+                                    color: Colors.grey.shade400,
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                getImageFromGallery();
-                              },
-                              child: Container(
-                                width: 140,
-                                height: 140,
-                                decoration: BoxDecoration(
-                                  color: whiteColor,
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                      spreadRadius: 1,
-                                    ),
-                                  ],
-                                ),
-                                child: _image != null
-                                    ? Image.file(
-                                        _image!,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : Icon(
-                                        Icons.camera_alt,
-                                        size: 70,
-                                        color: Colors.grey.shade400,
-                                      ),
-                              ),
+                        ButtonTheme(
+                          alignedDropdown: true,
+                          child: DropdownButton<String>(
+                            underline: Container(
+                              height: 2,
+                              color: Colors.grey,
                             ),
-                          ],
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.only(
-                                right: 5,
-                              ),
-                              width: 130,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 10,
-                                  ),
-                                ],
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: ButtonTheme(
-                                  alignedDropdown: true,
-                                  child: DropdownButton<String>(
-                                    value: categorytype.isEmpty
-                                        ? null
-                                        : categorytype,
-                                    iconSize: 30,
-                                    style: const TextStyle(
-                                      color: Colors.black54,
-                                      fontSize: 16,
-                                    ),
-                                    hint: const Text(
-                                      'Category',
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                    onChanged: (String? newValue) {
-                                      setState(() {
-                                        categorytype = newValue!;
-                                        log("brand value is $categorytype"
-                                            as num);
-                                      });
-                                    },
-                                    items: category_List.map(
-                                      (item) {
-                                        return DropdownMenuItem(
-                                          value: item['categery_id'].toString(),
-                                          onTap: () {
-                                            setState(
-                                              () {
-                                                categoryname =
-                                                    item['categery_name'];
-                                              },
-                                            );
-                                          },
-                                          child: Text(
-                                            item['categery_name'],
-                                          ),
-                                        );
+                            value: categorytype.isEmpty ? null : categorytype,
+                            iconSize: 30,
+                            style: const TextStyle(
+                              color: Colors.black54,
+                              fontSize: 16,
+                            ),
+                            hint: const Text(
+                              'Category',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w500),
+                            ),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                categorytype = newValue!;
+                                log("brand value is $categorytype" as num);
+                              });
+                            },
+                            items: category_List.map(
+                              (item) {
+                                return DropdownMenuItem(
+                                  value: item['categery_id'].toString(),
+                                  onTap: () {
+                                    setState(
+                                      () {
+                                        categoryname = item['categery_name'];
                                       },
-                                    ).toList(),
+                                    );
+                                  },
+                                  child: Text(
+                                    item['categery_name'],
                                   ),
-                                ),
-                              ),
+                                );
+                              },
+                            ).toList(),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: TextField(
+                            controller: productController,
+                            keyboardType: TextInputType.text,
+                            decoration: const InputDecoration(
+                              isDense: true,
+                              hintText: 'Product Name',
                             ),
-                            const SizedBox(height: 10),
-                            Container(
-                              padding: const EdgeInsets.symmetric(vertical: 0),
-                              height: 35,
-                              width: 130,
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                    ),
-                                  ],
-                                  borderRadius: BorderRadius.circular(6)),
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 13),
-                                child: TextField(
-                                  controller: productController,
-                                  keyboardType: TextInputType.text,
-                                  decoration: const InputDecoration(
-                                    isDense: true,
-                                    border: InputBorder.none,
-                                    hintText: 'Enter Product Name',
-                                  ),
-                                  style: const TextStyle(
-                                    color: Colors.black54,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
+                            style: const TextStyle(
+                              color: Colors.black54,
+                              fontSize: 16,
                             ),
-                            const SizedBox(height: 10),
-                            Container(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              height: 40,
-                              width: 130,
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                    ),
-                                  ],
-                                  borderRadius: BorderRadius.circular(6)),
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 13),
-                                child: TextField(
-                                  controller: unitController,
-                                  keyboardType: TextInputType.text,
-                                  decoration: const InputDecoration(
-                                    isDense: true,
-                                    border: InputBorder.none,
-                                    hintText: 'Enter Item Unit *',
-                                  ),
-                                  style: const TextStyle(
-                                    color: Colors.black54,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: TextField(
+                            controller: unitController,
+                            keyboardType: TextInputType.text,
+                            decoration: const InputDecoration(
+                              isDense: true,
+                              hintText: 'Item Unit',
                             ),
-                            const SizedBox(height: 10),
-                            Container(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              height: 40,
-                              width: 130,
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                    ),
-                                  ],
-                                  borderRadius: BorderRadius.circular(6)),
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 12),
-                                child: TextField(
-                                  controller: priceController,
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'[0-9]')),
-                                    LengthLimitingTextInputFormatter(10)
-                                  ],
-                                  decoration: const InputDecoration(
-                                    isDense: true,
-                                    border: InputBorder.none,
-                                    hintText: 'Enter Price *',
-                                  ),
-                                  style: const TextStyle(
-                                    color: Colors.black54,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
+                            style: const TextStyle(
+                              color: Colors.black54,
+                              fontSize: 16,
                             ),
-                          ],
-                        )
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: TextField(
+                            controller: priceController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9]')),
+                              LengthLimitingTextInputFormatter(10)
+                            ],
+                            decoration: const InputDecoration(
+                              isDense: true,
+                              hintText: 'Enter Price ',
+                            ),
+                            style: const TextStyle(
+                              color: Colors.black54,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
                       ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Container(
-                        height: 44,
-                        width: 140,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                              colors: [
-                                Colors.blue,
-                                Color.fromARGB(255, 2, 52, 93)
-                              ],
-                              begin: Alignment.bottomLeft,
-                              end: Alignment.topRight),
-                          borderRadius: BorderRadius.circular(26),
-                        ),
-                        child: MaterialButton(
-                          onPressed: () {
-                            addProductToFirestore();
-                          },
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(26),
-                          ),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 0,
-                              vertical: 13,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              // ignore: prefer_const_literals_to_create_immutables
-                              children: [
-                                Text(
-                                  'Save',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
                     ),
                   ],
                 ),
-              )
-            ],
+              ],
+            ),
           ),
         );
       },

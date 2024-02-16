@@ -1,10 +1,10 @@
-import 'dart:io';
+// ignore_for_file: deprecated_member_use
+
+import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:raw_material/helpers/app_constants.dart';
 import 'package:raw_material/mainfiles/homepage.dart';
 
@@ -21,6 +21,11 @@ class _CategoryPageState extends State<CategoryPage> {
   // Uint8List webImage = Uint8List(8);
   TextEditingController categoryNameController = TextEditingController();
 
+  // ignore: unused_field
+  late StreamController<List<DocumentSnapshot>> _streamController;
+  // ignore: unused_field
+  late List<DocumentSnapshot> _document;
+
   // Future getImageFromGallery() async {
   //   final picker = ImagePicker();
 
@@ -36,6 +41,32 @@ class _CategoryPageState extends State<CategoryPage> {
   //     }
   //   });
   // }
+
+  @override
+  void initState() {
+    _document = [];
+    _streamController = StreamController<List<DocumentSnapshot>>();
+    getData();
+    super.initState();
+  }
+
+  Future<void> getData() async {
+    try {
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('raw_category').get();
+
+      _document = querySnapshot.docs;
+      _streamController.add(_document);
+    } catch (e) {
+      print('error i fetching data: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _streamController.close();
+  }
 
   void addCategoryToFirestore() async {
     try {
@@ -71,6 +102,12 @@ class _CategoryPageState extends State<CategoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    // return WillPopScope(
+    //   onWillPop: () async {
+    //     Navigator.popUntil(context, ModalRoute.withName('/first'));
+    //     return true;
+    //   },
+    //   child:
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 8, 71, 123),
@@ -151,7 +188,7 @@ class _CategoryPageState extends State<CategoryPage> {
                       ),
                       child: Center(
                         child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10, top: 3),
+                          padding: const EdgeInsets.only(top: 18),
                           child: TextField(
                             controller: categoryNameController,
                             decoration: const InputDecoration(
@@ -185,10 +222,10 @@ class _CategoryPageState extends State<CategoryPage> {
                   ),
                   // save button
                   Padding(
-                    padding: const EdgeInsets.only(top: 10),
+                    padding: const EdgeInsets.only(top: 15),
                     child: Container(
                       height: 44,
-                      width: 150,
+                      width: 170,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                             colors: [
@@ -197,7 +234,7 @@ class _CategoryPageState extends State<CategoryPage> {
                             ],
                             begin: Alignment.bottomLeft,
                             end: Alignment.topRight),
-                        borderRadius: BorderRadius.circular(26),
+                        borderRadius: BorderRadius.circular(15),
                       ),
                       child: MaterialButton(
                         onPressed: () {
@@ -206,34 +243,28 @@ class _CategoryPageState extends State<CategoryPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(26),
                         ),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 0,
-                            vertical: 13,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            // ignore: prefer_const_literals_to_create_immutables
-                            children: [
-                              Text(
-                                'Add Category Name',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          // ignore: prefer_const_literals_to_create_immutables
+                          children: [
+                            Text(
+                              'Add Category Name',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
                   Padding(
                     padding:
-                        const EdgeInsets.only(left: 10, right: 10, top: 10),
+                        const EdgeInsets.only(left: 10, right: 10, top: 20),
                     child: Container(
-                      height: MediaQuery.of(context).size.height / 2.04,
+                      height: MediaQuery.of(context).size.height / 1.49,
                       width: displayWidth(context),
                       decoration: BoxDecoration(
                         color: whiteColor,
@@ -257,51 +288,38 @@ class _CategoryPageState extends State<CategoryPage> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   InkWell(
-                                    onTap: () {},
+                                    onTap: () {
+                                      getData();
+                                    },
                                     child: const Padding(
                                       padding: EdgeInsets.only(right: 15),
                                       child: Icon(
-                                        Icons.edit,
-                                        color: Colors.blue,
+                                        Icons.delete,
+                                        color:
+                                            Color.fromARGB(200, 119, 118, 118),
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                              leading: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 15,
-                                  vertical: 0,
-                                ),
-                                child: Container(
-                                  height: 50,
-                                  width: 50,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.red.withOpacity(0.2),
-                                    image: const DecorationImage(
-                                      image: NetworkImage(
-                                        'image',
-                                      ),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
+                              leading: const Padding(
+                                padding: EdgeInsets.only(left: 10),
+                                child: Text(
+                                  "1",
+                                  style: TextStyle(fontSize: 20),
                                 ),
                               ),
                               title: const Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    "dfgdgfd",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    '',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.green,
+                                  Padding(
+                                    padding:
+                                        EdgeInsets.only(bottom: 5, left: 10),
+                                    child: Text(
+                                      "category",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20),
                                     ),
                                   ),
                                 ],
@@ -318,6 +336,7 @@ class _CategoryPageState extends State<CategoryPage> {
           ],
         ),
       ),
+      // ),
     );
   }
 }

@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -70,7 +72,14 @@ class _create_billStateState extends State<create_bill> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return
+        //  WillPopScope(
+        //   onWillPop: () async {
+        //     Navigator.popUntil(context, ModalRoute.withName('/first'));
+        //     return true;
+        //   },
+        //   child:
+        Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 8, 71, 123),
@@ -166,6 +175,7 @@ class _create_billStateState extends State<create_bill> {
           ),
         ),
       ),
+      //   ),
     );
   }
 
