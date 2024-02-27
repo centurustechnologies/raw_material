@@ -69,7 +69,8 @@ class _AddNewUserState extends State<AddNewUser> {
       'user_name': nameController.text,
       'user_id': userIdController.text,
       'user_number': numberController.text,
-      'user_email': eMailController.text,
+      'user_address': eMailController.text,
+      'date': "fdghtdrfg",
       // 'image': urlDownload.toString(),
     }).then((value) {
       print("data added sucessfully");

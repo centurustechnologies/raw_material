@@ -332,14 +332,15 @@ class _MyOrderState extends State<MyOrder> {
                     ),
                   ),
                   margin: const EdgeInsets.symmetric(
-                      horizontal: 10.0, vertical: 5.0),
+                      horizontal: 5.0, vertical: 10.0),
                   child: imagebool
                       ? Padding(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.only(
+                              top: 20, bottom: 20, right: 5, left: 5),
                           child: Text(
                             productName,
                             style: const TextStyle(
-                              fontSize: 15,
+                              fontSize: 17,
                               fontWeight: FontWeight.w700,
                               color: Color.fromARGB(255, 8, 71, 123),
                             ),

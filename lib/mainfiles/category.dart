@@ -115,6 +115,7 @@ class _CategoryPageState extends State<CategoryPage> {
         return true;
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           backgroundColor: const Color.fromARGB(255, 8, 71, 123),
           title: const Text(

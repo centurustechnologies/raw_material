@@ -1,79 +1,139 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
-// ignore: use_key_in_widget_constructors
-class ImagePickerWidget extends StatefulWidget {
+class ExpensivePage extends StatefulWidget {
+  final List<Map<String, dynamic>> historyData;
+
+  ExpensivePage({required this.historyData});
+
   @override
-  // ignore: library_private_types_in_public_api
-  _ImagePickerWidgetState createState() => _ImagePickerWidgetState();
+  State<ExpensivePage> createState() => _ExpensivePageState();
 }
 
-class _ImagePickerWidgetState extends State<ImagePickerWidget> {
-  File? _pickedImage;
-
-  Future<void> _pickImage(ImageSource source) async {
-    final pickedImage = await ImagePicker().pickImage(source: source);
-
-    setState(() {
-      _pickedImage = pickedImage != null ? File(pickedImage.path) : null;
-    });
-  }
-
-  void _clearImage() {
-    setState(() {
-      _pickedImage = null;
-    });
-  }
-// Future<void> _uploadImageToFirebase() async {
-//     if (_pickedImage == null) {
-//       return; // No image picked, return early
-//     }
-
-//     try {
-//       final firebase_storage.Reference ref = firebase_storage.FirebaseStorage.instance
-//           .ref()
-//           .child('images') // Your Firebase Storage path for images
-//           .child('image_${DateTime.now().millisecondsSinceEpoch}.jpg');
-
-//       await ref.putFile(_pickedImage!);
-
-//       // Image uploaded successfully, now clear the picked image
-//       setState(() {
-//         _pickedImage = null;
-//       });
-
-//       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-//         content: Text('Image uploaded to Firebase'),
-//       ));
-//     } catch (e) {
-//       print('Error uploading image: $e');
-//       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-//         content: Text('Error uploading image to Firebase'),
-//       ));
-//     }
-//   }
+class _ExpensivePageState extends State<ExpensivePage> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (_pickedImage != null) ...[
-          Image.file(_pickedImage!), // Display picked image
-          ElevatedButton(
-            onPressed: _clearImage,
-            child: Text('Clear Image'),
-          ),
-        ],
-        ElevatedButton(
-          onPressed: () => _pickImage(ImageSource.camera),
-          child: Text('Pick Image from Camera'),
-        ),
-        ElevatedButton(
-          onPressed: () => _pickImage(ImageSource.gallery),
-          child: Text('Pick Image from Gallery'),
-        ),
-      ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Expensive Page'),
+      ),
+      body: ListView.builder(
+        itemCount: widget.historyData.length,
+        itemBuilder: (context, index) {
+          final data = widget.historyData[index];
+          return Card(
+            margin: EdgeInsets.all(8.0),
+            child: ListTile(
+              title: Text('Customer: ${data['customerName']}'),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text('Customer ID: ${data['customerId']}'),
+                  Text('User: ${data['userName']}'),
+                  Text('User ID: ${data['userId']}'),
+                  Text('Products: ${data['products']}'),
+                  Text('Total Payment: \$${data['totalPayment']}'),
+                  Text('Details: ${data['details']}'),
+                ],
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.file_download),
+                    onPressed: () {
+                      // Add functionality to download data here
+                      // Example: downloadData(data);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Downloading data...')),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.print),
+                    onPressed: () {
+                      // Add functionality to print data here
+                      // Example: printData(data);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Printing data...')),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
+
+void main() {
+  runApp(MaterialApp(
+    home: ExpensivePage(
+      historyData: [
+        {
+          'customerName': 'John Doe',
+          'customerId': 'C001',
+          'userName': 'Jane Smith',
+          'userId': 'U001',
+          'products': 'Product A, Product B',
+          'totalPayment': 200.0,
+          'details': 'Details for transaction 1',
+        },
+        {
+          'customerName': 'Alice Johnson',
+          'customerId': 'C002',
+          'userName': 'Bob Brown',
+          'userId': 'U002',
+          'products': 'Product C, Product D',
+          'totalPayment': 350.0,
+          'details': 'Details for transaction 2',
+        },
+        // Add more historical data as needed
+      ],
+    ),
+  ));
+}
+
+    //   body: ListView.builder(
+    //     itemCount: 5, // Assuming there are 5 historical records
+    //     itemBuilder: (context, index) {
+    //       return Card(
+    //         margin: EdgeInsets.all(10.0),
+    //         color: Colors.grey[200],
+    //         child: ListTile(
+    //           title: Text('Customer Name'),
+    //           subtitle: Column(
+    //             crossAxisAlignment: CrossAxisAlignment.start,
+    //             children: [
+    //               Text('ID: Customer ID'),
+    //               Text('Username: Username'),
+    //               Text('Products: Product details'),
+    //               Text('Total Payment: Total amount'),
+    //               Text('Details: Additional details here'),
+    //             ],
+    //           ),
+    //           trailing: Row(
+    //             mainAxisSize: MainAxisSize.min,
+    //             children: [
+    //               IconButton(
+    //                 icon: Icon(Icons.file_download),
+    //                 onPressed: () {
+    //                   // Implement download functionality
+    //                 },
+    //               ),
+    //               IconButton(
+    //                 icon: Icon(Icons.print),
+    //                 onPressed: () {
+    //                   // Implement print functionality
+    //                 },
+    //               ),
+    //             ],
+    //           ),
+    //         ),
+    //       );
+    //     },
+    //   ),
+    // );
+

@@ -39,7 +39,7 @@ class _create_billState extends State<create_bill> {
   void addDataToRawCart() async {
     try {
       await FirebaseFirestore.instance.collection('raw_cart').add({
-        'user_id': 'ccdsf',
+        'costomer_id': 'ccdsf',
         'customer_name': 'dfsdfs',
         'price': 'dfsdff',
       });
@@ -221,7 +221,7 @@ class _create_billState extends State<create_bill> {
                             snapshot.data!.map((DocumentSnapshot document) {
                           Map<String, dynamic> data =
                               document.data() as Map<String, dynamic>;
-                          String userId = data['user_id'];
+                          String userId = data['customer_id'];
                           String costumerName = data['customer_name'];
                           String price = data['price'];
 
@@ -238,75 +238,79 @@ class _create_billState extends State<create_bill> {
                                   ),
                                 );
                               },
-                              child: Container(
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                  color: Colors.white,
-                                  border:
-                                      Border.all(color: Colors.blue, width: 2),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 15, right: 20, top: 5),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                              child: Card(
+                                child: Container(
+                                  height: 120,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Colors.white,
+                                    border: Border.all(
+                                        color: Colors.blue, width: 1),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 15, right: 20, top: 5),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              costumerName,
+                                              style: const TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w500),
+                                            ),
+                                            IconButton(
+                                                onPressed: () {},
+                                                icon:
+                                                    const Icon(Icons.more_vert))
+                                          ],
+                                        ),
+                                      ),
+                                      Column(
                                         children: [
-                                          Text(
-                                            userId,
-                                            style: const TextStyle(
-                                                fontSize: 22,
-                                                fontWeight: FontWeight.w500),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 15, right: 20, bottom: 8),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      "Id : $userId",
+                                                      style: const TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w400),
+                                                    ),
+                                                    Text(
+                                                      "₹ $price",
+                                                      style: const TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w400),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                          IconButton(
-                                              onPressed: () {},
-                                              icon: const Icon(Icons.more_vert))
                                         ],
                                       ),
-                                    ),
-                                    Column(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 15, right: 20, bottom: 8),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    costumerName,
-                                                    style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w400),
-                                                  ),
-                                                  Text(
-                                                    price,
-                                                    style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w400),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                                    ],
+                                  ),
 
-                                //trailing: ,
+                                  //trailing: ,
+                                ),
                               ),
                             ),
                           );
@@ -662,14 +666,15 @@ class _AddNewBillPageStateState extends State<AddNewBillPage> {
                     ),
                   ),
                   margin: const EdgeInsets.symmetric(
-                      horizontal: 10.0, vertical: 5.0),
+                      horizontal: 5.0, vertical: 10.0),
                   child: imagebool
                       ? Padding(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.only(
+                              top: 20, bottom: 20, right: 5, left: 5),
                           child: Text(
                             productName,
                             style: const TextStyle(
-                              fontSize: 15,
+                              fontSize: 17,
                               fontWeight: FontWeight.w700,
                               color: Color.fromARGB(255, 8, 71, 123),
                             ),
