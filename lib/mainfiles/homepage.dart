@@ -2,13 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:raw_material/mainfiles/create_bills.dart';
-import 'package:raw_material/mainfiles/product_page.dart';
-import 'package:raw_material/mainfiles/category_page.dart';
+import 'package:raw_material/mainfiles/new_bill.dart';
+import 'package:raw_material/mainfiles/product.dart';
+import 'package:raw_material/mainfiles/category.dart';
 import 'package:raw_material/mainfiles/profile.dart';
-import 'package:raw_material/mainfiles/user.dart';
+import 'package:raw_material/mainfiles/manage_user.dart';
 import '../helpers/app_constants.dart';
-import 'generate_yesterday_bill.dart';
+import 'my_order.dart';
 import 'bill_history.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -21,166 +21,175 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Builder(builder: (BuildContext context) {
-          return IconButton(
-            icon: const Icon(
-              Icons.menu,
-              color: Colors.white, // Change the color here
-            ),
-            onPressed: () {
-              Scaffold.of(context).openDrawer();
-            },
-          );
-        }),
-        title: const Text(
-          "Home",
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: const Color.fromARGB(255, 8, 71, 123),
-      ),
-      drawer: const MyDrawer(),
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/white-abstract.png'),
-            fit: BoxFit.fitHeight,
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => MyHomePage()),
+            (route) => false);
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: Builder(builder: (BuildContext context) {
+            return IconButton(
+              icon: const Icon(
+                Icons.menu,
+                color: Colors.white, // Change the color here
+              ),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          }),
+          title: const Text(
+            "Home",
+            style: TextStyle(color: Colors.white),
           ),
+          backgroundColor: const Color.fromARGB(255, 8, 71, 123),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'Welcome',
-                        style: TextStyle(
-                            fontSize: 28,
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                      Text(
-                        ',',
-                        style: TextStyle(
-                          fontSize: 30,
-                          color: Colors.green, // Change the text color to red
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      Text(
-                        ' Here',
-                        style: TextStyle(
-                            fontSize: 26,
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                  // Text(
-                  //   'Providing The best features for u',
-                  //   style: TextStyle(
-                  //     fontSize: 20, // Change the font size to 18
-                  //     color: Colors.black, // Change the text color to blue
-                  //   ),
-                  // ),
-                ],
-              ),
+        drawer: const MyDrawer(),
+        body: Container(
+          height: MediaQuery.of(context).size.height,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/white-abstract.png'),
+              fit: BoxFit.fitHeight,
             ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 100),
-              child: Column(
-                children: [
-                  Align(
-                    alignment: Alignment.center,
-                    child: MaterialButton(
-                      minWidth: 280,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.all(20),
-                      color: greenLightShadeColor,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const create_bill(),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Welcome',
+                          style: TextStyle(
+                              fontSize: 28,
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          ',',
+                          style: TextStyle(
+                            fontSize: 30,
+                            color: Colors.green, // Change the text color to red
                           ),
-                        );
-                      },
-                      child: Text(
-                        'New bill',
-                        style: GoogleFonts.poppins(
-                          color: whiteColor,
-                          fontWeight: FontWeight.w600,
+                          textAlign: TextAlign.center,
                         ),
-                      ),
-                      // onPressed: () {
-                      //   if (userid.text.isNotEmpty &&
-                      //       password.text.isNotEmpty) {
-                      //     // setState(() {
-                      //     //   id = userid.text;
-                      //     // });
-                      //     getadmindata(userid.text);
-                      //   }
-                      // },
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: MaterialButton(
-                      minWidth: 280,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.all(20),
-                      color: greenLightShadeColor,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const GenerateYesterdayBill(),
-                          ),
-                        );
-                      },
-                      child: Text(
-                        'My Order',
-                        style: GoogleFonts.poppins(
-                          color: whiteColor,
-                          fontWeight: FontWeight.w600,
+                        Text(
+                          ' Here',
+                          style: TextStyle(
+                              fontSize: 26,
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
                         ),
-                      ),
-                      // onPressed: () {
-                      //   if (userid.text.isNotEmpty &&
-                      //       password.text.isNotEmpty) {
-                      //     // setState(() {
-                      //     //   id = userid.text;
-                      //     // });
-                      //     getadmindata(userid.text);
-                      //   }
-                      // },
+                      ],
                     ),
-                  ),
-                ],
+                    // Text(
+                    //   'Providing The best features for u',
+                    //   style: TextStyle(
+                    //     fontSize: 20, // Change the font size to 18
+                    //     color: Colors.black, // Change the text color to blue
+                    //   ),
+                    // ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.only(bottom: 100),
+                child: Column(
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: MaterialButton(
+                        minWidth: 280,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.all(20),
+                        color: greenLightShadeColor,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const create_bill(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'New bill',
+                          style: GoogleFonts.poppins(
+                            color: whiteColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        // onPressed: () {
+                        //   if (userid.text.isNotEmpty &&
+                        //       password.text.isNotEmpty) {
+                        //     // setState(() {
+                        //     //   id = userid.text;
+                        //     // });
+                        //     getadmindata(userid.text);
+                        //   }
+                        // },
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Align(
+                      alignment: Alignment.center,
+                      child: MaterialButton(
+                        minWidth: 280,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.all(20),
+                        color: greenLightShadeColor,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AddNewBillPage(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'My Order',
+                          style: GoogleFonts.poppins(
+                            color: whiteColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        // onPressed: () {
+                        //   if (userid.text.isNotEmpty &&
+                        //       password.text.isNotEmpty) {
+                        //     // setState(() {
+                        //     //   id = userid.text;
+                        //     // });
+                        //     getadmindata(userid.text);
+                        //   }
+                        // },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -242,7 +251,7 @@ class MyDrawer extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const UserPage()),
+                MaterialPageRoute(builder: (context) => ManageUser()),
               );
             },
           ),
@@ -282,8 +291,7 @@ class MyDrawer extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => const GenerateYesterdayBill()),
+                MaterialPageRoute(builder: (context) => const MyOrder()),
               );
             },
           ),

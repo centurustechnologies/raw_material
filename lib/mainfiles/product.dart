@@ -76,139 +76,143 @@ class _product_listState extends State<product_list> {
 
   @override
   Widget build(BuildContext context) {
-    return
-        // WillPopScope(
-        //   onWillPop: () async {
-        //     Navigator.popUntil(context, ModalRoute.withName('/first'));
-        //     return true;
-        //   },
-        //   child:
-        Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 8, 71, 123),
-        title: const Text(
-          "Product List",
-          style: TextStyle(color: Colors.white),
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const MyHomePage()),
+            (route) => false);
+        return true;
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          backgroundColor: const Color.fromARGB(255, 8, 71, 123),
+          title: const Text(
+            "Product List",
+            style: TextStyle(color: Colors.white),
+          ),
+          leading: Builder(builder: (BuildContext context) {
+            return IconButton(
+              icon: const Icon(
+                Icons.menu,
+                color: Colors.white, // Change the color here
+              ),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          }),
         ),
-        leading: Builder(builder: (BuildContext context) {
-          return IconButton(
-            icon: const Icon(
-              Icons.menu,
-              color: Colors.white, // Change the color here
-            ),
-            onPressed: () {
-              Scaffold.of(context).openDrawer();
-            },
-          );
-        }),
-      ),
-      drawer: const MyDrawer(),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 0),
-        child: SizedBox(
-          height: displayHeight(context) / 1.1,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.only(top: 10, bottom: 10),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                          colors: [Colors.blue, Color.fromARGB(255, 2, 52, 93)],
-                          begin: Alignment.bottomLeft,
-                          end: Alignment.topRight),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        showAddProductDialog(
-                            context); // Call the dialog function here
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.only(
-                            right: 40, left: 40, top: 10, bottom: 10),
-                        child: Text(
-                          'Add Product',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+        drawer: const MyDrawer(),
+        body: Padding(
+          padding: const EdgeInsets.only(top: 0),
+          child: SizedBox(
+            height: displayHeight(context) / 1.1,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.only(top: 10, bottom: 10),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                            colors: [
+                              Colors.blue,
+                              Color.fromARGB(255, 2, 52, 93)
+                            ],
+                            begin: Alignment.bottomLeft,
+                            end: Alignment.topRight),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          showAddProductDialog(
+                              context); // Call the dialog function here
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.only(
+                              right: 40, left: 40, top: 10, bottom: 10),
+                          child: Text(
+                            'Add Product',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  //iklashjlkhasdlik
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 10, right: 10, top: 10, bottom: 10),
-                    child: Container(
-                      height: MediaQuery.of(context).size.height / 1.32,
-                      width: displayWidth(context),
-                      decoration: BoxDecoration(
-                        color: whiteColor,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.blue.withOpacity(0.3),
-                            blurRadius: 10,
-                            spreadRadius: 1,
-                          ),
-                        ],
-                      ),
-                      child: ListView.builder(
-                          itemCount: category_List.length,
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                              leading: const CircleAvatar(
-                                backgroundImage:
-                                    AssetImage('assets/images/Logo-10.png'),
-                              ),
-                              title: const Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    'Product',
-                                    style: TextStyle(
-                                      fontSize: 18,
+                    //iklashjlkhasdlik
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          left: 10, right: 10, top: 10, bottom: 10),
+                      child: Container(
+                        height: MediaQuery.of(context).size.height / 1.32,
+                        width: displayWidth(context),
+                        decoration: BoxDecoration(
+                          color: whiteColor,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blue.withOpacity(0.3),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        child: ListView.builder(
+                            itemCount: category_List.length,
+                            itemBuilder: (context, index) {
+                              return ListTile(
+                                leading: const CircleAvatar(
+                                  backgroundImage:
+                                      AssetImage('assets/images/Logo-10.png'),
+                                ),
+                                title: const Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      'Product',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                      ),
                                     ),
-                                  ),
-                                  SizedBox(
-                                    width: 10,
-                                  ),
-                                  Text(
-                                    'Category',
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                              subtitle: const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Price Rs. '),
-                                ],
-                              ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () {},
-                              ),
-                            );
-                          }),
+                                    SizedBox(
+                                      width: 10,
+                                    ),
+                                    Text(
+                                      'Category',
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                subtitle: const Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Price Rs. '),
+                                  ],
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () {},
+                                ),
+                              );
+                            }),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
-      //   ),
     );
   }
 
@@ -222,7 +226,7 @@ class _product_listState extends State<product_list> {
             style:
                 TextStyle(fontWeight: FontWeight.bold, color: Colors.black54),
           ),
-          titlePadding: EdgeInsets.only(left: 80, top: 15),
+          titlePadding: const EdgeInsets.only(left: 80, top: 15),
           actions: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -244,7 +248,7 @@ class _product_listState extends State<product_list> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(26),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       // ignore: prefer_const_literals_to_create_immutables
                       children: [
@@ -305,7 +309,7 @@ class _product_listState extends State<product_list> {
                         ),
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     Column(

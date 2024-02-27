@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:raw_material/mainfiles/homepage.dart';
+import 'package:raw_material/mainfiles/new_bill.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
         '/first': (context) => const MyHomePage(),
       },
       debugShowCheckedModeBanner: false,
-      home: const MyHomePage(),
+      home: const create_bill(),
     );
   }
 }
