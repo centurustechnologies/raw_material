@@ -48,31 +48,29 @@ class _AddNewUserState extends State<AddNewUser> {
     }
   }
 
-  Future<void> addDataToFirestore(userIdController) async {
-    final path = 'image/$originalImageName';
-    final file = File(image!.path);
+  Future<void> addDataToRawUser() async {
+    // final path = 'image/$originalImageName';
+    // final file = File(image!.path);
 
-    final ref = FirebaseStorage.instance.ref().child(path);
-    setState(() {
-      uploadTask = ref.putFile(file);
-    });
-    final snapshot = await uploadTask!.whenComplete(() {});
+    // final ref = FirebaseStorage.instance.ref().child(path);
+    // setState(() {
+    //   uploadTask = ref.putFile(file);
+    // });
+    // final snapshot = await uploadTask!.whenComplete(() {});
 
-    final urlDownload = await snapshot.ref.getDownloadURL();
-    log('Download link : $urlDownload');
+    // final urlDownload = await snapshot.ref.getDownloadURL();
+    // log('Download link : $urlDownload');
 
-    setState(() {
-      uploadTask = null;
-    });
+    // setState(() {
+    //   uploadTask = null;
+    // });
 
-    String documentId = userIdController.text;
-    FirebaseFirestore.instance.collection('raw_user').doc(documentId).set({
+    FirebaseFirestore.instance.collection('raw_user').doc().set({
       'user_name': nameController.text,
       'user_id': userIdController.text,
       'user_number': numberController.text,
       'user_email': eMailController.text,
-      'date': dateController.text,
-      'image': urlDownload.toString(),
+      // 'image': urlDownload.toString(),
     }).then((value) {
       print("data added sucessfully");
     }).catchError((error) {
@@ -87,38 +85,10 @@ class _AddNewUserState extends State<AddNewUser> {
     });
   }
 
-  late StreamController<List<DocumentSnapshot>> _streamController;
-  // ignore: unused_field
-  late List<DocumentSnapshot> _document;
-  @override
-  void initState() {
-    _document = [];
-    _streamController = StreamController<List<DocumentSnapshot>>();
-    getData();
-    super.initState();
-  }
-
-  Future<void> getData() async {
-    // ignore: unused_local_variable
-    try {
-      QuerySnapshot querySnapshot =
-          await FirebaseFirestore.instance.collection('raw_user').get();
-      _document = querySnapshot.docs;
-      _streamController.add(_document);
-    } catch (e) {
-      print('error i fetching data: $e');
-    }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _streamController.close();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 8, 71, 123),
         title: const Text(
@@ -232,7 +202,7 @@ class _AddNewUserState extends State<AddNewUser> {
                       padding: const EdgeInsets.only(left: 10),
                       child: TextField(
                         controller: numberController,
-                        keyboardType: TextInputType.text,
+                        keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
                           isDense: true,
                           hintText: 'Number',
@@ -261,7 +231,7 @@ class _AddNewUserState extends State<AddNewUser> {
                   ),
                   child: MaterialButton(
                     onPressed: () {
-                      // addDataToFirestore(userIdController);
+                      addDataToRawUser();
                     },
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(26),

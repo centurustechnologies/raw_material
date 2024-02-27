@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
@@ -35,10 +36,57 @@ class _product_listState extends State<product_list> {
   TextEditingController productController = TextEditingController();
   TextEditingController priceController = TextEditingController();
   TextEditingController unitController = TextEditingController();
+  // File? _image;
+  // Uint8List webImage = Uint8List(8);
+  TextEditingController categoryNameController = TextEditingController();
 
-  // ignore: non_constant_identifier_names
-  final CollectionReference raw_category =
-      FirebaseFirestore.instance.collection('raw_category');
+  // ignore: unused_field
+  late StreamController<List<DocumentSnapshot>> _streamController;
+  // ignore: unused_field
+  late List<DocumentSnapshot> _document;
+
+  // Future getImageFromGallery() async {
+  //   final picker = ImagePicker();
+
+  //   final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+  //   setState(() {
+  //     if (pickedFile != null) {
+  //       _image = File(pickedFile.path);
+  //     } else {
+  //       if (kDebugMode) {
+  //         print('No image selected.');
+  //       }
+  //     }
+  //   });
+  // }
+
+  @override
+  void initState() {
+    _document = [];
+    _streamController = StreamController<List<DocumentSnapshot>>();
+    getData();
+    super.initState();
+  }
+
+  Future<void> getData() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('raw_billing_product')
+          .get();
+
+      _document = querySnapshot.docs;
+      _streamController.add(_document);
+    } catch (e) {
+      print('error i fetching data: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _streamController.close();
+  }
 
   Future<void> addProductToFirestore() async {
     FirebaseFirestore.instance.collection('raw_billing_product').doc().set({
@@ -164,46 +212,75 @@ class _product_listState extends State<product_list> {
                             ),
                           ],
                         ),
-                        child: ListView.builder(
-                            itemCount: category_List.length,
-                            itemBuilder: (context, index) {
-                              return ListTile(
-                                leading: const CircleAvatar(
-                                  backgroundImage:
-                                      AssetImage('assets/images/Logo-10.png'),
-                                ),
-                                title: const Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      'Product',
-                                      style: TextStyle(
-                                        fontSize: 18,
+                        child: StreamBuilder(
+                          stream: _streamController.stream,
+                          builder: (BuildContext context,
+                              AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+                            if (snapshot.hasData) {
+                              return ListView(
+                                  children: snapshot.data!.map(
+                                (DocumentSnapshot document) {
+                                  Map<String, dynamic> data =
+                                      document.data() as Map<String, dynamic>;
+                                  String category = data['category'];
+                                  String productName = data['product_name'];
+                                  String productPrice = data['product_price'];
+
+                                  return Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: Card(
+                                      color: Colors.white,
+                                      child: ListTile(
+                                        leading: const CircleAvatar(
+                                          backgroundImage: AssetImage(
+                                              'assets/images/Logo-10.png'),
+                                        ),
+                                        title: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              productName,
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 10,
+                                            ),
+                                            Text(
+                                              category,
+                                              style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(productPrice),
+                                          ],
+                                        ),
+                                        trailing: IconButton(
+                                          icon: const Icon(Icons.edit),
+                                          onPressed: () {},
+                                        ),
                                       ),
                                     ),
-                                    SizedBox(
-                                      width: 10,
-                                    ),
-                                    Text(
-                                      'Category',
-                                      style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                subtitle: const Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Price Rs. '),
-                                  ],
-                                ),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () {},
-                                ),
-                              );
-                            }),
+                                  );
+                                },
+                              ).toList());
+                            }
+                            return Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ],

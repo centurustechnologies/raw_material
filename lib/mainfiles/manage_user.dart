@@ -1,4 +1,7 @@
 // ignore_for_file: deprecated_member_use
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:raw_material/mainfiles/add_user.dart';
 import 'package:raw_material/mainfiles/homepage.dart';
@@ -10,6 +13,36 @@ class ManageUser extends StatefulWidget {
 
 class _ManageUserState extends State<ManageUser> {
   TextEditingController _searchController = TextEditingController();
+
+  late StreamController<List<DocumentSnapshot>> _streamController;
+  // ignore: unused_field
+  late List<DocumentSnapshot> _document;
+
+  @override
+  void initState() {
+    _document = [];
+    _streamController = StreamController<List<DocumentSnapshot>>();
+    getData();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _streamController.close();
+  }
+
+  Future<void> getData() async {
+    try {
+      // ignore: unused_local_variable
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('raw_user').get();
+      _document = querySnapshot.docs;
+      _streamController.add(_document);
+    } catch (e) {
+      print('error in fetching data: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,32 +108,66 @@ class _ManageUserState extends State<ManageUser> {
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                itemCount: 1,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: ListTile(
-                      leading: const CircleAvatar(
-                        child: Text("S"),
-                      ),
-                      title: const Text("Satish"),
-                      subtitle: const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Role: Read Only"),
-                          Text("Status: Verification Pending"),
-                        ],
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.more_vert),
-                        onPressed: () {
-                          //more options logic here
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
+              child: StreamBuilder<List<DocumentSnapshot>>(
+                  stream: _streamController.stream,
+                  builder: (BuildContext context,
+                      AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(
+                        child: const Padding(
+                          padding: EdgeInsets.all(10.0),
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    }
+                    return ListView(
+                      children: snapshot.data!.map((DocumentSnapshot document) {
+                        Map<String, dynamic> data =
+                            document.data() as Map<String, dynamic>;
+                        String userName = data['user_name'];
+                        String userId = data['user_id'];
+                        String userEmail = data['user_email'];
+                        String userNumber = data['user_number'];
+                        return Card(
+                          child: ListTile(
+                            leading: const CircleAvatar(
+                              child: Text("S"),
+                            ),
+                            title: Row(
+                              children: [
+                                Text(
+                                  userName,
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  "[ $userId ]",
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              ],
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("contact: $userNumber"),
+                                Text("email: $userEmail"),
+                              ],
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.more_vert),
+                              onPressed: () {
+                                //more options logic here
+                              },
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  }),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 10),

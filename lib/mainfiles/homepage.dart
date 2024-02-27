@@ -257,7 +257,7 @@ class MyDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.list_alt),
-            title: const Text('Category List'),
+            title: const Text('Categories'),
             onTap: () {
               Navigator.push(
                 context,

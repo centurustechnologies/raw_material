@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:raw_material/helpers/app_constants.dart';
 
 import 'homepage.dart';
 
@@ -35,7 +36,7 @@ class _create_billState extends State<create_bill> {
     _streamController.close();
   }
 
-  void addCartToFirestore() async {
+  void addDataToRawCart() async {
     try {
       await FirebaseFirestore.instance.collection('raw_cart').add({
         'user_id': 'ccdsf',
@@ -79,7 +80,7 @@ class _create_billState extends State<create_bill> {
         appBar: AppBar(
           backgroundColor: const Color.fromARGB(255, 8, 71, 123),
           title: const Text(
-            'My Order',
+            'New Bill',
             style: TextStyle(
                 fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
           ),
@@ -141,7 +142,7 @@ class _create_billState extends State<create_bill> {
                                 ),
                                 child: InkWell(
                                   onTap: () {
-                                    addCartToFirestore();
+                                    addDataToRawCart();
                                     Navigator.of(context).pop();
                                   },
                                   child: const Center(
@@ -243,7 +244,7 @@ class _create_billState extends State<create_bill> {
                                   borderRadius: BorderRadius.circular(15),
                                   color: Colors.white,
                                   border:
-                                      Border.all(color: Colors.red, width: 2),
+                                      Border.all(color: Colors.blue, width: 2),
                                 ),
                                 child: Column(
                                   mainAxisAlignment:
@@ -375,12 +376,6 @@ class _AddNewBillPageStateState extends State<AddNewBillPage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> items = [
-      {'name': 'kali mirch', 'price': 70},
-      {'name': 'chaap', 'price': 40},
-      {'name': 'tandoori', 'price': 40},
-    ];
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -445,38 +440,122 @@ class _AddNewBillPageStateState extends State<AddNewBillPage> {
           ),
           SizedBox(
             width: MediaQuery.of(context).size.width - 105,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 15),
-                  child: Column(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 15, right: 10),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
                     children: [
+                      const Text(
+                        'Order details',
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red),
+                      ),
                       Column(
                         children: [
-                          const Text(
-                            'Order Details',
-                            style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red),
-                          ),
-                          const SizedBox(height: 10),
-                          ...items.map(
-                            (item) => Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('${item['quantity']} x ${item['name']}'),
-                                Text('\$${item['price']}'),
-                              ],
+                          const Padding(
+                            padding: EdgeInsets.only(top: 5),
+                            child: SizedBox(
+                              width: 300,
+                              child: Text(
+                                "ProductName",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color.fromARGB(255, 8, 71, 123),
+                                ),
+                              ),
                             ),
+                          ),
+                          Row(
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.only(right: 8),
+                                child: SizedBox(
+                                  width: 50,
+                                  child: Text(
+                                    "5 pcs",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400,
+                                      color: Color.fromARGB(255, 8, 71, 123),
+                                    ),
+                                    softWrap: true,
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.only(right: 2),
+                                child: SizedBox(
+                                  width: 50,
+                                  child: Text(
+                                    "200 rs",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400,
+                                      color: Color.fromARGB(255, 8, 71, 123),
+                                    ),
+                                    softWrap: true,
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                              MaterialButton(
+                                color: mainColor,
+                                padding: const EdgeInsets.all(6.0),
+                                minWidth: 0,
+                                height: 0,
+                                onPressed: () {},
+                                child: Icon(
+                                  size: 18,
+                                  Icons.add,
+                                  color: whiteColor,
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.only(right: 8, left: 8),
+                                child: SizedBox(
+                                  width: 20,
+                                  child: Text(
+                                    "23",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400,
+                                      color: Color.fromARGB(255, 8, 71, 123),
+                                    ),
+                                    softWrap: true,
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                              MaterialButton(
+                                color: mainColor,
+                                padding: const EdgeInsets.all(6.0),
+                                minWidth: 0,
+                                height: 0,
+                                onPressed: () {},
+                                child: Icon(
+                                  Icons.delete,
+                                  size: 18,
+                                  color: whiteColor,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-
-                      // grand total
-
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    ],
+                  ),
+                  const Column(
+                    children: [
+                      Column(
                         children: [
                           Divider(
                             height: 2,
@@ -505,10 +584,10 @@ class _AddNewBillPageStateState extends State<AddNewBillPage> {
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          )
+          ),
         ],
       ),
       bottomNavigationBar: Padding(
