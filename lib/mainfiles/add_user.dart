@@ -1,15 +1,14 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:io';
-import 'package:path/path.dart' as path;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+// import 'package:raw_material/mainfiles/card.dart'; // Commented out as it seems to be unnecessary or missing
 
 class AddNewUser extends StatefulWidget {
-  const AddNewUser({super.key});
+  const AddNewUser({Key? key});
 
   @override
   State<AddNewUser> createState() => _AddNewUserState();
@@ -18,72 +17,67 @@ class AddNewUser extends StatefulWidget {
 class _AddNewUserState extends State<AddNewUser> {
   List items = [];
   UploadTask? uploadTask;
-  File? image;
-  String originalImageName = '';
 
   TextEditingController nameController = TextEditingController();
   TextEditingController userIdController = TextEditingController();
   TextEditingController eMailController = TextEditingController();
   TextEditingController numberController = TextEditingController();
   TextEditingController dateController = TextEditingController();
-  File? pickedlogoimage;
 
-  Future pickImage(ImageSource galary) async {
-    try {
-      final image = await ImagePicker().pickImage(source: galary);
-      if (image == null) return;
+  String imageURL = "";
 
-      final imageTemporary = File(image.path);
-      final imageName = path.basenameWithoutExtension(imageTemporary.path);
-      final newFile = await imageTemporary
-          .rename('${imageTemporary.parent.path}/$imageName.png');
-      log('picked image is $newFile ${imageTemporary.parent.path}');
-
-      setState(() {
-        this.image = newFile;
-        originalImageName = "$imageName.png";
-      });
-    } on PlatformException catch (e) {
-      log('Failed to pick image: $e');
-    }
+  // ignore: unused_field
+  File? _image;
+  Future<void> pickImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
   }
 
-  Future<void> addDataToRawUser() async {
-    // final path = 'image/$originalImageName';
-    // final file = File(image!.path);
+  Future uploadImageToStorage(pickedFile) async {
+    if (pickedFile == null) {
+      print('No image selected.');
+      return;
+    }
+    String fileName = DateTime.now().microsecondsSinceEpoch.toString() + '.png';
 
-    // final ref = FirebaseStorage.instance.ref().child(path);
-    // setState(() {
-    //   uploadTask = ref.putFile(file);
-    // });
-    // final snapshot = await uploadTask!.whenComplete(() {});
+    Reference referenceRoot = FirebaseStorage.instance.ref();
+    Reference referenceDireImages = referenceRoot.child('user_image');
+    Reference referenceImageToUpload = referenceDireImages.child(fileName);
 
-    // final urlDownload = await snapshot.ref.getDownloadURL();
-    // log('Download link : $urlDownload');
-
-    // setState(() {
-    //   uploadTask = null;
-    // });
-
-    FirebaseFirestore.instance.collection('raw_user').doc().set({
-      'user_name': nameController.text,
-      'user_id': userIdController.text,
-      'user_number': numberController.text,
-      'user_address': eMailController.text,
-      'date': "fdghtdrfg",
-      // 'image': urlDownload.toString(),
-    }).then((value) {
-      print("data added sucessfully");
-    }).catchError((error) {
-      print("failed to add data: $error");
-    }).whenComplete(() {
-      setState(() {
-        nameController.clear();
-        userIdController.clear();
-        numberController.clear();
-        eMailController.clear();
+    try {
+      await referenceImageToUpload.putFile(File(pickedFile.path));
+      String imageURL = await referenceImageToUpload.getDownloadURL();
+      FirebaseFirestore.instance.collection('raw_user').doc().set({
+        'user_name': nameController.text,
+        'user_id': userIdController.text,
+        'user_number': numberController.text,
+        'user_email': eMailController.text,
+        'user_image': imageURL,
+      }).then((value) {
+        print("data added sucessfully");
+      }).catchError((error) {
+        print("failed to add data: $error");
+      }).whenComplete(() {
+        setState(() {
+          nameController.clear();
+          userIdController.clear();
+          numberController.clear();
+          eMailController.clear();
+          _image = null;
+        });
       });
-    });
+      // ignore: avoid_print
+    } catch (error) {
+      // ignore: avoid_print
+      print("Error occurred while uploading image and Data: $error");
+    }
   }
 
   @override
@@ -119,7 +113,7 @@ class _AddNewUserState extends State<AddNewUser> {
                 children: [
                   InkWell(
                     onTap: () {
-                      // pickImage(ImageSource.gallery);
+                      pickImage();
                     },
                     child: Container(
                       width: 180,
@@ -135,11 +129,16 @@ class _AddNewUserState extends State<AddNewUser> {
                           ),
                         ],
                       ),
-                      child: Icon(
-                        Icons.camera_alt,
-                        size: 70,
-                        color: Colors.grey.shade400,
-                      ),
+                      child: _image != null
+                          ? Image.file(
+                              _image!,
+                              fit: BoxFit.cover,
+                            )
+                          : Icon(
+                              Icons.camera_alt,
+                              size: 70,
+                              color: Colors.grey.shade400,
+                            ),
                     ),
                   ),
                 ],
@@ -232,7 +231,7 @@ class _AddNewUserState extends State<AddNewUser> {
                   ),
                   child: MaterialButton(
                     onPressed: () {
-                      addDataToRawUser();
+                      uploadImageToStorage(_image);
                     },
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(26),

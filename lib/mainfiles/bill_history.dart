@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:raw_material/mainfiles/card.dart';
 import 'package:raw_material/mainfiles/homepage.dart';
 
 class Historypage extends StatefulWidget {
@@ -39,6 +38,12 @@ class _HistorypageState extends State<Historypage> {
     _streamController = StreamController<List<DocumentSnapshot>>();
     getData();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _streamController.close();
   }
 
   @override
@@ -250,95 +255,283 @@ class _HistorypageState extends State<Historypage> {
 class BillDetail extends StatefulWidget {
   final List<Map<String, dynamic>> historyData;
 
-  // ignore: prefer_const_constructors_in_immutables
-  BillDetail({super.key, required this.historyData});
+  BillDetail({Key? key, required this.historyData}) : super(key: key);
+
   @override
   State<BillDetail> createState() => _BillDetailState();
 }
 
 class _BillDetailState extends State<BillDetail> {
+  late StreamController<List<DocumentSnapshot>> _streamController;
+
+  @override
+  void initState() {
+    super.initState();
+    _streamController = StreamController<List<DocumentSnapshot>>();
+    getData();
+  }
+
+  @override
+  void dispose() {
+    _streamController.close();
+    super.dispose();
+  }
+
+  Future<void> getData() async {
+    try {
+      QuerySnapshot queryProductData = await FirebaseFirestore.instance
+          .collection('raw_billing_product')
+          .get();
+      QuerySnapshot queryCartData =
+          await FirebaseFirestore.instance.collection('raw_cart').get();
+
+      QuerySnapshot queryCategoryData =
+          await FirebaseFirestore.instance.collection('raw_category').get();
+
+      QuerySnapshot queryUserData =
+          await FirebaseFirestore.instance.collection('raw_user').get();
+
+      Map<String, dynamic> fetchedData = {
+        'productData': queryProductData.docs,
+        'cartData': queryCartData.docs,
+        'categoryData': queryCategoryData.docs,
+        'userData': queryUserData.docs,
+      };
+
+      _streamController.add(queryProductData.docs);
+      _streamController.add(queryCartData.docs);
+      _streamController.add(queryCategoryData.docs);
+      _streamController.add(queryUserData.docs);
+    } catch (e) {
+      print('Error in fetching data: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bill history Details'),
+        backgroundColor: const Color.fromARGB(255, 8, 71, 123),
+        title: const Text(
+          "Bill history Details",
+          style: TextStyle(color: Colors.white),
+        ),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
-      body: ListView.builder(
-        itemCount: widget.historyData.length,
-        itemBuilder: (context, index) {
-          final data = widget.historyData[index];
-          return Card(
-            margin: const EdgeInsets.all(8.0),
-            child: ListTile(
-              title: Text('Customer: ${data['customerName']}'),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text('Customer ID: ${data['customerId']}'),
-                  Text('User: ${data['userName']}'),
-                  Text('User ID: ${data['userId']}'),
-                  Text('Products: ${data['products']}'),
-                  Text('Total Payment: \$${data['totalPayment']}'),
-                  Text('Details: ${data['details']}'),
-                ],
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  IconButton(
-                    icon: const Icon(Icons.file_download),
-                    onPressed: () {
-                      // Add functionality to download data here
-                      // Example: downloadData(data);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Downloading data...')),
-                      );
-                    },
+      body: StreamBuilder<List<DocumentSnapshot>>(
+        stream: _streamController.stream,
+        builder: (BuildContext context,
+            AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Padding(
+              padding: EdgeInsets.all(10.0),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          return SizedBox(
+            height: MediaQuery.of(context).size.height - 180,
+            width: 400,
+            child: ListView(
+              children: snapshot.data!.map((DocumentSnapshot document) {
+                Map<String, dynamic> data =
+                    document.data() as Map<String, dynamic>;
+                String customerId = data['customer_id'];
+                String customerName = data['customer_name'];
+                String userName = data['user_name'];
+                String userId = data['user_id'];
+
+                return Padding(
+                  padding:
+                      const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                  child: Card(
+                    child: Container(
+                      height: 180,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                        border: Border.all(color: Colors.blue, width: 1),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 15, right: 20, top: 5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  customerName,
+                                  style: const TextStyle(
+                                      color: Colors.black87,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 15, right: 20, bottom: 8),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              "Customer Id :",
+                                              style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              " $customerId",
+                                              style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w400),
+                                            ),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              "₹",
+                                              style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              " $userId",
+                                              style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w400),
+                                            ),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              "₹",
+                                              style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              " $userName",
+                                              style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w400),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.print),
-                    onPressed: () {
-                      // Add functionality to print data here
-                      // Example: printData(data);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Printing data...')),
-                      );
-                    },
-                  ),
-                ],
-              ),
+                );
+              }).toList(),
             ),
           );
         },
       ),
     );
   }
-
-  void main() {
-    runApp(MaterialApp(
-      home: ExpensivePage(
-        historyData: const [
-          {
-            'customerName': 'John Doe',
-            'customerId': 'C001',
-            'userName': 'Jane Smith',
-            'userId': 'U001',
-            'products': 'Product A, Product B',
-            'totalPayment': 200.0,
-            'details': 'Details for transaction 1',
-          },
-          {
-            'customerName': 'Alice Johnson',
-            'customerId': 'C002',
-            'userName': 'Bob Brown',
-            'userId': 'U002',
-            'products': 'Product C, Product D',
-            'totalPayment': 350.0,
-            'details': 'Details for transaction 2',
-          },
-          // Add more historical data as needed
-        ],
-      ),
-    ));
-  }
 }
+  // ListView.builder(
+      //   itemCount: widget.historyData.length,
+      //   itemBuilder: (context, index) {
+      //     final data = widget.historyData[index];
+      //     return Card(
+      //       margin: const EdgeInsets.all(8.0),
+      //       child: ListTile(
+      //         title: Text('Customer: ${data['customerName']}'),
+      //         subtitle: Column(
+      //           crossAxisAlignment: CrossAxisAlignment.start,
+      //           children: <Widget>[
+      //             Text('Customer ID: ${data['customerId']}'),
+      //             Text('User: ${data['userName']}'),
+      //             Text('User ID: ${data['userId']}'),
+      //             Text('Products: ${data['products']}'),
+      //             Text('Total Payment: \$${data['totalPayment']}'),
+      //             Text('Details: ${data['details']}'),
+      //           ],
+      //         ),
+      //         trailing: Row(
+      //           mainAxisSize: MainAxisSize.min,
+      //           children: <Widget>[
+      //             IconButton(
+      //               icon: const Icon(Icons.file_download),
+      //               onPressed: () {
+      //                 // Add functionality to download data here
+      //                 // Example: downloadData(data);
+      //                 ScaffoldMessenger.of(context).showSnackBar(
+      //                   const SnackBar(content: Text('Downloading data...')),
+      //                 );
+      //               },
+      //             ),
+      //             IconButton(
+      //               icon: const Icon(Icons.print),
+      //               onPressed: () {
+      //                 // Add functionality to print data here
+      //                 // Example: printData(data);
+      //                 ScaffoldMessenger.of(context).showSnackBar(
+      //                   const SnackBar(content: Text('Printing data...')),
+      //                 );
+      //               },
+      //             ),
+      //           ],
+      //         ),
+      //       ),
+      //     );
+      //   },
+      // ),
+    
+
+  // void main() {
+  //   runApp(MaterialApp(
+  //     home: ExpensivePage(
+  //       historyData: const [
+  //         {
+  //           'customerName': 'John Doe',
+  //           'customerId': 'C001',
+  //           'userName': 'Jane Smith',
+  //           'userId': 'U001',
+  //           'products': 'Product A, Product B',
+  //           'totalPayment': 200.0,
+  //           'details': 'Details for transaction 1',
+  //         },
+  //         {
+  //           'customerName': 'Alice Johnson',
+  //           'customerId': 'C002',
+  //           'userName': 'Bob Brown',
+  //           'userId': 'U002',
+  //           'products': 'Product C, Product D',
+  //           'totalPayment': 350.0,
+  //           'details': 'Details for transaction 2',
+  //         },
+  //         // Add more historical data as needed
+  //       ],
+  //   ),
+  // ));

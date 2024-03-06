@@ -128,10 +128,11 @@ class _ManageUserState extends State<ManageUser> {
                         String userId = data['user_id'];
                         String userEmail = data['user_email'];
                         String userNumber = data['user_number'];
+
                         return Card(
                           child: ListTile(
-                            leading: const CircleAvatar(
-                              child: Text("S"),
+                            leading: CircleAvatar(
+                              backgroundImage: NetworkImage(data['user_image']),
                             ),
                             title: Row(
                               children: [

@@ -264,7 +264,7 @@ class _CategoryPageState extends State<CategoryPage> {
                               AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
                             if (snapshot.hasData) {
                               return ListView(
-                                children: snapshot.data!
+                                children: snapshot.data!.reversed
                                     .map((DocumentSnapshot document) {
                                   Map<String, dynamic> data =
                                       document.data() as Map<String, dynamic>;
@@ -302,10 +302,7 @@ class _CategoryPageState extends State<CategoryPage> {
                                           child: CircleAvatar(
                                             // Wrap with CircleAvatar
                                             backgroundColor: Color.fromARGB(
-                                                255,
-                                                201,
-                                                201,
-                                                201), // Example background color
+                                                255, 153, 195, 253),
                                             child: Text(
                                               "$categoryId",
                                               style: TextStyle(

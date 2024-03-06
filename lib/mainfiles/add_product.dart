@@ -2,9 +2,9 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -21,23 +21,16 @@ class product_list extends StatefulWidget {
 
 // ignore: camel_case_types
 class _product_listState extends State<product_list> {
-  List items = [];
   // ignore: non_constant_identifier_names
   List category_List = [];
   String categorytype = "";
   String categoryname = "";
-  File? _image;
-  File? editPickImages;
-
-  Uint8List webImage = Uint8List(8);
-  Uint8List editWbImage = Uint8List(8);
+  String? selectedCategory;
 
   TextEditingController categoryController = TextEditingController();
   TextEditingController productController = TextEditingController();
   TextEditingController priceController = TextEditingController();
   TextEditingController unitController = TextEditingController();
-  // File? _image;
-  // Uint8List webImage = Uint8List(8);
   TextEditingController categoryNameController = TextEditingController();
 
   // ignore: unused_field
@@ -45,28 +38,56 @@ class _product_listState extends State<product_list> {
   // ignore: unused_field
   late List<DocumentSnapshot> _document;
 
-  // Future getImageFromGallery() async {
-  //   final picker = ImagePicker();
+  File? _image;
+  Future<void> pickImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
 
-  //   final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  Future uploadImageToStorage(pickedFile) async {
+    if (pickedFile == null) {
+      print('No image selected.');
+      return;
+    }
+    String fileName = DateTime.now().microsecondsSinceEpoch.toString() + '.png';
 
-  //   setState(() {
-  //     if (pickedFile != null) {
-  //       _image = File(pickedFile.path);
-  //     } else {
-  //       if (kDebugMode) {
-  //         print('No image selected.');
-  //       }
-  //     }
-  //   });
-  // }
+    Reference referenceRoot = FirebaseStorage.instance.ref();
+    Reference referenceDireImages = referenceRoot.child('product_image');
+    Reference referenceImageToUpload = referenceDireImages.child(fileName);
 
-  @override
-  void initState() {
-    _document = [];
-    _streamController = StreamController<List<DocumentSnapshot>>();
-    getData();
-    super.initState();
+    try {
+      await referenceImageToUpload.putFile(File(pickedFile.path));
+      String imageURL = await referenceImageToUpload.getDownloadURL();
+      FirebaseFirestore.instance.collection('raw_billing_product').doc().set({
+        'category': categoryController,
+        'product_name': productController.text,
+        'product_price': priceController.text,
+        'product_image': imageURL,
+      }).then((value) {
+        print("data added sucessfully");
+      }).catchError((error) {
+        print("failed to add data: $error");
+      }).whenComplete(() {
+        setState(() {
+          categoryController.clear();
+          productController.clear();
+          priceController.clear();
+          unitController.clear();
+          _image = null;
+        });
+      });
+      // ignore: avoid_print
+    } catch (error) {
+      // ignore: avoid_print
+      print("Error occurred while uploading image and Data: $error");
+    }
   }
 
   Future<void> getData() async {
@@ -83,44 +104,20 @@ class _product_listState extends State<product_list> {
   }
 
   @override
+  void initState() {
+    _document = [];
+    _streamController = StreamController<List<DocumentSnapshot>>();
+    getData();
+    super.initState();
+  }
+
+  @override
   void dispose() {
     super.dispose();
     _streamController.close();
   }
 
-  Future<void> addProductToFirestore() async {
-    FirebaseFirestore.instance.collection('raw_billing_product').doc().set({
-      'category': categoryController,
-      'product_name': productController.text,
-      'product_price': priceController.text,
-      'product_image': _image,
-    }).then((value) {
-      print("data added sucessfully");
-    }).catchError((error) {
-      print("failed to add data: $error");
-    }).whenComplete(() {
-      setState(() {
-        categoryController.clear();
-        productController.clear();
-        priceController.clear();
-        unitController.clear();
-      });
-    });
-  }
-
-  Future getImageFromGallery() async {
-    final picker = ImagePicker();
-
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      } else {
-        print('No image selected.');
-      }
-    });
-  }
+  Future<void> addProductToFirestore() async {}
 
   @override
   Widget build(BuildContext context) {
@@ -231,9 +228,9 @@ class _product_listState extends State<product_list> {
                                     child: Card(
                                       color: Colors.white,
                                       child: ListTile(
-                                        leading: const CircleAvatar(
-                                          backgroundImage: AssetImage(
-                                              'assets/images/Logo-10.png'),
+                                        leading: CircleAvatar(
+                                          backgroundImage: NetworkImage(
+                                              data['product_image']),
                                         ),
                                         title: Row(
                                           crossAxisAlignment:
@@ -320,7 +317,7 @@ class _product_listState extends State<product_list> {
                   ),
                   child: MaterialButton(
                     onPressed: () {
-                      addProductToFirestore();
+                      uploadImageToStorage(_image);
                     },
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(26),
@@ -356,10 +353,10 @@ class _product_listState extends State<product_list> {
                       children: [
                         InkWell(
                           onTap: () {
-                            getImageFromGallery();
+                            pickImage();
                           },
                           child: Container(
-                            width: 220,
+                            width: 200,
                             height: 160,
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -394,45 +391,44 @@ class _product_listState extends State<product_list> {
                       children: [
                         ButtonTheme(
                           alignedDropdown: true,
-                          child: DropdownButton<String>(
-                            underline: Container(
-                              height: 2,
-                              color: Colors.grey,
-                            ),
-                            value: categorytype.isEmpty ? null : categorytype,
-                            iconSize: 30,
-                            style: const TextStyle(
-                              color: Colors.black54,
-                              fontSize: 16,
-                            ),
-                            hint: const Text(
-                              'Category',
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w500),
-                            ),
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                categorytype = newValue!;
-                                log("brand value is $categorytype" as num);
-                              });
-                            },
-                            items: category_List.map(
-                              (item) {
-                                return DropdownMenuItem(
-                                  value: item['categery_id'].toString(),
-                                  onTap: () {
-                                    setState(
-                                      () {
-                                        categoryname = item['categery_name'];
-                                      },
+                          child: StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection('raw_category')
+                                .snapshots(),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasError) {
+                                print('Some Error Occured ${snapshot.error}');
+                              }
+                              List<DropdownMenuItem> rawCategory = [];
+                              if (!snapshot.hasData) {
+                                const CircularProgressIndicator();
+                              } else {
+                                final selectProgram =
+                                    snapshot.data?.docs.reversed.toList();
+
+                                if (selectProgram != null) {
+                                  for (var data in selectProgram) {
+                                    rawCategory.add(
+                                      DropdownMenuItem(
+                                        value: data.id,
+                                        child: Text(
+                                          data['category'],
+                                        ),
+                                      ),
                                     );
-                                  },
-                                  child: Text(
-                                    item['categery_name'],
-                                  ),
-                                );
-                              },
-                            ).toList(),
+                                  }
+                                }
+                              }
+                              return DropdownButton(
+                                  value: selectedCategory,
+                                  items: rawCategory,
+                                  hint: const Text('Select Category'),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedCategory = value;
+                                    });
+                                  });
+                            },
                           ),
                         ),
                         Padding(
