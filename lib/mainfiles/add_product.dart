@@ -27,31 +27,29 @@ class _product_listState extends State<product_list> {
   String categoryname = "";
   String? selectedCategory;
 
-  TextEditingController categoryController = TextEditingController();
   TextEditingController productController = TextEditingController();
   TextEditingController priceController = TextEditingController();
   TextEditingController unitController = TextEditingController();
-  TextEditingController categoryNameController = TextEditingController();
 
   // ignore: unused_field
   late StreamController<List<DocumentSnapshot>> _streamController;
   // ignore: unused_field
   late List<DocumentSnapshot> _document;
 
-  File? _image;
-  Future<void> pickImage() async {
+  File? _Image;
+  Future pickImage() async {
     final pickedFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
     setState(() {
       if (pickedFile != null) {
-        _image = File(pickedFile.path);
+        _Image = File(pickedFile.path);
       } else {
         print('No image selected.');
       }
     });
   }
 
-  Future uploadImageToStorage(pickedFile) async {
+  Future uploadDataToStorage(pickedFile) async {
     if (pickedFile == null) {
       print('No image selected.');
       return;
@@ -59,28 +57,32 @@ class _product_listState extends State<product_list> {
     String fileName = DateTime.now().microsecondsSinceEpoch.toString() + '.png';
 
     Reference referenceRoot = FirebaseStorage.instance.ref();
-    Reference referenceDireImages = referenceRoot.child('product_image');
+    Reference referenceDireImages = referenceRoot.child('product_Image');
     Reference referenceImageToUpload = referenceDireImages.child(fileName);
 
     try {
       await referenceImageToUpload.putFile(File(pickedFile.path));
-      String imageURL = await referenceImageToUpload.getDownloadURL();
+      String imageUrl = await referenceImageToUpload.getDownloadURL();
       FirebaseFirestore.instance.collection('raw_billing_product').doc().set({
-        'category': categoryController,
+        'category': selectedCategory,
         'product_name': productController.text,
         'product_price': priceController.text,
-        'product_image': imageURL,
+        'product_image': imageUrl,
       }).then((value) {
         print("data added sucessfully");
       }).catchError((error) {
         print("failed to add data: $error");
       }).whenComplete(() {
         setState(() {
-          categoryController.clear();
           productController.clear();
           priceController.clear();
           unitController.clear();
-          _image = null;
+          _Image = null;
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const product_list()),
+          );
         });
       });
       // ignore: avoid_print
@@ -238,16 +240,16 @@ class _product_listState extends State<product_list> {
                                           children: [
                                             Text(
                                               productName,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 18,
                                               ),
                                             ),
-                                            SizedBox(
+                                            const SizedBox(
                                               width: 10,
                                             ),
                                             Text(
                                               category,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.bold),
                                             ),
@@ -270,9 +272,9 @@ class _product_listState extends State<product_list> {
                                 },
                               ).toList());
                             }
-                            return Center(
+                            return const Center(
                               child: Padding(
-                                padding: const EdgeInsets.all(10.0),
+                                padding: EdgeInsets.all(10.0),
                                 child: CircularProgressIndicator(),
                               ),
                             );
@@ -294,201 +296,218 @@ class _product_listState extends State<product_list> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text(
-            'Add Product',
-            style:
-                TextStyle(fontWeight: FontWeight.bold, color: Colors.black54),
-          ),
-          titlePadding: const EdgeInsets.only(left: 80, top: 15),
-          actions: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  height: 44,
-                  width: 120,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                        colors: [Colors.blue, Color.fromARGB(255, 2, 52, 93)],
-                        begin: Alignment.bottomLeft,
-                        end: Alignment.topRight),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: MaterialButton(
-                    onPressed: () {
-                      uploadImageToStorage(_image);
-                    },
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(26),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      // ignore: prefer_const_literals_to_create_immutables
-                      children: [
-                        Text(
-                          'Save',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+        return SingleChildScrollView(
+          physics: NeverScrollableScrollPhysics(),
+          child: StatefulBuilder(
+            builder: (BuildContext context,
+                void Function(void Function()) setState) {
+              return AlertDialog(
+                title: const Text(
+                  'Add Product',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.black54),
                 ),
-              ],
-            ),
-          ],
-          content: Container(
-            height: 365,
-            child: Column(
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            pickImage();
-                          },
-                          child: Container(
-                            width: 200,
-                            height: 160,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  spreadRadius: 1,
-                                ),
-                              ],
-                            ),
-                            child: _image != null
-                                ? Image.file(
-                                    _image!,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Icon(
-                                    Icons.camera_alt,
-                                    size: 70,
-                                    color: Colors.grey.shade400,
-                                  ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ButtonTheme(
-                          alignedDropdown: true,
-                          child: StreamBuilder<QuerySnapshot>(
-                            stream: FirebaseFirestore.instance
-                                .collection('raw_category')
-                                .snapshots(),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasError) {
-                                print('Some Error Occured ${snapshot.error}');
-                              }
-                              List<DropdownMenuItem> rawCategory = [];
-                              if (!snapshot.hasData) {
-                                const CircularProgressIndicator();
-                              } else {
-                                final selectProgram =
-                                    snapshot.data?.docs.reversed.toList();
-
-                                if (selectProgram != null) {
-                                  for (var data in selectProgram) {
-                                    rawCategory.add(
-                                      DropdownMenuItem(
-                                        value: data.id,
-                                        child: Text(
-                                          data['category'],
-                                        ),
+                titlePadding: const EdgeInsets.only(left: 80, top: 15),
+                content: Container(
+                  height: 360,
+                  child: Column(
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              StatefulBuilder(
+                                builder: (BuildContext context,
+                                    void Function(void Function()) setState) {
+                                  return InkWell(
+                                    onTap: () {
+                                      pickImage();
+                                    },
+                                    child: Container(
+                                      width: 200,
+                                      height: 150,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(10),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.1),
+                                            blurRadius: 10,
+                                            spreadRadius: 1,
+                                          ),
+                                        ],
                                       ),
-                                    );
-                                  }
-                                }
-                              }
-                              return DropdownButton(
-                                  value: selectedCategory,
-                                  items: rawCategory,
-                                  hint: const Text('Select Category'),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      selectedCategory = value;
-                                    });
-                                  });
-                            },
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: TextField(
-                            controller: productController,
-                            keyboardType: TextInputType.text,
-                            decoration: const InputDecoration(
-                              isDense: true,
-                              hintText: 'Product Name',
-                            ),
-                            style: const TextStyle(
-                              color: Colors.black54,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: TextField(
-                            controller: unitController,
-                            keyboardType: TextInputType.text,
-                            decoration: const InputDecoration(
-                              isDense: true,
-                              hintText: 'Item Unit',
-                            ),
-                            style: const TextStyle(
-                              color: Colors.black54,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: TextField(
-                            controller: priceController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'[0-9]')),
-                              LengthLimitingTextInputFormatter(10)
+                                      child: _Image != null
+                                          ? Image.file(
+                                              _Image!,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : Icon(
+                                              Icons.camera_alt,
+                                              size: 70,
+                                              color: Colors.grey.shade400,
+                                            ),
+                                    ),
+                                  );
+                                },
+                              ),
                             ],
-                            decoration: const InputDecoration(
-                              isDense: true,
-                              hintText: 'Enter Price ',
-                            ),
-                            style: const TextStyle(
-                              color: Colors.black54,
-                              fontSize: 16,
-                            ),
+                          ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ButtonTheme(
+                                alignedDropdown: true,
+                                child: StreamBuilder<QuerySnapshot>(
+                                  stream: FirebaseFirestore.instance
+                                      .collection('raw_category')
+                                      .snapshots(),
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasError) {
+                                      print(
+                                          'Some Error Occured ${snapshot.error}');
+                                    }
+                                    List<DropdownMenuItem> rawCategory = [];
+                                    if (!snapshot.hasData) {
+                                      const CircularProgressIndicator();
+                                    } else {
+                                      final selectProgram =
+                                          snapshot.data?.docs.reversed.toList();
+
+                                      if (selectProgram != null) {
+                                        for (var data in selectProgram) {
+                                          rawCategory.add(
+                                            DropdownMenuItem(
+                                              value: data.id,
+                                              child: Text(
+                                                data['category'],
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    }
+                                    return DropdownButton(
+                                        value: selectedCategory,
+                                        items: rawCategory,
+                                        hint: const Text('Select Category'),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            selectedCategory = value;
+                                          });
+                                        });
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10),
+                                child: TextField(
+                                  controller: productController,
+                                  keyboardType: TextInputType.text,
+                                  decoration: const InputDecoration(
+                                    isDense: true,
+                                    hintText: 'Product Name',
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10),
+                                child: TextField(
+                                  controller: unitController,
+                                  keyboardType: TextInputType.text,
+                                  decoration: const InputDecoration(
+                                    isDense: true,
+                                    hintText: 'Item Unit',
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10),
+                                child: TextField(
+                                  controller: priceController,
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                        RegExp(r'[0-9]')),
+                                    LengthLimitingTextInputFormatter(10)
+                                  ],
+                                  decoration: const InputDecoration(
+                                    isDense: true,
+                                    hintText: 'Enter Price ',
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 44,
+                        width: 120,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                              colors: [
+                                Colors.blue,
+                                Color.fromARGB(255, 2, 52, 93)
+                              ],
+                              begin: Alignment.bottomLeft,
+                              end: Alignment.topRight),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: MaterialButton(
+                          onPressed: () {
+                            uploadDataToStorage(_Image);
+                          },
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(26),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(
+                                'Save',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
         );
       },

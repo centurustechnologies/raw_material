@@ -9,16 +9,18 @@ import 'package:raw_material/helpers/app_constants.dart';
 
 import 'homepage.dart';
 
-class create_bill extends StatefulWidget {
-  const create_bill({super.key});
+class NewBill extends StatefulWidget {
+  const NewBill({super.key});
 
   @override
-  State<create_bill> createState() => _create_billState();
+  State<NewBill> createState() => _NewBillState();
 }
 
-class _create_billState extends State<create_bill> {
+class _NewBillState extends State<NewBill> {
   late StreamController<List<DocumentSnapshot>> _streamController;
-  // ignore: unused_field
+  TextEditingController _searchController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
+  bool _isLoading = true;
   late List<DocumentSnapshot> _document;
   List items = [];
 
@@ -38,12 +40,23 @@ class _create_billState extends State<create_bill> {
 
   void addDataToRawCart() async {
     try {
+      var snapshot =
+          await FirebaseFirestore.instance.collection('raw_cart').get();
+      int currentCount = snapshot.size;
       await FirebaseFirestore.instance.collection('raw_cart').add({
-        'costomer_id': 'ccdsf',
-        'customer_name': 'dfsdfs',
-        'price': 'dfsdff',
-      });
+        'costomer_id': currentCount + 1,
+        'customer_name': nameController.text,
+        'price': '₹ 0',
+      }).whenComplete(() {
+        setState(() {
+          nameController.clear();
 
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const NewBill()),
+          );
+        });
+      });
       if (kDebugMode) {
         print("Data added successfully!");
       }
@@ -56,7 +69,6 @@ class _create_billState extends State<create_bill> {
 
   Future<void> getData() async {
     try {
-      // ignore: unused_local_variable
       QuerySnapshot querySnapshot =
           await FirebaseFirestore.instance.collection('raw_cart').get();
       _document = querySnapshot.docs;
@@ -77,6 +89,7 @@ class _create_billState extends State<create_bill> {
         return true;
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           backgroundColor: const Color.fromARGB(255, 8, 71, 123),
           title: const Text(
@@ -88,7 +101,7 @@ class _create_billState extends State<create_bill> {
             return IconButton(
               icon: const Icon(
                 Icons.menu,
-                color: Colors.white, // Change the color here
+                color: Colors.white,
               ),
               onPressed: () {
                 Scaffold.of(context).openDrawer();
@@ -101,99 +114,27 @@ class _create_billState extends State<create_bill> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 10, left: 12),
-              child: InkWell(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                          title: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Create Table',
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w500),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: IconButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    icon: const Icon(
-                                      Icons.close,
-                                      size: 24,
-                                    )),
-                              )
-                            ],
-                          ),
-                          actions: [
-                            Center(
-                              child: Container(
-                                height: 50,
-                                width: 100,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: Colors.blue,
-                                ),
-                                child: InkWell(
-                                  onTap: () {
-                                    addDataToRawCart();
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Center(
-                                    child: Text(
-                                      'Create',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            )
-                          ]);
-                    },
-                  );
-                },
-                child: Container(
-                  height: 50,
-                  width: 180,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                        colors: [Colors.blue, Color.fromARGB(255, 2, 52, 93)],
-                        begin: Alignment.bottomLeft,
-                        end: Alignment.topRight),
-                    borderRadius: BorderRadius.circular(15),
+              padding: const EdgeInsets.only(
+                  top: 10, left: 20, right: 20, bottom: 0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: const BorderSide(
+                      color: Colors.black,
+                      width: 5.0,
+                    ),
                   ),
-                  child: const Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '+',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 12,
-                      ),
-                      Text(
-                        'Add New Bill',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+                  hintText: "Search...",
+                  enabledBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.black,
+                    ),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: () {},
                   ),
                 ),
               ),
@@ -201,8 +142,25 @@ class _create_billState extends State<create_bill> {
             const SizedBox(
               height: 20,
             ),
-            SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
+            // _isLoading
+            // ? const Expanded(
+            //     child: Center(
+            //       child: Column(
+            //         children: [
+            //           Padding(
+            //             padding: EdgeInsets.all(16.0),
+            //             child: Text(
+            //               'No data available....',
+            //               style: TextStyle(
+            //                   fontSize: 18, fontWeight: FontWeight.bold),
+            //             ),
+            //           ),
+            //         ],
+            //       ),
+            //     ),
+            //   )
+            // :
+            Expanded(
               child: StreamBuilder<List<DocumentSnapshot>>(
                   stream: _streamController.stream,
                   builder: (BuildContext context,
@@ -214,14 +172,13 @@ class _create_billState extends State<create_bill> {
                       );
                     }
                     return SizedBox(
-                      height: MediaQuery.of(context).size.height - 180,
+                      height: MediaQuery.of(context).size.height - 250,
                       width: 400,
                       child: ListView(
                         children:
                             snapshot.data!.map((DocumentSnapshot document) {
                           Map<String, dynamic> data =
                               document.data() as Map<String, dynamic>;
-                          String userId = data['customer_id'];
                           String costumerName = data['customer_name'];
                           String price = data['price'];
 
@@ -234,82 +191,33 @@ class _create_billState extends State<create_bill> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        const AddNewBillPage(),
+                                        const GenerateNewBill(),
                                   ),
                                 );
                               },
                               child: Card(
-                                child: Container(
-                                  height: 120,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    color: Colors.white,
-                                    border: Border.all(
-                                        color: Colors.blue, width: 1),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                child: ListTile(
+                                  title: Row(
                                     children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 15, right: 20, top: 5),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              costumerName,
-                                              style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                            IconButton(
-                                                onPressed: () {},
-                                                icon:
-                                                    const Icon(Icons.more_vert))
-                                          ],
-                                        ),
+                                      Text(
+                                        costumerName,
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
                                       ),
-                                      Column(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 15, right: 20, bottom: 8),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      "Id : $userId",
-                                                      style: const TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w400),
-                                                    ),
-                                                    Text(
-                                                      "₹ $price",
-                                                      style: const TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w400),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
+                                      const SizedBox(
+                                        width: 10,
                                       ),
                                     ],
                                   ),
-
-                                  //trailing: ,
+                                  subtitle: Text("Price : $price"),
+                                  trailing: IconButton(
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.grey,
+                                    ),
+                                    onPressed: () {},
+                                  ),
                                 ),
                               ),
                             ),
@@ -319,6 +227,88 @@ class _create_billState extends State<create_bill> {
                     );
                   }),
             ),
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Center(
+                child: Container(
+                  height: 44,
+                  width: 160,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                        colors: [Colors.blue, Color.fromARGB(255, 2, 52, 93)],
+                        begin: Alignment.bottomLeft,
+                        end: Alignment.topRight),
+                    borderRadius: BorderRadius.circular(26),
+                  ),
+                  child: MaterialButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text(
+                              'Create New Bill',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            content: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextField(
+                                  controller: nameController,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Enter Name',
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  "Price : ₹0",
+                                  style: TextStyle(fontSize: 18),
+                                )
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  addDataToRawCart();
+                                },
+                                child: const Text('Create'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(26),
+                    ),
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Add New Bill',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -326,16 +316,16 @@ class _create_billState extends State<create_bill> {
   }
 }
 
-class AddNewBillPage extends StatefulWidget {
-  const AddNewBillPage({
+class GenerateNewBill extends StatefulWidget {
+  const GenerateNewBill({
     super.key,
   });
 
   @override
-  State<AddNewBillPage> createState() => _AddNewBillPageStateState();
+  State<GenerateNewBill> createState() => _GenerateNewBillStateState();
 }
 
-class _AddNewBillPageStateState extends State<AddNewBillPage> {
+class _GenerateNewBillStateState extends State<GenerateNewBill> {
   bool textlist = true;
   bool imagebool = true;
   bool detail = false;
@@ -346,6 +336,7 @@ class _AddNewBillPageStateState extends State<AddNewBillPage> {
 
   String area = '';
   String name = '';
+  int _number = 0;
 
   // ignore: unused_field
   late StreamController<List<DocumentSnapshot>> _streamController;
@@ -376,6 +367,100 @@ class _AddNewBillPageStateState extends State<AddNewBillPage> {
   void dispose() {
     super.dispose();
     _streamController.close();
+  }
+
+  Future<void> addNewTableProduct(
+      String id, DocumentSnapshot documentSnapshot) async {
+    try {
+      var docRef = FirebaseFirestore.instance
+          .collection('tables')
+          .doc(id)
+          .collection('product')
+          .doc(documentSnapshot.id);
+      var doc = await docRef.get();
+
+      FirebaseFirestore.instance
+          .collection('tables')
+          .doc(id)
+          .collection('product')
+          .get()
+          .then(
+        (value) {
+          if (value.docs.isNotEmpty) {
+          } else {
+            FirebaseFirestore.instance.collection('tables').doc(id).update(
+              {
+                'status': 'occupied',
+              },
+            );
+          }
+        },
+      );
+
+      if (doc.exists) {
+        if (kIsWeb) {
+          String basePrice = documentSnapshot['product_price'];
+          String totalPrice = doc.get('total_price');
+          String total = "${int.parse(totalPrice) + int.parse(basePrice)}";
+          String quantity = doc.get('quantity');
+          await FirebaseFirestore.instance
+              .collection('tables')
+              .doc(id)
+              .collection('product')
+              .doc(documentSnapshot.id)
+              .update(
+            {
+              'total_price': total,
+              'quantity': '${int.parse(quantity) + 1}',
+            },
+          );
+        }
+      } else {
+        if (kIsWeb) {
+          await FirebaseFirestore.instance
+              .collection('settings')
+              .doc('settings')
+              .get()
+              .then(
+            (value) async {
+              await FirebaseFirestore.instance
+                  .collection('tables')
+                  .doc(id)
+                  .collection('product')
+                  .doc(documentSnapshot.id)
+                  .set(
+                {
+                  'product_name': documentSnapshot['product_name'],
+                  'categery': documentSnapshot['categery'],
+                  'product_id': documentSnapshot['product_id'],
+                  'product_price': documentSnapshot['product_price'],
+                  'total_price': documentSnapshot['product_price'],
+                  'product_type': documentSnapshot['product_type'],
+                  'quantity': '1',
+                  'tax': value.get('tax').toString(),
+                },
+              );
+            },
+          );
+        }
+      }
+    } catch (e) {
+      print('Error adding product: $e');
+    }
+  }
+
+  void _increment() {
+    setState(() {
+      _number++;
+    });
+  }
+
+  void _decrement() {
+    setState(() {
+      if (_number > 0) {
+        _number--;
+      }
+    });
   }
 
   @override
@@ -461,7 +546,7 @@ class _AddNewBillPageStateState extends State<AddNewBillPage> {
                       Column(
                         children: [
                           const Padding(
-                            padding: EdgeInsets.only(top: 5),
+                            padding: EdgeInsets.only(top: 10),
                             child: SizedBox(
                               width: 300,
                               child: Text(
@@ -481,7 +566,7 @@ class _AddNewBillPageStateState extends State<AddNewBillPage> {
                                 child: SizedBox(
                                   width: 50,
                                   child: Text(
-                                    "5 pcs",
+                                    "6 pcs",
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w400,
@@ -515,19 +600,21 @@ class _AddNewBillPageStateState extends State<AddNewBillPage> {
                                 padding: const EdgeInsets.all(6.0),
                                 minWidth: 0,
                                 height: 0,
-                                onPressed: () {},
+                                onPressed: () {
+                                  _decrement();
+                                },
                                 child: Icon(
                                   size: 18,
-                                  Icons.add,
+                                  Icons.delete,
                                   color: whiteColor,
                                 ),
                               ),
-                              const Padding(
+                              Padding(
                                 padding: EdgeInsets.only(right: 8, left: 8),
                                 child: SizedBox(
                                   width: 20,
                                   child: Text(
-                                    "23",
+                                    "$_number",
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w400,
@@ -544,9 +631,11 @@ class _AddNewBillPageStateState extends State<AddNewBillPage> {
                                 padding: const EdgeInsets.all(6.0),
                                 minWidth: 0,
                                 height: 0,
-                                onPressed: () {},
+                                onPressed: () {
+                                  _increment();
+                                },
                                 child: Icon(
-                                  Icons.delete,
+                                  Icons.add,
                                   size: 18,
                                   color: whiteColor,
                                 ),
@@ -554,7 +643,7 @@ class _AddNewBillPageStateState extends State<AddNewBillPage> {
                             ],
                           ),
                         ],
-                      ),
+                      )
                     ],
                   ),
                   const Column(
@@ -607,8 +696,6 @@ class _AddNewBillPageStateState extends State<AddNewBillPage> {
           ),
           child: MaterialButton(
             onPressed: () {},
-            //color: Colors.blue,
-
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             child: const Padding(
@@ -637,10 +724,6 @@ class _AddNewBillPageStateState extends State<AddNewBillPage> {
       stream: _streamController.stream,
       builder: (BuildContext context,
           AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
-        // if (snapshot.hasError) {
-        //   return Text('Error: ${snapshot.error}');
-        // }
-
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Padding(
             padding: EdgeInsets.all(10.0),
@@ -651,48 +734,57 @@ class _AddNewBillPageStateState extends State<AddNewBillPage> {
         return SizedBox(
           height: MediaQuery.of(context).size.height - 205,
           width: MediaQuery.of(context).size.height / 7.4,
-          child: ListView(
-            children: snapshot.data!.map((DocumentSnapshot document) {
-              Map<String, dynamic> data =
-                  document.data() as Map<String, dynamic>;
-              String productName = data['product_name'];
-              String image = data['product_image'];
+          child: Padding(
+            padding: const EdgeInsets.only(top: 5),
+            child: ListView(
+              children: snapshot.data!.map((DocumentSnapshot document) {
+                Map<String, dynamic> data =
+                    document.data() as Map<String, dynamic>;
+                String productName = data['product_name'];
+                String image = data['product_image'];
 
-              return Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.black,
-                      width: 1.0,
+                return Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.black,
+                        width: 1.0,
+                      ),
                     ),
-                  ),
-                  margin: const EdgeInsets.symmetric(
-                      horizontal: 5.0, vertical: 10.0),
-                  child: imagebool
-                      ? Padding(
-                          padding: const EdgeInsets.only(
-                              top: 20, bottom: 20, right: 5, left: 5),
-                          child: Text(
-                            productName,
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                              color: Color.fromARGB(255, 8, 71, 123),
+                    margin: const EdgeInsets.symmetric(
+                        horizontal: 5.0, vertical: 2.0),
+                    child: imagebool
+                        ? InkWell(
+                            onTap: () {},
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                  top: 20, bottom: 20, right: 5, left: 5),
+                              child: Text(
+                                productName,
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color.fromARGB(255, 8, 71, 123),
+                                ),
+                                softWrap: true,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            softWrap: true,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.all(2),
-                          child: Image.network(
-                            width: MediaQuery.of(context).size.width,
-                            height: MediaQuery.of(context).size.width / 6,
-                            image,
-                            fit: BoxFit.cover,
-                          ),
-                        ));
-            }).toList(),
+                          )
+                        : InkWell(
+                            onTap: () {},
+                            child: Padding(
+                              padding: const EdgeInsets.all(2),
+                              child: Image.network(
+                                width: MediaQuery.of(context).size.width,
+                                height: MediaQuery.of(context).size.width / 6,
+                                image,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ));
+              }).toList(),
+            ),
           ),
         );
       },

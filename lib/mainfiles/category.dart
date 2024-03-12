@@ -28,9 +28,7 @@ class _CategoryPageState extends State<CategoryPage> {
 
   // Future getImageFromGallery() async {
   //   final picker = ImagePicker();
-
   //   final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
   //   setState(() {
   //     if (pickedFile != null) {
   //       _image = File(pickedFile.path);
@@ -83,6 +81,11 @@ class _CategoryPageState extends State<CategoryPage> {
       }).whenComplete(() {
         setState(() {
           categoryNameController.clear();
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CategoryPage()),
+          );
         });
       });
 
@@ -223,10 +226,9 @@ class _CategoryPageState extends State<CategoryPage> {
                               child: const Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
-                                // ignore: prefer_const_literals_to_create_immutables
                                 children: [
                                   Text(
-                                    'Add Category Name',
+                                    'Add Category',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w700,
@@ -241,107 +243,88 @@ class _CategoryPageState extends State<CategoryPage> {
                       ],
                     ),
                   ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(left: 10, right: 10, top: 20),
-                    child: Container(
-                      height: MediaQuery.of(context).size.height / 1.49,
-                      width: displayWidth(context),
-                      decoration: BoxDecoration(
-                        color: whiteColor,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.blue.withOpacity(0.3),
-                            blurRadius: 10,
-                            spreadRadius: 1,
-                          ),
-                        ],
-                      ),
-                      child: StreamBuilder<List<DocumentSnapshot>>(
-                          stream: _streamController.stream,
-                          builder: (BuildContext context,
-                              AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
-                            if (snapshot.hasData) {
-                              return ListView(
-                                children: snapshot.data!.reversed
-                                    .map((DocumentSnapshot document) {
-                                  Map<String, dynamic> data =
-                                      document.data() as Map<String, dynamic>;
-                                  int categoryId = data['category_id'];
-                                  String category = data['category'];
+                  Container(
+                    height: MediaQuery.of(context).size.height / 1.49,
+                    width: displayWidth(context),
+                    child: StreamBuilder<List<DocumentSnapshot>>(
+                        stream: _streamController.stream,
+                        builder: (BuildContext context,
+                            AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+                          if (snapshot.hasData) {
+                            return ListView(
+                              children: snapshot.data!
+                                  .map((DocumentSnapshot document) {
+                                Map<String, dynamic> data =
+                                    document.data() as Map<String, dynamic>;
+                                int categoryId = data['category_id'];
+                                String category = data['category'];
 
-                                  return Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 5, left: 8, right: 8),
-                                    child: Card(
-                                      color: Colors.white,
-                                      child: ListTile(
-                                        contentPadding: EdgeInsets.zero,
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            MaterialButton(
-                                              color: Color.fromARGB(
-                                                  255, 153, 195, 253),
-                                              padding:
-                                                  const EdgeInsets.all(6.0),
-                                              minWidth: 0,
-                                              height: 0,
-                                              onPressed: () {},
-                                              child: Icon(
-                                                Icons.delete,
-                                                size: 18,
-                                                color: whiteColor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        leading: Padding(
-                                          padding: EdgeInsets.only(left: 10),
-                                          child: CircleAvatar(
-                                            // Wrap with CircleAvatar
-                                            backgroundColor: Color.fromARGB(
-                                                255, 153, 195, 253),
-                                            child: Text(
-                                              "$categoryId",
-                                              style: TextStyle(
-                                                  fontSize: 20,
-                                                  color: Colors
-                                                      .white), // Example text style
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 5, left: 8, right: 8),
+                                  child: Card(
+                                    child: ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          MaterialButton(
+                                            color: Colors.grey,
+                                            padding: const EdgeInsets.all(6.0),
+                                            minWidth: 0,
+                                            height: 0,
+                                            onPressed: () {},
+                                            child: Icon(
+                                              Icons.delete,
+                                              size: 18,
+                                              color: whiteColor,
                                             ),
                                           ),
-                                        ),
-                                        title: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsets.only(
-                                                  bottom: 5, left: 10),
-                                              child: Text(
-                                                category,
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 20),
-                                              ),
-                                            ),
-                                          ],
+                                        ],
+                                      ),
+                                      leading: Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 10),
+                                        child: CircleAvatar(
+                                          // Wrap with CircleAvatar
+                                          backgroundColor: Colors.grey,
+                                          child: Text(
+                                            "$categoryId",
+                                            style: const TextStyle(
+                                                fontSize: 20,
+                                                color: Colors
+                                                    .white), // Example text style
+                                          ),
                                         ),
                                       ),
+                                      title: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 5, left: 10),
+                                            child: Text(
+                                              category,
+                                              style:
+                                                  const TextStyle(fontSize: 20),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  );
-                                }).toList(),
-                              );
-                            }
-                            return Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: CircularProgressIndicator(),
-                              ),
+                                  ),
+                                );
+                              }).toList(),
                             );
-                          }),
-                    ),
+                          }
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(10.0),
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }),
                   ),
                 ],
               ),

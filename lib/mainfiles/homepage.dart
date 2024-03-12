@@ -25,7 +25,7 @@ class _MyHomePageState extends State<MyHomePage> {
       onWillPop: () async {
         Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => MyHomePage()),
+            MaterialPageRoute(builder: (context) => const MyHomePage()),
             (route) => false);
         return true;
       },
@@ -122,7 +122,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const create_bill(),
+                              builder: (context) => const NewBill(),
                             ),
                           );
                         },
@@ -160,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => AddNewBillPage(),
+                              builder: (context) => const GenerateNewBill(),
                             ),
                           );
                         },
@@ -281,7 +281,7 @@ class MyDrawer extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const create_bill()),
+                MaterialPageRoute(builder: (context) => const NewBill()),
               );
             },
           ),

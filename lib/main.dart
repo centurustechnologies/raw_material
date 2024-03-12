@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:raw_material/mainfiles/homepage.dart';
 import 'package:raw_material/mainfiles/new_bill.dart';
 
 Future<void> main() async {
@@ -25,12 +24,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      routes: {
-        '/first': (context) => const MyHomePage(),
-      },
-      debugShowCheckedModeBanner: false,
-      home: const create_bill(),
-    );
+    return const MaterialApp(
+        debugShowCheckedModeBanner: false, home: NewBill());
   }
 }

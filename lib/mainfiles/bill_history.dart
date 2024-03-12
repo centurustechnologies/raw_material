@@ -96,7 +96,7 @@ class _HistorypageState extends State<Historypage> {
                     children: snapshot.data!.map((DocumentSnapshot document) {
                       Map<String, dynamic> data =
                           document.data() as Map<String, dynamic>;
-                      String customerId = data['customer_id'];
+                      int customerId = data['costomer_id'];
                       String customerName = data['customer_name'];
                       String price = data['price'];
 
@@ -279,29 +279,26 @@ class _BillDetailState extends State<BillDetail> {
 
   Future<void> getData() async {
     try {
+      List<DocumentSnapshot> allData = [];
+
       QuerySnapshot queryProductData = await FirebaseFirestore.instance
           .collection('raw_billing_product')
           .get();
+      allData.addAll(queryProductData.docs);
+
       QuerySnapshot queryCartData =
           await FirebaseFirestore.instance.collection('raw_cart').get();
+      allData.addAll(queryCartData.docs);
 
       QuerySnapshot queryCategoryData =
           await FirebaseFirestore.instance.collection('raw_category').get();
+      allData.addAll(queryCategoryData.docs);
 
       QuerySnapshot queryUserData =
           await FirebaseFirestore.instance.collection('raw_user').get();
+      allData.addAll(queryUserData.docs);
 
-      Map<String, dynamic> fetchedData = {
-        'productData': queryProductData.docs,
-        'cartData': queryCartData.docs,
-        'categoryData': queryCategoryData.docs,
-        'userData': queryUserData.docs,
-      };
-
-      _streamController.add(queryProductData.docs);
-      _streamController.add(queryCartData.docs);
-      _streamController.add(queryCategoryData.docs);
-      _streamController.add(queryUserData.docs);
+      _streamController.add(allData);
     } catch (e) {
       print('Error in fetching data: $e');
     }
@@ -343,7 +340,7 @@ class _BillDetailState extends State<BillDetail> {
               children: snapshot.data!.map((DocumentSnapshot document) {
                 Map<String, dynamic> data =
                     document.data() as Map<String, dynamic>;
-                String customerId = data['customer_id'];
+                int customerId = data['cstomer_id'];
                 String customerName = data['customer_name'];
                 String userName = data['user_name'];
                 String userId = data['user_id'];

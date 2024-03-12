@@ -5,6 +5,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+
+import 'manage_user.dart';
 // import 'package:raw_material/mainfiles/card.dart'; // Commented out as it seems to be unnecessary or missing
 
 class AddNewUser extends StatefulWidget {
@@ -15,6 +17,17 @@ class AddNewUser extends StatefulWidget {
 }
 
 class _AddNewUserState extends State<AddNewUser> {
+  // String? validateEmail(String? value) {
+  //   var pattern =
+  //       r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+
+  //   final regex = RegExp(pattern);
+
+  //   return value!.isNotEmpty && !regex.hasMatch(value)
+  //       ? 'Enter a valid email address'
+  //       : null;
+  // }
+
   List items = [];
   UploadTask? uploadTask;
 
@@ -71,6 +84,11 @@ class _AddNewUserState extends State<AddNewUser> {
           numberController.clear();
           eMailController.clear();
           _image = null;
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ManageUser()),
+          );
         });
       });
       // ignore: avoid_print
@@ -152,7 +170,7 @@ class _AddNewUserState extends State<AddNewUser> {
                     const SizedBox(height: 10),
                     Padding(
                       padding: const EdgeInsets.only(left: 10),
-                      child: TextField(
+                      child: TextFormField(
                         controller: nameController,
                         keyboardType: TextInputType.text,
                         decoration: const InputDecoration(
@@ -163,12 +181,18 @@ class _AddNewUserState extends State<AddNewUser> {
                           color: Colors.black54,
                           fontSize: 16,
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your name';
+                          }
+                          return null;
+                        },
                       ),
                     ),
                     const SizedBox(height: 10),
                     Padding(
                       padding: const EdgeInsets.only(left: 10),
-                      child: TextField(
+                      child: TextFormField(
                         controller: userIdController,
                         keyboardType: TextInputType.text,
                         decoration: const InputDecoration(
@@ -179,14 +203,20 @@ class _AddNewUserState extends State<AddNewUser> {
                           color: Colors.black54,
                           fontSize: 16,
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your name';
+                          }
+                          return null;
+                        },
                       ),
                     ),
                     const SizedBox(height: 10),
                     Padding(
                       padding: const EdgeInsets.only(left: 10),
-                      child: TextField(
+                      child: TextFormField(
                         controller: eMailController,
-                        keyboardType: TextInputType.text,
+                        keyboardType: TextInputType.emailAddress,
                         decoration: const InputDecoration(
                           isDense: true,
                           hintText: 'email',
@@ -195,12 +225,26 @@ class _AddNewUserState extends State<AddNewUser> {
                           color: Colors.black54,
                           fontSize: 16,
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your name';
+                          } else {
+                            // Regex for email validation
+                            String pattern =
+                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
+                            RegExp regExp = RegExp(pattern);
+                            if (!regExp.hasMatch(value)) {
+                              return 'Enter a valid email address';
+                            }
+                          }
+                          return null;
+                        },
                       ),
                     ),
                     const SizedBox(height: 10),
                     Padding(
                       padding: const EdgeInsets.only(left: 10),
-                      child: TextField(
+                      child: TextFormField(
                         controller: numberController,
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
@@ -211,6 +255,17 @@ class _AddNewUserState extends State<AddNewUser> {
                           color: Colors.black54,
                           fontSize: 16,
                         ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^[0-9]+$')),
+                          LengthLimitingTextInputFormatter(10),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your name';
+                          }
+                          return null;
+                        },
                       ),
                     ),
                     const SizedBox(height: 10),
