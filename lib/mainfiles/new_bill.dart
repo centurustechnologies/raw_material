@@ -594,7 +594,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                       Column(
                         children: [
                           const Padding(
-                            padding: EdgeInsets.only(top: 10),
+                            padding: EdgeInsets.only(top: 15),
                             child: SizedBox(
                               width: 300,
                               child: Text(

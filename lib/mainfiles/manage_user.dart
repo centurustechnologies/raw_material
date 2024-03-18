@@ -143,62 +143,71 @@ class _ManageUserState extends State<ManageUser> {
                         String userNumber = data['user_number'];
 
                         return Card(
-                          child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundImage:
-                                    NetworkImage(data['user_image']),
-                              ),
-                              title: Row(
-                                children: [
-                                  Text(
-                                    userName,
-                                    style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
+                          color: Color.fromARGB(255, 255, 247, 247),
+                          child: Padding(
+                            padding: const EdgeInsets.all(2.0),
+                            child: Container(
+                              height: 65,
+                              child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundImage:
+                                        NetworkImage(data['user_image']),
                                   ),
-                                  SizedBox(
-                                    width: 10,
+                                  title: Row(
+                                    children: [
+                                      Text(
+                                        userName,
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text(
+                                        "[ $userId ]",
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    "[ $userId ]",
-                                    style: const TextStyle(fontSize: 14),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text("contact: $userNumber"),
+                                      Text("email: $userEmail"),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("contact: $userNumber"),
-                                  Text("email: $userEmail"),
-                                ],
-                              ),
-                              trailing: PopupMenuButton<String>(
-                                  onSelected: (String value) {
-                                    // Handle selected value
-                                  },
-                                  itemBuilder: (
-                                    context,
-                                  ) =>
-                                      [
-                                        PopupMenuItem(
-                                          value: 'edit',
-                                          child: ListTile(
-                                            leading: const Icon(Icons.edit),
-                                            title: const Text('Edit'),
-                                            onTap: () {},
-                                          ),
-                                        ),
-                                        PopupMenuItem(
-                                          value: 'remove',
-                                          child: ListTile(
-                                            leading: const Icon(Icons.delete),
-                                            title: const Text('Remove'),
-                                            onTap: () {
-                                              // removeItem(context, index);
-                                            },
-                                          ),
-                                        ),
-                                      ])),
+                                  trailing: PopupMenuButton<String>(
+                                      onSelected: (String value) {
+                                        // Handle selected value
+                                      },
+                                      itemBuilder: (
+                                        context,
+                                      ) =>
+                                          [
+                                            PopupMenuItem(
+                                              value: 'edit',
+                                              child: ListTile(
+                                                leading: const Icon(Icons.edit),
+                                                title: const Text('Edit'),
+                                                onTap: () {},
+                                              ),
+                                            ),
+                                            PopupMenuItem(
+                                              value: 'remove',
+                                              child: ListTile(
+                                                leading:
+                                                    const Icon(Icons.delete),
+                                                title: const Text('Remove'),
+                                                onTap: () {
+                                                  // removeItem(context, index);
+                                                },
+                                              ),
+                                            ),
+                                          ])),
+                            ),
+                          ),
                         );
                       }).toList(),
                     );

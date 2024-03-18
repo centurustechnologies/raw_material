@@ -85,8 +85,8 @@ class _NewHomeState extends State<NewHome> {
   }
 
   BoxDecoration _boxDecoration() {
-    return BoxDecoration(
-      borderRadius: const BorderRadius.vertical(
+    return const BoxDecoration(
+      borderRadius: BorderRadius.vertical(
         bottom: Radius.circular(20),
       ),
       gradient: LinearGradient(
@@ -127,12 +127,12 @@ class _NewHomeState extends State<NewHome> {
   }
 
   Widget _tabBar() {
-    return TabBar(
-      labelPadding: const EdgeInsets.all(0),
+    return const TabBar(
+      labelPadding: EdgeInsets.all(0),
       labelColor: Color.fromARGB(255, 68, 255, 224),
       indicatorColor: Color.fromARGB(255, 68, 255, 224),
       unselectedLabelColor: Colors.white,
-      tabs: const [
+      tabs: [
         Tab(
           iconMargin: EdgeInsets.all(0),
           icon: Icon(Icons.home),
@@ -242,7 +242,7 @@ class _HomeBodyState extends State<_HomeBody> {
                   child: Container(
                     width: 280,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                         colors: [
                           Color.fromARGB(255, 245, 157, 157),
                           Color.fromARGB(255, 255, 90, 78),
@@ -282,7 +282,7 @@ class _HomeBodyState extends State<_HomeBody> {
                   child: Container(
                     width: 280,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                         colors: [
                           Color.fromARGB(255, 245, 157, 157),
                           Color.fromARGB(255, 255, 90, 78),
@@ -372,7 +372,7 @@ class _ManageUserState extends State<ManageUser> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(
+        const SizedBox(
           height: 10,
         ),
         Expanded(
@@ -381,8 +381,8 @@ class _ManageUserState extends State<ManageUser> {
               builder: (BuildContext context,
                   AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(
-                    child: const Padding(
+                  return const Center(
+                    child: Padding(
                       padding: EdgeInsets.all(10.0),
                       child: CircularProgressIndicator(),
                     ),
@@ -398,67 +398,76 @@ class _ManageUserState extends State<ManageUser> {
                     String userNumber = data['user_number'];
 
                     return Card(
-                      child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: NetworkImage(data['user_image']),
-                          ),
-                          title: Row(
-                            children: [
-                              Text(
-                                userName,
-                                style: const TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              Text(
-                                "[ $userId ]",
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("contact: $userNumber"),
-                              Text("email: $userEmail"),
-                            ],
-                          ),
-                          trailing: PopupMenuButton<String>(
-                              icon: Icon(
-                                Icons.more_vert, // Customize the icon as needed
-                                color: Color.fromARGB(255, 180, 68,
-                                    255), // Change the color of the icon
-                              ),
-                              onSelected: (String value) {
-                                // Handle selected value
-                              },
-                              itemBuilder: (
-                                context,
-                              ) =>
-                                  [
-                                    PopupMenuItem(
-                                      value: 'edit',
-                                      child: ListTile(
-                                        leading: const Icon(
-                                          Icons.edit,
+                      color: Color.fromARGB(255, 255, 247, 247),
+                      child: Container(
+                        height: 65,
+                        child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: NetworkImage(data['user_image']),
+                            ),
+                            title: Row(
+                              children: [
+                                Text(
+                                  userName,
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  "[ $userId ]",
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              ],
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("contact: $userNumber"),
+                                Text("email: $userEmail"),
+                              ],
+                            ),
+                            trailing: PopupMenuButton<String>(
+                                icon: Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: const Icon(
+                                    Icons
+                                        .more_vert, // Customize the icon as needed
+                                    color: Color.fromARGB(255, 180, 68,
+                                        255), // Change the color of the icon
+                                  ),
+                                ),
+                                onSelected: (String value) {
+                                  // Handle selected value
+                                },
+                                itemBuilder: (
+                                  context,
+                                ) =>
+                                    [
+                                      PopupMenuItem(
+                                        value: 'edit',
+                                        child: ListTile(
+                                          leading: const Icon(
+                                            Icons.edit,
+                                          ),
+                                          title: const Text('Edit'),
+                                          onTap: () {},
                                         ),
-                                        title: const Text('Edit'),
-                                        onTap: () {},
                                       ),
-                                    ),
-                                    PopupMenuItem(
-                                      value: 'remove',
-                                      child: ListTile(
-                                        leading: const Icon(Icons.delete),
-                                        title: const Text('Remove'),
-                                        onTap: () {
-                                          // removeItem(context, index);
-                                        },
+                                      PopupMenuItem(
+                                        value: 'remove',
+                                        child: ListTile(
+                                          leading: const Icon(Icons.delete),
+                                          title: const Text('Remove'),
+                                          onTap: () {
+                                            // removeItem(context, index);
+                                          },
+                                        ),
                                       ),
-                                    ),
-                                  ])),
+                                    ])),
+                      ),
                     );
                   }).toList(),
                 );
@@ -626,12 +635,12 @@ class _NewBillState extends State<MyNewBill> {
                             children: [
                               Text(
                                 costumerName,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(height: 5),
+                              const SizedBox(height: 5),
                               Text(
                                 "itemDescription",
                                 style: TextStyle(
@@ -639,16 +648,16 @@ class _NewBillState extends State<MyNewBill> {
                                   color: Colors.grey[600],
                                 ),
                               ),
-                              SizedBox(height: 5),
+                              const SizedBox(height: 5),
                               Text(
                                 "Price : ₹ $price",
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.green,
                                 ),
                               ),
-                              Divider(),
+                              const Divider(),
                             ],
                           ),
                         ),
@@ -777,14 +786,15 @@ class MenuTab extends StatelessWidget {
                 Card(
                   elevation:
                       2, // Adjust the elevation to control the intensity of the shadow
-                  shadowColor: Color.fromARGB(255, 68, 255, 224),
+                  shadowColor: const Color.fromARGB(255, 68, 255, 224),
                   child: ListTile(
-                    leading: Icon(Icons.list_alt),
-                    title: Text('Categories'),
+                    leading: const Icon(Icons.list_alt),
+                    title: const Text('Categories'),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => CategoryPage()),
+                        MaterialPageRoute(
+                            builder: (context) => const CategoryPage()),
                       );
                     },
                   ),
@@ -792,14 +802,15 @@ class MenuTab extends StatelessWidget {
                 Card(
                   elevation:
                       2, // Adjust the elevation to control the intensity of the shadow
-                  shadowColor: Color.fromARGB(255, 68, 255, 224),
+                  shadowColor: const Color.fromARGB(255, 68, 255, 224),
                   child: ListTile(
-                    leading: Icon(Icons.propane),
-                    title: Text('Product'),
+                    leading: const Icon(Icons.propane),
+                    title: const Text('Product'),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => product_list()),
+                        MaterialPageRoute(
+                            builder: (context) => const product_list()),
                       );
                     },
                   ),
@@ -807,14 +818,15 @@ class MenuTab extends StatelessWidget {
                 Card(
                   elevation:
                       2, // Adjust the elevation to control the intensity of the shadow
-                  shadowColor: Color.fromARGB(255, 68, 255, 224),
+                  shadowColor: const Color.fromARGB(255, 68, 255, 224),
                   child: ListTile(
-                    leading: Icon(Icons.file_copy),
-                    title: Text('My Order'),
+                    leading: const Icon(Icons.file_copy),
+                    title: const Text('My Order'),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => MyOrder()),
+                        MaterialPageRoute(
+                            builder: (context) => const MyOrder()),
                       );
                     },
                   ),
@@ -822,14 +834,15 @@ class MenuTab extends StatelessWidget {
                 Card(
                   elevation:
                       2, // Adjust the elevation to control the intensity of the shadow
-                  shadowColor: Color.fromARGB(255, 68, 255, 224),
+                  shadowColor: const Color.fromARGB(255, 68, 255, 224),
                   child: ListTile(
-                    leading: Icon(Icons.history_sharp),
-                    title: Text('Bills history'),
+                    leading: const Icon(Icons.history_sharp),
+                    title: const Text('Bills history'),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => Historypage()),
+                        MaterialPageRoute(
+                            builder: (context) => const Historypage()),
                       );
                     },
                   ),
@@ -837,10 +850,10 @@ class MenuTab extends StatelessWidget {
                 Card(
                   elevation:
                       2, // Adjust the elevation to control the intensity of the shadow
-                  shadowColor: Color.fromARGB(255, 68, 255, 224),
+                  shadowColor: const Color.fromARGB(255, 68, 255, 224),
                   child: ListTile(
-                    leading: Icon(Icons.settings),
-                    title: Text('Setting'),
+                    leading: const Icon(Icons.settings),
+                    title: const Text('Setting'),
                     onTap: () {
                       // Navigator.push(
                       //   context,
