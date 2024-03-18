@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:raw_material/NewApp/card.dart';
 import 'package:raw_material/mainfiles/add_user.dart';
 import 'package:raw_material/mainfiles/homepage.dart';
 
@@ -50,13 +51,25 @@ class _ManageUserState extends State<ManageUser> {
       onWillPop: () async {
         Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => const MyHomePage()),
+            MaterialPageRoute(builder: (context) => const NewHome()),
             (route) => false);
         return true;
       },
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 8, 71, 123),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color.fromARGB(255, 245, 157, 157),
+                  Color.fromARGB(255, 255, 90, 78),
+                  Color.fromARGB(255, 245, 157, 157),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
           title: const Text(
             'Manage Users',
             style: TextStyle(
@@ -87,7 +100,7 @@ class _ManageUserState extends State<ManageUser> {
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Colors.black,
+                        color: Color.fromARGB(255, 245, 157, 157),
                         width: 5.0,
                       ),
                     ),
@@ -131,40 +144,61 @@ class _ManageUserState extends State<ManageUser> {
 
                         return Card(
                           child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundImage: NetworkImage(data['user_image']),
-                            ),
-                            title: Row(
-                              children: [
-                                Text(
-                                  userName,
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Text(
-                                  "[ $userId ]",
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                              ],
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("contact: $userNumber"),
-                                Text("email: $userEmail"),
-                              ],
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.more_vert),
-                              onPressed: () {
-                                //more options logic here
-                              },
-                            ),
-                          ),
+                              leading: CircleAvatar(
+                                backgroundImage:
+                                    NetworkImage(data['user_image']),
+                              ),
+                              title: Row(
+                                children: [
+                                  Text(
+                                    userName,
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    "[ $userId ]",
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("contact: $userNumber"),
+                                  Text("email: $userEmail"),
+                                ],
+                              ),
+                              trailing: PopupMenuButton<String>(
+                                  onSelected: (String value) {
+                                    // Handle selected value
+                                  },
+                                  itemBuilder: (
+                                    context,
+                                  ) =>
+                                      [
+                                        PopupMenuItem(
+                                          value: 'edit',
+                                          child: ListTile(
+                                            leading: const Icon(Icons.edit),
+                                            title: const Text('Edit'),
+                                            onTap: () {},
+                                          ),
+                                        ),
+                                        PopupMenuItem(
+                                          value: 'remove',
+                                          child: ListTile(
+                                            leading: const Icon(Icons.delete),
+                                            title: const Text('Remove'),
+                                            onTap: () {
+                                              // removeItem(context, index);
+                                            },
+                                          ),
+                                        ),
+                                      ])),
                         );
                       }).toList(),
                     );
@@ -176,10 +210,10 @@ class _ManageUserState extends State<ManageUser> {
                 height: 44,
                 width: 160,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                      colors: [Colors.blue, Color.fromARGB(255, 2, 52, 93)],
-                      begin: Alignment.bottomLeft,
-                      end: Alignment.topRight),
+                  gradient: const LinearGradient(colors: [
+                    Color.fromARGB(255, 245, 157, 157),
+                    Color.fromARGB(255, 255, 90, 78),
+                  ], begin: Alignment.bottomLeft, end: Alignment.topRight),
                   borderRadius: BorderRadius.circular(26),
                 ),
                 child: MaterialButton(

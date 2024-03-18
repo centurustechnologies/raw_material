@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:raw_material/mainfiles/new_bill.dart';
+import 'package:raw_material/NewApp/card.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,7 +11,7 @@ Future<void> main() async {
       //   apiKey: "",
       //   projectId: "centurusbills",
       //   messagingSenderId: "",
-      //   appId: "1:207694629480:web:18814847f52006250bc9dd",
+      //   appId: "1:207694629480:web:18814847f52006250bc9dd",-
       // ),
       );
 
@@ -25,6 +25,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-        debugShowCheckedModeBanner: false, home: NewBill());
+        debugShowCheckedModeBanner: false, home: NewHome());
   }
 }

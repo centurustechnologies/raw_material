@@ -3,9 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../helpers/app_constants.dart';
+import '../helpers/app_constants.dart';
 import '../mainfiles/homepage.dart';
-import 'controller.dart';
+import '../helpers/controller.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

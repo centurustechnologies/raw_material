@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:raw_material/NewApp/card.dart';
 import 'package:raw_material/mainfiles/homepage.dart';
 
 class Historypage extends StatefulWidget {
@@ -46,23 +47,55 @@ class _HistorypageState extends State<Historypage> {
     _streamController.close();
   }
 
+  void removeItem(BuildContext context) {
+    if (items.isNotEmpty) {
+      int removedItem = items.removeLast();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Item $removedItem removed'),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () {
+              setState(() {
+                items.add(removedItem);
+              });
+            },
+          ),
+        ),
+      );
+      setState(() {}); // Trigger rebuild after removing the item
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
         Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => MyHomePage()),
+            MaterialPageRoute(builder: (context) => const NewHome()),
             (route) => false);
         return true;
       },
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 8, 71, 123),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color.fromARGB(255, 245, 157, 157),
+                  Color.fromARGB(255, 255, 90, 78),
+                  Color.fromARGB(255, 245, 157, 157),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
           title: const Text(
             'Bill history',
             style: TextStyle(
-                fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white),
+                fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
           ),
           leading: Builder(builder: (BuildContext context) {
             return IconButton(
@@ -77,232 +110,225 @@ class _HistorypageState extends State<Historypage> {
           }),
         ),
         drawer: const MyDrawer(),
-        body: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: StreamBuilder<List<DocumentSnapshot>>(
-              stream: _streamController.stream,
-              builder: (BuildContext context,
-                  AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.all(10.0),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                return SizedBox(
-                  height: MediaQuery.of(context).size.height - 180,
-                  width: 400,
-                  child: ListView(
-                    children: snapshot.data!.map((DocumentSnapshot document) {
-                      Map<String, dynamic> data =
-                          document.data() as Map<String, dynamic>;
-                      int customerId = data['costomer_id'];
-                      String customerName = data['customer_name'];
-                      String price = data['price'];
-
-                      return Padding(
-                        padding: const EdgeInsets.only(
-                            left: 10, right: 10, bottom: 10),
-                        child: Card(
-                          child: Container(
-                            height: 180,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.white,
-                              border: Border.all(color: Colors.blue, width: 1),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 15, right: 20, top: 5),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        customerName,
-                                        style: const TextStyle(
-                                            color: Colors.black87,
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                      IconButton(
-                                          onPressed: () {},
-                                          icon: const Icon(Icons.more_vert))
-                                    ],
-                                  ),
-                                ),
-                                Column(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 15, right: 20, bottom: 8),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Text(
-                                                    "Customer Id :",
-                                                    style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  Text(
-                                                    " $customerId",
-                                                    style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w400),
-                                                  ),
-                                                ],
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Text(
-                                                    "₹",
-                                                    style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  Text(
-                                                    " $price",
-                                                    style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w400),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      SizedBox(
-                                        child: IconButton(
-                                          icon:
-                                              const Icon(Icons.remove_red_eye),
-                                          onPressed: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    BillDetail(
-                                                  historyData: const [],
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                          iconSize:
-                                              25.0, // Adjust the size of the icon as needed
-                                          color: Colors
-                                              .blue, // Customize the color of the icon
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      SizedBox(
-                                        child: IconButton(
-                                          icon: const Icon(Icons.download),
-                                          onPressed: () {},
-                                          iconSize:
-                                              28.0, // Adjust the size of the icon as needed
-                                          color: Colors
-                                              .blue, // Customize the color of the icon
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        width: 20,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            //trailing: ,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+        body: StreamBuilder<List<DocumentSnapshot>>(
+            stream: _streamController.stream,
+            builder: (BuildContext context,
+                AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: Center(child: CircularProgressIndicator()),
                 );
-              }),
-        ),
+              }
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    top: 5,
+                  ),
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height - 100,
+                    width: 400,
+                    child: ListView(
+                      children: snapshot.data!.map((DocumentSnapshot document) {
+                        Map<String, dynamic> data =
+                            document.data() as Map<String, dynamic>;
+                        int customerId = data['costomer_id'];
+                        String customerName = data['customer_name'];
+                        String price = data['price'];
+
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                              left: 5, right: 5, bottom: 10),
+                          child: Card(
+                            child: Container(
+                              height: 160,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.white,
+                                border:
+                                    Border.all(color: Colors.grey, width: 1),
+                              ),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 15, right: 20, top: 5),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          customerName,
+                                          style: const TextStyle(
+                                              color: Colors.black87,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                        SizedBox(
+                                          child: IconButton(
+                                            icon: const Icon(
+                                              Icons.delete,
+                                              color: Colors.black,
+                                            ),
+                                            onPressed: () {
+                                              removeItem(
+                                                context,
+                                              );
+                                            },
+                                            iconSize: 28.0,
+                                            color: Colors.blue,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Column(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 15, right: 20, bottom: 8),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    const Text(
+                                                      "Bill Id :",
+                                                      style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    Text(
+                                                      " $customerId",
+                                                      style: const TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w400),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    const Text(
+                                                      "₹",
+                                                      style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    Text(
+                                                      " $price",
+                                                      style: const TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w400),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        SizedBox(
+                                          child: IconButton(
+                                            icon: const Icon(
+                                              Icons.remove_red_eye,
+                                            ),
+                                            onPressed: () {
+                                              String name =
+                                                  data['customer_name'];
+                                              int customerId =
+                                                  data['costomer_id'];
+                                              String price = data['price'];
+
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      BillDetail(
+                                                    customerName: name,
+                                                    customerId: customerId,
+                                                    customerPrice: price,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            iconSize: 25.0,
+                                            color: Colors.blue,
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        SizedBox(
+                                          child: IconButton(
+                                            icon: const Icon(
+                                              Icons.download,
+                                            ),
+                                            onPressed: () {},
+                                            iconSize:
+                                                28.0, // Adjust the size of the icon as needed
+                                            color: Colors
+                                                .blue, // Customize the color of the icon
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 20,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              //trailing: ,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              );
+            }),
       ),
     );
   }
 }
 
 class BillDetail extends StatefulWidget {
-  final List<Map<String, dynamic>> historyData;
+  final int customerId;
+  final String customerName;
+  final String customerPrice;
 
-  BillDetail({Key? key, required this.historyData}) : super(key: key);
-
+  BillDetail(
+      {required this.customerId,
+      required this.customerName,
+      required this.customerPrice});
   @override
   State<BillDetail> createState() => _BillDetailState();
 }
 
 class _BillDetailState extends State<BillDetail> {
-  late StreamController<List<DocumentSnapshot>> _streamController;
-
-  @override
-  void initState() {
-    super.initState();
-    _streamController = StreamController<List<DocumentSnapshot>>();
-    getData();
-  }
-
-  @override
-  void dispose() {
-    _streamController.close();
-    super.dispose();
-  }
-
-  Future<void> getData() async {
-    try {
-      List<DocumentSnapshot> allData = [];
-
-      QuerySnapshot queryProductData = await FirebaseFirestore.instance
-          .collection('raw_billing_product')
-          .get();
-      allData.addAll(queryProductData.docs);
-
-      QuerySnapshot queryCartData =
-          await FirebaseFirestore.instance.collection('raw_cart').get();
-      allData.addAll(queryCartData.docs);
-
-      QuerySnapshot queryCategoryData =
-          await FirebaseFirestore.instance.collection('raw_category').get();
-      allData.addAll(queryCategoryData.docs);
-
-      QuerySnapshot queryUserData =
-          await FirebaseFirestore.instance.collection('raw_user').get();
-      allData.addAll(queryUserData.docs);
-
-      _streamController.add(allData);
-    } catch (e) {
-      print('Error in fetching data: $e');
-    }
-  }
+  final bool _paymentResult = true;
+  String customerId = '';
 
   @override
   Widget build(BuildContext context) {
@@ -310,153 +336,469 @@ class _BillDetailState extends State<BillDetail> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 8, 71, 123),
         title: const Text(
-          "Bill history Details",
-          style: TextStyle(color: Colors.white),
+          'Detail Bill history',
+          style: TextStyle(
+              fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white),
         ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        leading: Builder(builder: (BuildContext context) {
+          return IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          );
+        }),
       ),
-      body: StreamBuilder<List<DocumentSnapshot>>(
-        stream: _streamController.stream,
-        builder: (BuildContext context,
-            AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Padding(
-              padding: EdgeInsets.all(10.0),
-              child: Center(child: CircularProgressIndicator()),
-            );
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('raw_cart')
+            .where(
+              'customer_name',
+              isEqualTo: widget.customerName,
+            )
+            .where(
+              'costomer_id',
+              isEqualTo: widget.customerId,
+            )
+            .where(
+              'price',
+              isEqualTo: widget.customerPrice,
+            )
+            .snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
           }
-          return SizedBox(
-            height: MediaQuery.of(context).size.height - 180,
-            width: 400,
-            child: ListView(
-              children: snapshot.data!.map((DocumentSnapshot document) {
-                Map<String, dynamic> data =
-                    document.data() as Map<String, dynamic>;
-                int customerId = data['cstomer_id'];
-                String customerName = data['customer_name'];
-                String userName = data['user_name'];
-                String userId = data['user_id'];
 
-                return Padding(
-                  padding:
-                      const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-                  child: Card(
-                    child: Container(
-                      height: 180,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white,
-                        border: Border.all(color: Colors.blue, width: 1),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 15, right: 20, top: 5),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('No bills found'));
+          }
+          final DocumentSnapshot document = snapshot.data!.docs.first;
+          final Map<String, dynamic> data =
+              document.data() as Map<String, dynamic>;
+
+          return Column(
+            children: [
+              const Row(
+                children: [],
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Card(
+                child: SizedBox(
+                  height: 510,
+                  width: MediaQuery.of(context).size.width,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                        padding:
+                            const EdgeInsets.only(top: 10, left: 10, right: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
+                                const Text(
+                                  'Bill Id',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 20,
+                                ),
+                                const Text(': '),
+                                const SizedBox(
+                                  width: 20,
+                                ),
                                 Text(
-                                  customerName,
+                                  '${data['costomer_id']}',
                                   style: const TextStyle(
-                                      color: Colors.black87,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500),
+                                    fontSize: 20,
+                                    color: Colors.red,
+                                  ),
                                 ),
                               ],
                             ),
-                          ),
-                          Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 15, right: 20, bottom: 8),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Text(
+                                  'Date',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 28,
+                                ),
+                                const Text(':'),
+                                const SizedBox(
+                                  width: 20,
+                                ),
+                                Text(
+                                  data['customer_name'],
+                                  style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w400),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Text(
+                                  'Customer Name',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 14,
+                                ),
+                                const Text(':'),
+                                const SizedBox(
+                                  width: 20,
+                                ),
+                                Text(
+                                  data['customer_name'],
+                                  style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w400),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            const Row(
+                              children: [
+                                Text(
+                                  'Products',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(width: 20),
+                              ],
+                            ),
+                            const SizedBox(height: 0),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4),
+                              child: Expanded(
+                                child: Card(
+                                  child: Container(
+                                    height: 230,
+                                    width: MediaQuery.of(context).size.width,
+                                    child: const SingleChildScrollView(
+                                      physics: AlwaysScrollableScrollPhysics(),
+                                      child: Padding(
+                                        padding: EdgeInsets.only(
+                                            right: 2,
+                                            left: 5,
+                                            top: 2,
+                                            bottom: 5),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Padding(
+                                                  padding:
+                                                      EdgeInsets.only(right: 5),
+                                                  child: Row(
+                                                    children: [
+                                                      Text(
+                                                        '1.)',
+                                                        style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 5,
+                                                      ),
+                                                      Column(
+                                                        children: [
+                                                          Text(
+                                                            'customer',
+                                                            style: TextStyle(
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Text(":"),
+                                                Column(
+                                                  children: [
+                                                    Text(
+                                                      'Price',
+                                                      style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                             Text(
-                                              "Customer Id :",
-                                              style: const TextStyle(
+                                              'name',
+                                              style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.bold),
                                             ),
                                             Text(
-                                              " $customerId",
-                                              style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w400),
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "₹",
-                                              style: const TextStyle(
+                                              'customer_name',
+                                              style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.bold),
                                             ),
                                             Text(
-                                              " $userId",
-                                              style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w400),
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "₹",
-                                              style: const TextStyle(
+                                              'name',
+                                              style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.bold),
                                             ),
                                             Text(
-                                              " $userName",
-                                              style: const TextStyle(
+                                              'customer_name',
+                                              style: TextStyle(
                                                   fontSize: 16,
-                                                  fontWeight: FontWeight.w400),
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'customer',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'customer',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'name',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'customer_name',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'customer',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'name',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'customer_name',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'customer',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'customer',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              'name',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
                                             ),
                                           ],
                                         ),
-                                      ],
+                                      ),
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            bottom: 10, left: 10, right: 30),
+                        child: Column(
+                          children: [
+                            const Divider(
+                              height: 2,
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 2, right: 2),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Total Items',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(
+                                    width: 14,
+                                  ),
+                                  const Text(':'),
+                                  const SizedBox(
+                                    width: 20,
+                                  ),
+                                  Row(
+                                    children: [
+                                      const Text(
+                                        '',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.blue,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(
+                                        width: 5,
+                                      ),
+                                      Text(
+                                        data['price'],
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            color: _paymentResult
+                                                ? Colors.red
+                                                : Colors.green,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            const Divider(
+                              height: 2,
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 2, right: 2),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Grand Price',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(
+                                    width: 20,
+                                  ),
+                                  const Text(':'),
+                                  const SizedBox(
+                                    width: 20,
+                                  ),
+                                  Row(
+                                    children: [
+                                      const Text(
+                                        '₹',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.blue,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(
+                                        width: 5,
+                                      ),
+                                      Text(
+                                        data['price'],
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            color: _paymentResult
+                                                ? Colors.red
+                                                : Colors.green,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            const Divider(
+                              height: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                );
-              }).toList(),
-            ),
+                ),
+              ),
+            ],
           );
         },
       ),
     );
   }
 }
-  // ListView.builder(
+
+
+ 
+ 
+ 
+ 
+ // ListView.builder(
       //   itemCount: widget.historyData.length,
       //   itemBuilder: (context, index) {
       //     final data = widget.historyData[index];

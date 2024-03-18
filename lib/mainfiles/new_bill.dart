@@ -1,11 +1,15 @@
-// ignore_for_file: deprecated_member_use
-
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:raw_material/NewApp/card.dart';
 import 'package:raw_material/helpers/app_constants.dart';
+import 'package:raw_material/mainfiles/add_product.dart';
+import 'package:raw_material/mainfiles/bill_history.dart';
+import 'package:raw_material/mainfiles/category.dart';
+import 'package:raw_material/mainfiles/manage_user.dart';
+import 'package:raw_material/mainfiles/my_order.dart';
 
 import 'homepage.dart';
 
@@ -18,9 +22,8 @@ class NewBill extends StatefulWidget {
 
 class _NewBillState extends State<NewBill> {
   late StreamController<List<DocumentSnapshot>> _streamController;
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   TextEditingController nameController = TextEditingController();
-  bool _isLoading = true;
   late List<DocumentSnapshot> _document;
   List items = [];
 
@@ -84,14 +87,26 @@ class _NewBillState extends State<NewBill> {
       onWillPop: () async {
         Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => const MyHomePage()),
+            MaterialPageRoute(builder: (context) => const NewHome()),
             (route) => false);
         return true;
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 8, 71, 123),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color.fromARGB(255, 245, 157, 157),
+                  Color.fromARGB(255, 255, 90, 78),
+                  Color.fromARGB(255, 245, 157, 157),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
           title: const Text(
             'New Bill',
             style: TextStyle(
@@ -182,43 +197,47 @@ class _NewBillState extends State<NewBill> {
                           String costumerName = data['customer_name'];
                           String price = data['price'];
 
-                          return Padding(
-                            padding: const EdgeInsets.only(
-                                left: 10, right: 10, bottom: 10),
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const GenerateNewBill(),
-                                  ),
-                                );
-                              },
-                              child: Card(
-                                child: ListTile(
-                                  title: Row(
-                                    children: [
-                                      Text(
-                                        costumerName,
-                                        style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                    ],
-                                  ),
-                                  subtitle: Text("Price : $price"),
-                                  trailing: IconButton(
-                                    icon: const Icon(
-                                      Icons.delete,
-                                      color: Colors.grey,
-                                    ),
-                                    onPressed: () {},
-                                  ),
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const GenerateNewBill(),
                                 ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    costumerName,
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(
+                                    "itemDescription",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(
+                                    "Price : ₹ $price",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                  Divider(),
+                                ],
                               ),
                             ),
                           );
@@ -234,10 +253,10 @@ class _NewBillState extends State<NewBill> {
                   height: 44,
                   width: 160,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                        colors: [Colors.blue, Color.fromARGB(255, 2, 52, 93)],
-                        begin: Alignment.bottomLeft,
-                        end: Alignment.topRight),
+                    gradient: const LinearGradient(colors: [
+                      Color.fromARGB(255, 247, 125, 125),
+                      Colors.red
+                    ], begin: Alignment.bottomLeft, end: Alignment.topRight),
                     borderRadius: BorderRadius.circular(26),
                   ),
                   child: MaterialButton(
@@ -275,13 +294,30 @@ class _NewBillState extends State<NewBill> {
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 },
-                                child: const Text('Cancel'),
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                      color:
+                                          Color.fromARGB(255, 247, 125, 125)),
+                                ),
                               ),
                               ElevatedButton(
                                 onPressed: () {
                                   addDataToRawCart();
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const GenerateNewBill(),
+                                    ),
+                                  );
                                 },
-                                child: const Text('Create'),
+                                child: const Text(
+                                  'Create',
+                                  style: TextStyle(
+                                    color: Color.fromARGB(255, 247, 125, 125),
+                                  ),
+                                ),
                               ),
                             ],
                           );
@@ -369,85 +405,85 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
     _streamController.close();
   }
 
-  Future<void> addNewTableProduct(
-      String id, DocumentSnapshot documentSnapshot) async {
-    try {
-      var docRef = FirebaseFirestore.instance
-          .collection('tables')
-          .doc(id)
-          .collection('product')
-          .doc(documentSnapshot.id);
-      var doc = await docRef.get();
+  // Future<void> addNewTableProduct(
+  //     String id, DocumentSnapshot documentSnapshot) async {
+  //   try {
+  //     var docRef = FirebaseFirestore.instance
+  //         .collection('tables')
+  //         .doc(id)
+  //         .collection('product')
+  //         .doc(documentSnapshot.id);
+  //     var doc = await docRef.get();
 
-      FirebaseFirestore.instance
-          .collection('tables')
-          .doc(id)
-          .collection('product')
-          .get()
-          .then(
-        (value) {
-          if (value.docs.isNotEmpty) {
-          } else {
-            FirebaseFirestore.instance.collection('tables').doc(id).update(
-              {
-                'status': 'occupied',
-              },
-            );
-          }
-        },
-      );
+  //     FirebaseFirestore.instance
+  //         .collection('tables')
+  //         .doc(id)
+  //         .collection('product')
+  //         .get()
+  //         .then(
+  //       (value) {
+  //         if (value.docs.isNotEmpty) {
+  //         } else {
+  //           FirebaseFirestore.instance.collection('tables').doc(id).update(
+  //             {
+  //               'status': 'occupied',
+  //             },
+  //           );
+  //         }
+  //       },
+  //     );
 
-      if (doc.exists) {
-        if (kIsWeb) {
-          String basePrice = documentSnapshot['product_price'];
-          String totalPrice = doc.get('total_price');
-          String total = "${int.parse(totalPrice) + int.parse(basePrice)}";
-          String quantity = doc.get('quantity');
-          await FirebaseFirestore.instance
-              .collection('tables')
-              .doc(id)
-              .collection('product')
-              .doc(documentSnapshot.id)
-              .update(
-            {
-              'total_price': total,
-              'quantity': '${int.parse(quantity) + 1}',
-            },
-          );
-        }
-      } else {
-        if (kIsWeb) {
-          await FirebaseFirestore.instance
-              .collection('settings')
-              .doc('settings')
-              .get()
-              .then(
-            (value) async {
-              await FirebaseFirestore.instance
-                  .collection('tables')
-                  .doc(id)
-                  .collection('product')
-                  .doc(documentSnapshot.id)
-                  .set(
-                {
-                  'product_name': documentSnapshot['product_name'],
-                  'categery': documentSnapshot['categery'],
-                  'product_id': documentSnapshot['product_id'],
-                  'product_price': documentSnapshot['product_price'],
-                  'total_price': documentSnapshot['product_price'],
-                  'product_type': documentSnapshot['product_type'],
-                  'quantity': '1',
-                  'tax': value.get('tax').toString(),
-                },
-              );
-            },
-          );
-        }
-      }
-    } catch (e) {
-      print('Error adding product: $e');
-    }
-  }
+  //     if (doc.exists) {
+  //       if (kIsWeb) {
+  //         String basePrice = documentSnapshot['product_price'];
+  //         String totalPrice = doc.get('total_price');
+  //         String total = "${int.parse(totalPrice) + int.parse(basePrice)}";
+  //         String quantity = doc.get('quantity');
+  //         await FirebaseFirestore.instance
+  //             .collection('tables')
+  //             .doc(id)
+  //             .collection('product')
+  //             .doc(documentSnapshot.id)
+  //             .update(
+  //           {
+  //             'total_price': total,
+  //             'quantity': '${int.parse(quantity) + 1}',
+  //           },
+  //         );
+  //       }
+  //     } else {
+  //       if (kIsWeb) {
+  //         await FirebaseFirestore.instance
+  //             .collection('settings')
+  //             .doc('settings')
+  //             .get()
+  //             .then(
+  //           (value) async {
+  //             await FirebaseFirestore.instance
+  //                 .collection('tables')
+  //                 .doc(id)
+  //                 .collection('product')
+  //                 .doc(documentSnapshot.id)
+  //                 .set(
+  //               {
+  //                 'product_name': documentSnapshot['product_name'],
+  //                 'categery': documentSnapshot['categery'],
+  //                 'product_id': documentSnapshot['product_id'],
+  //                 'product_price': documentSnapshot['product_price'],
+  //                 'total_price': documentSnapshot['product_price'],
+  //                 'product_type': documentSnapshot['product_type'],
+  //                 'quantity': '1',
+  //                 'tax': value.get('tax').toString(),
+  //               },
+  //             );
+  //           },
+  //         );
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print('Error adding product: $e');
+  //   }
+  // }
 
   void _increment() {
     setState(() {
@@ -468,7 +504,19 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 8, 71, 123),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color.fromARGB(255, 245, 157, 157),
+                Color.fromARGB(255, 255, 90, 78),
+                Color.fromARGB(255, 245, 157, 157),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: const Text(
           'Generate New Bill',
           style: TextStyle(
@@ -689,10 +737,15 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
           height: 39,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22),
-            gradient: const LinearGradient(
-                colors: [Colors.blue, Color.fromARGB(255, 8, 71, 123)],
-                begin: Alignment.bottomLeft,
-                end: Alignment.topRight),
+            gradient: LinearGradient(
+              colors: [
+                Color.fromARGB(255, 245, 157, 157),
+                Color.fromARGB(255, 255, 90, 78),
+                Color.fromARGB(255, 245, 157, 157),
+              ],
+              begin: Alignment.bottomLeft,
+              end: Alignment.topRight,
+            ),
           ),
           child: MaterialButton(
             onPressed: () {},

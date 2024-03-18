@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:raw_material/NewApp/card.dart';
 import 'package:raw_material/mainfiles/add_product.dart';
 import 'package:raw_material/mainfiles/new_bill.dart';
 import 'package:raw_material/mainfiles/category.dart';
@@ -25,7 +26,7 @@ class _MyHomePageState extends State<MyHomePage> {
       onWillPop: () async {
         Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => const MyHomePage()),
+            MaterialPageRoute(builder: (context) => const NewHome()),
             (route) => false);
         return true;
       },
@@ -35,7 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
             return IconButton(
               icon: const Icon(
                 Icons.menu,
-                color: Colors.white, // Change the color here
+                color: Colors.white,
               ),
               onPressed: () {
                 Scaffold.of(context).openDrawer();
@@ -44,9 +45,22 @@ class _MyHomePageState extends State<MyHomePage> {
           }),
           title: const Text(
             "Home",
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(
+                fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
           ),
-          backgroundColor: const Color.fromARGB(255, 8, 71, 123),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color.fromARGB(255, 245, 157, 157),
+                  Color.fromARGB(255, 255, 90, 78),
+                  Color.fromARGB(255, 245, 157, 157),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
         ),
         drawer: const MyDrawer(),
         body: Container(
@@ -111,37 +125,39 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     Align(
                       alignment: Alignment.center,
-                      child: MaterialButton(
-                        minWidth: 280,
-                        shape: RoundedRectangleBorder(
+                      child: Container(
+                        width: 280,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Color.fromARGB(255, 245, 157, 157),
+                              Color.fromARGB(255, 255, 90, 78),
+                              Color.fromARGB(255, 245, 157, 157),
+                            ],
+                            begin: Alignment.bottomLeft,
+                            end: Alignment.topRight,
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        padding: const EdgeInsets.all(20),
-                        color: greenLightShadeColor,
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const NewBill(),
+                        child: MaterialButton(
+                          minWidth: 280,
+                          padding: const EdgeInsets.all(20),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const NewBill(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'New bill',
+                            style: GoogleFonts.poppins(
+                              color: whiteColor,
+                              fontWeight: FontWeight.w600,
                             ),
-                          );
-                        },
-                        child: Text(
-                          'New bill',
-                          style: GoogleFonts.poppins(
-                            color: whiteColor,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        // onPressed: () {
-                        //   if (userid.text.isNotEmpty &&
-                        //       password.text.isNotEmpty) {
-                        //     // setState(() {
-                        //     //   id = userid.text;
-                        //     // });
-                        //     getadmindata(userid.text);
-                        //   }
-                        // },
                       ),
                     ),
                     const SizedBox(
@@ -149,37 +165,39 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     Align(
                       alignment: Alignment.center,
-                      child: MaterialButton(
-                        minWidth: 280,
-                        shape: RoundedRectangleBorder(
+                      child: Container(
+                        width: 280,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Color.fromARGB(255, 245, 157, 157),
+                              Color.fromARGB(255, 255, 90, 78),
+                              Color.fromARGB(255, 245, 157, 157),
+                            ],
+                            begin: Alignment.bottomLeft,
+                            end: Alignment.topRight,
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        padding: const EdgeInsets.all(20),
-                        color: greenLightShadeColor,
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const GenerateNewBill(),
+                        child: MaterialButton(
+                          minWidth: 280,
+                          padding: const EdgeInsets.all(20),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const MyOrder(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'My Order',
+                            style: GoogleFonts.poppins(
+                              color: whiteColor,
+                              fontWeight: FontWeight.w600,
                             ),
-                          );
-                        },
-                        child: Text(
-                          'My Order',
-                          style: GoogleFonts.poppins(
-                            color: whiteColor,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        // onPressed: () {
-                        //   if (userid.text.isNotEmpty &&
-                        //       password.text.isNotEmpty) {
-                        //     // setState(() {
-                        //     //   id = userid.text;
-                        //     // });
-                        //     getadmindata(userid.text);
-                        //   }
-                        // },
                       ),
                     ),
                   ],
@@ -206,8 +224,15 @@ class MyDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(
-              color: Color.fromARGB(255, 8, 71, 123),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color.fromARGB(255, 255, 159, 159),
+                  Color.fromARGB(255, 253, 94, 83)
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -236,73 +261,37 @@ class MyDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.home),
-            title: const Text('Home'),
+            title: Text('Edit Profile'),
+            leading: Icon(Icons.list_alt),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const MyHomePage()),
+                MaterialPageRoute(builder: (context) => ProfilePage()),
               );
             },
           ),
           ListTile(
-            leading: const Icon(Icons.person_add),
-            title: const Text('User'),
+            title: const Text('Help & Support'),
+            leading: Icon(Icons.help),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ManageUser()),
+                MaterialPageRoute(builder: (context) => NewBill()),
               );
             },
           ),
           ListTile(
-            leading: const Icon(Icons.list_alt),
-            title: const Text('Categories'),
+            title: Text('Settings'),
+            leading: Icon(Icons.settings),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const CategoryPage()),
-              );
+              // Add the functionality for Settings
             },
           ),
           ListTile(
-            leading: const Icon(Icons.propane),
-            title: const Text('Product'),
+            title: Text('Logout'),
+            leading: Icon(Icons.person),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const product_list()),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.file_present),
-            title: const Text('New bill'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const NewBill()),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.file_copy),
-            title: const Text('My Order'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const MyOrder()),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.history_sharp),
-            title: const Text('Bills history'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Historypage()),
-              );
+              // Add the functionality for Logout
             },
           ),
         ],

@@ -103,7 +103,19 @@ class _AddNewUserState extends State<AddNewUser> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 8, 71, 123),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color.fromARGB(255, 245, 157, 157),
+                Color.fromARGB(255, 255, 90, 78),
+                Color.fromARGB(255, 245, 157, 157),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: const Text(
           'Add New User',
           style: TextStyle(
@@ -278,10 +290,10 @@ class _AddNewUserState extends State<AddNewUser> {
                   height: 44,
                   width: 140,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                        colors: [Colors.blue, Color.fromARGB(255, 2, 52, 93)],
-                        begin: Alignment.bottomLeft,
-                        end: Alignment.topRight),
+                    gradient: const LinearGradient(colors: [
+                      Color.fromARGB(255, 245, 157, 157),
+                      Color.fromARGB(255, 255, 90, 78),
+                    ], begin: Alignment.bottomLeft, end: Alignment.topRight),
                     borderRadius: BorderRadius.circular(26),
                   ),
                   child: MaterialButton(
