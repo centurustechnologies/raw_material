@@ -5,11 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:raw_material/NewApp/card.dart';
 import 'package:raw_material/helpers/app_constants.dart';
-import 'package:raw_material/mainfiles/add_product.dart';
-import 'package:raw_material/mainfiles/bill_history.dart';
-import 'package:raw_material/mainfiles/category.dart';
-import 'package:raw_material/mainfiles/manage_user.dart';
-import 'package:raw_material/mainfiles/my_order.dart';
 
 import 'homepage.dart';
 
@@ -44,7 +39,7 @@ class _NewBillState extends State<NewBill> {
   void addDataToRawCart() async {
     try {
       var snapshot =
-          await FirebaseFirestore.instance.collection('raw_cart').get();
+          await FirebaseFirestore.instance.collection('raw_users').get();
       int currentCount = snapshot.size;
       await FirebaseFirestore.instance.collection('raw_cart').add({
         'costomer_id': currentCount + 1,
@@ -58,6 +53,32 @@ class _NewBillState extends State<NewBill> {
             context,
             MaterialPageRoute(builder: (context) => const NewBill()),
           );
+        });
+      });
+      if (kDebugMode) {
+        print("Data added successfully!");
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print("Failed to add data: $error");
+      }
+    }
+  }
+
+  void addproductdatToRawCart() async {
+    try {
+      var snapshot =
+          await FirebaseFirestore.instance.collection('raw_cart').get();
+      int currentCount = snapshot.size;
+      await FirebaseFirestore.instance.collection('raw_cart').add({
+        'costomer_id': currentCount + 1,
+        'product_name': nameController.text,
+        'product_quantity': nameController.text,
+        'product_price': '₹ 0',
+        'Grand_total': '₹ 0',
+      }).whenComplete(() {
+        setState(() {
+          nameController.clear();
         });
       });
       if (kDebugMode) {
@@ -95,7 +116,7 @@ class _NewBillState extends State<NewBill> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           flexibleSpace: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
                   Color.fromARGB(255, 245, 157, 157),
@@ -155,7 +176,7 @@ class _NewBillState extends State<NewBill> {
               ),
             ),
             const SizedBox(
-              height: 20,
+              height: 2,
             ),
             // _isLoading
             // ? const Expanded(
@@ -194,50 +215,85 @@ class _NewBillState extends State<NewBill> {
                             snapshot.data!.map((DocumentSnapshot document) {
                           Map<String, dynamic> data =
                               document.data() as Map<String, dynamic>;
-                          String costumerName = data['customer_name'];
-                          String price = data['price'];
+                          int costomerid = data['costomer_id'];
+                          String price = data['product_price'];
 
-                          return InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const GenerateNewBill(),
+                          return Padding(
+                            padding: const EdgeInsets.all(0),
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => GenerateNewBill(),
+                                  ),
+                                );
+                              },
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 10, right: 10),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 5, top: 15, bottom: 5),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '$costomerid',
+                                            style: const TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Text(
+                                            "itemDescription",
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Row(
+                                            children: [
+                                              const Text(
+                                                "Price : ",
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.green,
+                                                ),
+                                              ),
+                                              const Text(
+                                                "₹ ",
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.blue,
+                                                ),
+                                              ),
+                                              Text(
+                                                "$price",
+                                                style: const TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.orange,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Divider(
+                                      height: 1,
+                                    ),
+                                  ],
                                 ),
-                              );
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 10),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    costumerName,
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(height: 5),
-                                  Text(
-                                    "itemDescription",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  SizedBox(height: 5),
-                                  Text(
-                                    "Price : ₹ $price",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green,
-                                    ),
-                                  ),
-                                  Divider(),
-                                ],
                               ),
                             ),
                           );
@@ -307,8 +363,7 @@ class _NewBillState extends State<NewBill> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          const GenerateNewBill(),
+                                      builder: (context) => GenerateNewBill(),
                                     ),
                                   );
                                 },
@@ -353,9 +408,7 @@ class _NewBillState extends State<NewBill> {
 }
 
 class GenerateNewBill extends StatefulWidget {
-  const GenerateNewBill({
-    super.key,
-  });
+  GenerateNewBill({super.key});
 
   @override
   State<GenerateNewBill> createState() => _GenerateNewBillStateState();
@@ -367,10 +420,11 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
   bool detail = false;
   String? gender;
   String? gender1;
-  bool hascard = true;
-  bool selfemploy = true;
+  bool loading = true;
+  bool _isLoading = true;
 
   String area = '';
+  String productName = '';
   String name = '';
   int _number = 0;
 
@@ -385,6 +439,11 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
     _streamController = StreamController<List<DocumentSnapshot>>();
     fetchData();
     super.initState();
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        _isLoading = false;
+      });
+    });
   }
 
   Future<void> fetchData() async {
@@ -404,86 +463,6 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
     super.dispose();
     _streamController.close();
   }
-
-  // Future<void> addNewTableProduct(
-  //     String id, DocumentSnapshot documentSnapshot) async {
-  //   try {
-  //     var docRef = FirebaseFirestore.instance
-  //         .collection('tables')
-  //         .doc(id)
-  //         .collection('product')
-  //         .doc(documentSnapshot.id);
-  //     var doc = await docRef.get();
-
-  //     FirebaseFirestore.instance
-  //         .collection('tables')
-  //         .doc(id)
-  //         .collection('product')
-  //         .get()
-  //         .then(
-  //       (value) {
-  //         if (value.docs.isNotEmpty) {
-  //         } else {
-  //           FirebaseFirestore.instance.collection('tables').doc(id).update(
-  //             {
-  //               'status': 'occupied',
-  //             },
-  //           );
-  //         }
-  //       },
-  //     );
-
-  //     if (doc.exists) {
-  //       if (kIsWeb) {
-  //         String basePrice = documentSnapshot['product_price'];
-  //         String totalPrice = doc.get('total_price');
-  //         String total = "${int.parse(totalPrice) + int.parse(basePrice)}";
-  //         String quantity = doc.get('quantity');
-  //         await FirebaseFirestore.instance
-  //             .collection('tables')
-  //             .doc(id)
-  //             .collection('product')
-  //             .doc(documentSnapshot.id)
-  //             .update(
-  //           {
-  //             'total_price': total,
-  //             'quantity': '${int.parse(quantity) + 1}',
-  //           },
-  //         );
-  //       }
-  //     } else {
-  //       if (kIsWeb) {
-  //         await FirebaseFirestore.instance
-  //             .collection('settings')
-  //             .doc('settings')
-  //             .get()
-  //             .then(
-  //           (value) async {
-  //             await FirebaseFirestore.instance
-  //                 .collection('tables')
-  //                 .doc(id)
-  //                 .collection('product')
-  //                 .doc(documentSnapshot.id)
-  //                 .set(
-  //               {
-  //                 'product_name': documentSnapshot['product_name'],
-  //                 'categery': documentSnapshot['categery'],
-  //                 'product_id': documentSnapshot['product_id'],
-  //                 'product_price': documentSnapshot['product_price'],
-  //                 'total_price': documentSnapshot['product_price'],
-  //                 'product_type': documentSnapshot['product_type'],
-  //                 'quantity': '1',
-  //                 'tax': value.get('tax').toString(),
-  //               },
-  //             );
-  //           },
-  //         );
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print('Error adding product: $e');
-  //   }
-  // }
 
   void _increment() {
     setState(() {
@@ -505,7 +484,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
                 Color.fromARGB(255, 245, 157, 157),
@@ -526,7 +505,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
           return IconButton(
             icon: const Icon(
               Icons.arrow_back,
-              color: Colors.white, // Change the color here
+              color: Colors.white,
             ),
             onPressed: () {
               Navigator.pop(context);
@@ -534,210 +513,306 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
           );
         }),
       ),
-      body: Row(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 4, left: 2),
-                child: SizedBox(
-                  width: 100,
-                  height: 45,
-                  child: IconButton(
-                    iconSize: 30,
-                    splashColor: Colors.red,
-                    icon: Row(
-                      children: [
-                        Text(
-                          textlist ? ' Image' : " Text",
-                          style: TextStyle(
-                              fontSize: 16,
-                              color: textlist ? Colors.green : Colors.blue,
-                              fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 0, left: 2),
+                      child: SizedBox(
+                        width: 100,
+                        height: 45,
+                        child: IconButton(
+                          iconSize: 30,
+                          splashColor: Colors.red,
+                          icon: Row(
+                            children: [
+                              Text(
+                                textlist ? ' Image' : " Text",
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
+                              ),
+                              const Icon(
+                                Icons.swap_horiz,
+                                color: Colors.red,
+                              ),
+                            ],
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              imagebool = !imagebool;
+                              textlist = !textlist;
+                            });
+                          },
                         ),
-                        const Icon(
-                          Icons.swap_horiz,
-                          color: Colors.red,
-                        ),
-                      ],
+                      ),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        imagebool = !imagebool;
-                        textlist = !textlist;
-                      });
+                    _buildTextAndImageList(),
+                  ],
+                ),
+                Expanded(
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('raw_billing_product')
+                        .where(
+                          'product_name',
+                          // isEqualTo: widget.productName,
+                        )
+                        .snapshots(),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      }
+                      return SizedBox(
+                        width: MediaQuery.of(context).size.width - 105,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 10, right: 10),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                children: [
+                                  const Text(
+                                    'Order details',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: ListView(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      children: snapshot.data!.docs
+                                          .map((DocumentSnapshot document) {
+                                        Map<String, dynamic> data = document
+                                            .data() as Map<String, dynamic>;
+                                        String productName =
+                                            data['product_name'];
+
+                                        return Padding(
+                                          padding: const EdgeInsets.only(),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Column(
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            bottom: 1),
+                                                    child: SizedBox(
+                                                      width: 300,
+                                                      child: Text(
+                                                        productName,
+                                                        style: const TextStyle(
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                          color: Color.fromARGB(
+                                                              255, 8, 71, 123),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      const Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                right: 8),
+                                                        child: SizedBox(
+                                                          width: 50,
+                                                          child: Text(
+                                                            "6 pcs",
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      8,
+                                                                      71,
+                                                                      123),
+                                                            ),
+                                                            softWrap: true,
+                                                            maxLines: 3,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                right: 2),
+                                                        child: SizedBox(
+                                                          width: 50,
+                                                          child: Text(
+                                                            "200 rs",
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      8,
+                                                                      71,
+                                                                      123),
+                                                            ),
+                                                            softWrap: true,
+                                                            maxLines: 3,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      MaterialButton(
+                                                        color: Colors.green,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(6.0),
+                                                        minWidth: 0,
+                                                        height: 0,
+                                                        onPressed: () {
+                                                          _decrement();
+                                                        },
+                                                        child: Icon(
+                                                          size: 18,
+                                                          Icons.delete,
+                                                          color: whiteColor,
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                right: 8,
+                                                                left: 8),
+                                                        child: SizedBox(
+                                                          width: 20,
+                                                          child: Text(
+                                                            "$_number",
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      8,
+                                                                      71,
+                                                                      123),
+                                                            ),
+                                                            softWrap: true,
+                                                            maxLines: 3,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      MaterialButton(
+                                                        color: Colors.green,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(6.0),
+                                                        minWidth: 0,
+                                                        height: 0,
+                                                        onPressed: () {
+                                                          _increment();
+                                                        },
+                                                        child: Icon(
+                                                          Icons.add,
+                                                          size: 18,
+                                                          color: whiteColor,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const Divider(
+                                                    height: 2,
+                                                  )
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Column(
+                                children: [
+                                  Divider(
+                                    height: 2,
+                                  ),
+                                  SizedBox(height: 15),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Grand Total :',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        '\$240',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 15),
+                                  Divider(
+                                    height: 5,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
                     },
                   ),
                 ),
-              ),
-              _buildTextAndImageList(),
-            ],
-          ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width - 105,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 15, right: 10),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    children: [
-                      const Text(
-                        'Order details',
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red),
-                      ),
-                      Column(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.only(top: 15),
-                            child: SizedBox(
-                              width: 300,
-                              child: Text(
-                                "ProductName",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color.fromARGB(255, 8, 71, 123),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              const Padding(
-                                padding: EdgeInsets.only(right: 8),
-                                child: SizedBox(
-                                  width: 50,
-                                  child: Text(
-                                    "6 pcs",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                      color: Color.fromARGB(255, 8, 71, 123),
-                                    ),
-                                    softWrap: true,
-                                    maxLines: 3,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.only(right: 2),
-                                child: SizedBox(
-                                  width: 50,
-                                  child: Text(
-                                    "200 rs",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                      color: Color.fromARGB(255, 8, 71, 123),
-                                    ),
-                                    softWrap: true,
-                                    maxLines: 3,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ),
-                              MaterialButton(
-                                color: mainColor,
-                                padding: const EdgeInsets.all(6.0),
-                                minWidth: 0,
-                                height: 0,
-                                onPressed: () {
-                                  _decrement();
-                                },
-                                child: Icon(
-                                  size: 18,
-                                  Icons.delete,
-                                  color: whiteColor,
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(right: 8, left: 8),
-                                child: SizedBox(
-                                  width: 20,
-                                  child: Text(
-                                    "$_number",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                      color: Color.fromARGB(255, 8, 71, 123),
-                                    ),
-                                    softWrap: true,
-                                    maxLines: 3,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ),
-                              MaterialButton(
-                                color: mainColor,
-                                padding: const EdgeInsets.all(6.0),
-                                minWidth: 0,
-                                height: 0,
-                                onPressed: () {
-                                  _increment();
-                                },
-                                child: Icon(
-                                  Icons.add,
-                                  size: 18,
-                                  color: whiteColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                  const Column(
-                    children: [
-                      Column(
-                        children: [
-                          Divider(
-                            height: 2,
-                          ),
-                          SizedBox(height: 15),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Grand Total :',
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                '\$240',
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.green),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 15),
-                          Divider(
-                            height: 5,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              ],
             ),
-          ),
-        ],
-      ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         child: Container(
           height: 39,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22),
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: [
                 Color.fromARGB(255, 245, 157, 157),
                 Color.fromARGB(255, 255, 90, 78),
@@ -772,7 +847,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
     );
   }
 
-  Widget _buildTextAndImageList() {
+  _buildTextAndImageList() {
     return StreamBuilder<List<DocumentSnapshot>>(
       stream: _streamController.stream,
       builder: (BuildContext context,
@@ -783,174 +858,66 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
             child: CircularProgressIndicator(),
           );
         }
-
         return SizedBox(
           height: MediaQuery.of(context).size.height - 205,
           width: MediaQuery.of(context).size.height / 7.4,
           child: Padding(
-            padding: const EdgeInsets.only(top: 5),
+            padding: const EdgeInsets.only(top: 2),
             child: ListView(
-              children: snapshot.data!.map((DocumentSnapshot document) {
-                Map<String, dynamic> data =
-                    document.data() as Map<String, dynamic>;
-                String productName = data['product_name'];
-                String image = data['product_image'];
+              children: snapshot.data!.map(
+                (DocumentSnapshot document) {
+                  Map<String, dynamic> data =
+                      document.data() as Map<String, dynamic>;
+                  String productName = data['product_name'];
+                  String image = data['product_image'];
 
-                return Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.black,
-                        width: 1.0,
-                      ),
-                    ),
-                    margin: const EdgeInsets.symmetric(
-                        horizontal: 5.0, vertical: 2.0),
-                    child: imagebool
-                        ? InkWell(
-                            onTap: () {},
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  top: 20, bottom: 20, right: 5, left: 5),
-                              child: Text(
-                                productName,
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color.fromARGB(255, 8, 71, 123),
+                  return InkWell(
+                    onTap: () {
+                      fetchData();
+                      _increment();
+                    },
+                    child: Container(
+                        height: 67,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.black,
+                            width: 1.0,
+                          ),
+                        ),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 6.0, vertical: 3.0),
+                        child: imagebool
+                            ? Padding(
+                                padding: const EdgeInsets.only(
+                                    top: 20, bottom: 20, right: 5, left: 5),
+                                child: Text(
+                                  productName,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color.fromARGB(255, 8, 71, 123),
+                                  ),
+                                  softWrap: true,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                softWrap: true,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          )
-                        : InkWell(
-                            onTap: () {},
-                            child: Padding(
-                              padding: const EdgeInsets.all(2),
-                              child: Image.network(
-                                width: MediaQuery.of(context).size.width,
-                                height: MediaQuery.of(context).size.width / 6,
-                                image,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ));
-              }).toList(),
+                              )
+                            : Padding(
+                                padding: const EdgeInsets.all(2),
+                                child: Image.network(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: MediaQuery.of(context).size.width / 6,
+                                  image,
+                                  fit: BoxFit.cover,
+                                ),
+                              )),
+                  );
+                },
+              ).toList(),
             ),
           ),
         );
       },
     );
   }
-
-//  dialog(BuildContext context) {
-//     return showDialog(
-//         context: context,
-//         builder: (context) {
-//           return AlertDialog(
-//             shape: const RoundedRectangleBorder(
-//                 borderRadius: BorderRadius.all(Radius.circular(20))),
-//             title: Column(
-//               mainAxisAlignment: MainAxisAlignment.start,
-//               children: [
-//                 Center(
-//                   child: Container(
-//                     height: 250,
-//                     width: 300,
-//                     child: Lottie.asset('assets/conform.json',
-//                         fit: BoxFit.cover, repeat: true),
-//                   ),
-//                 ),
-//                 const Text(
-//                   "You'r all set!",
-//                   style: TextStyle(
-//                       fontSize: 18,
-//                       fontWeight: FontWeight.w700,
-//                       color: Colors.black),
-//                 ),
-//                 const SizedBox(
-//                   height: 20,
-//                 ),
-//                 const SizedBox(
-//                   width: 250,
-//                   child: Text(
-//                     'Click ok button to View Bill',
-//                     style: TextStyle(
-//                         fontSize: 14,
-//                         color: Color.fromARGB(255, 94, 94, 94),
-//                         fontWeight: FontWeight.w500),
-//                     textAlign: TextAlign.center,
-//                   ),
-//                 ),
-//                 const SizedBox(
-//                   height: 20,
-//                 ),
-//                 SizedBox(
-//                   width: 250,
-//                   child: MaterialButton(
-//                     onPressed: () {
-//                       userlead();
-//                     },
-//                     color: Color.fromARGB(255, 4, 53, 94),
-//                     shape: RoundedRectangleBorder(
-//                         borderRadius: BorderRadius.circular(10)),
-//                     child: const Padding(
-//                       padding:
-//                           EdgeInsets.symmetric(vertical: 7, horizontal: 80),
-//                       child: Text(
-//                         'ok',
-//                         style: TextStyle(
-//                             fontSize: 18,
-//                             fontWeight: FontWeight.w700,
-//                             color: Colors.white),
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           );
-//         });
-//   }
-
-//   info(name, name1, control, type, length) {
-//     return Column(
-//       mainAxisAlignment: MainAxisAlignment.start,
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Row(
-//           children: [
-//             Text(
-//               name,
-//               style: TextStyle(
-//                 fontSize: 15,
-//                 fontWeight: FontWeight.w400,
-//                 color: Color.fromARGB(255, 8, 71, 123),
-//               ),
-//             ),
-//             const Text(
-//               '*',
-//               style: TextStyle(
-//                   fontSize: 15, fontWeight: FontWeight.w400, color: Colors.red),
-//             ),
-//           ],
-//         ),
-//         Padding(
-//           padding: const EdgeInsets.only(left: 15, bottom: 20),
-//           child: TextField(
-//             controller: control,
-//             keyboardType: type,
-  //             //maxLength: length,
-//             expands: false,
-  //             //maxLengthEnforcement: false,
-//             decoration: InputDecoration(
-//               hintText: name1,
-//               hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-//             ),
-//           ),
-//         ),
-//       ],
-//     );
-//   }
 }

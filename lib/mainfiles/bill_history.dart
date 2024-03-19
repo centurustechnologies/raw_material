@@ -134,8 +134,8 @@ class _HistorypageState extends State<Historypage> {
                         Map<String, dynamic> data =
                             document.data() as Map<String, dynamic>;
                         int customerId = data['costomer_id'];
-                        String customerName = data['customer_name'];
-                        String price = data['price'];
+                        String productQuantity = data['product_quantity'];
+                        String productPrice = data['product_price'];
 
                         return Padding(
                           padding: const EdgeInsets.only(
@@ -161,7 +161,7 @@ class _HistorypageState extends State<Historypage> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          customerName,
+                                          productQuantity,
                                           style: const TextStyle(
                                               color: Colors.black87,
                                               fontSize: 18,
@@ -226,7 +226,7 @@ class _HistorypageState extends State<Historypage> {
                                                               FontWeight.bold),
                                                     ),
                                                     Text(
-                                                      " $price",
+                                                      " $productPrice",
                                                       style: const TextStyle(
                                                           fontSize: 16,
                                                           fontWeight:
@@ -252,20 +252,20 @@ class _HistorypageState extends State<Historypage> {
                                               Icons.remove_red_eye,
                                             ),
                                             onPressed: () {
-                                              String name =
-                                                  data['customer_name'];
-                                              int customerId =
-                                                  data['costomer_id'];
-                                              String price = data['price'];
+                                              String quantity =
+                                                  data['product_quantity'];
+                                              int id = data['costomer_id'];
+                                              String price =
+                                                  data['product_price'];
 
                                               Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
                                                   builder: (context) =>
                                                       BillDetail(
-                                                    customerName: name,
-                                                    customerId: customerId,
-                                                    customerPrice: price,
+                                                    productQuantity: quantity,
+                                                    customerId: id,
+                                                    productPrice: price,
                                                   ),
                                                 ),
                                               );
@@ -315,20 +315,19 @@ class _HistorypageState extends State<Historypage> {
 
 class BillDetail extends StatefulWidget {
   final int customerId;
-  final String customerName;
-  final String customerPrice;
+  final String productQuantity;
+  final String productPrice;
 
   BillDetail(
       {required this.customerId,
-      required this.customerName,
-      required this.customerPrice});
+      required this.productQuantity,
+      required this.productPrice});
   @override
   State<BillDetail> createState() => _BillDetailState();
 }
 
 class _BillDetailState extends State<BillDetail> {
   final bool _paymentResult = true;
-  String customerId = '';
 
   @override
   Widget build(BuildContext context) {
@@ -356,16 +355,16 @@ class _BillDetailState extends State<BillDetail> {
         stream: FirebaseFirestore.instance
             .collection('raw_cart')
             .where(
-              'customer_name',
-              isEqualTo: widget.customerName,
+              'product_price',
+              isEqualTo: widget.productPrice,
             )
             .where(
               'costomer_id',
               isEqualTo: widget.customerId,
             )
             .where(
-              'price',
-              isEqualTo: widget.customerPrice,
+              'product_quantity',
+              isEqualTo: widget.productQuantity,
             )
             .snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -449,7 +448,7 @@ class _BillDetailState extends State<BillDetail> {
                                   width: 20,
                                 ),
                                 Text(
-                                  data['customer_name'],
+                                  data['product_quantity'],
                                   style: const TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.w400),
@@ -474,7 +473,7 @@ class _BillDetailState extends State<BillDetail> {
                                   width: 20,
                                 ),
                                 Text(
-                                  data['customer_name'],
+                                  data['product_price'],
                                   style: const TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.w400),
@@ -704,7 +703,7 @@ class _BillDetailState extends State<BillDetail> {
                                         width: 5,
                                       ),
                                       Text(
-                                        data['price'],
+                                        data['product_price'],
                                         style: TextStyle(
                                             fontSize: 20,
                                             color: _paymentResult
@@ -759,7 +758,7 @@ class _BillDetailState extends State<BillDetail> {
                                         width: 5,
                                       ),
                                       Text(
-                                        data['price'],
+                                        data['product_price'],
                                         style: TextStyle(
                                             fontSize: 20,
                                             color: _paymentResult

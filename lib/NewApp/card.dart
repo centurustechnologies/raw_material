@@ -623,7 +623,7 @@ class _NewBillState extends State<MyNewBill> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const GenerateNewBill(),
+                              builder: (context) => GenerateNewBill(),
                             ),
                           );
                         },
@@ -727,7 +727,7 @@ class _NewBillState extends State<MyNewBill> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const GenerateNewBill(),
+                                  builder: (context) => GenerateNewBill(),
                                 ),
                               );
                             },
