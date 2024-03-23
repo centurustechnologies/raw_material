@@ -69,246 +69,235 @@ class _HistorypageState extends State<Historypage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const NewHome()),
-            (route) => false);
-        return true;
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          flexibleSpace: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color.fromARGB(255, 245, 157, 157),
-                  Color.fromARGB(255, 255, 90, 78),
-                  Color.fromARGB(255, 245, 157, 157),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+    return Scaffold(
+      appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color.fromARGB(255, 245, 157, 157),
+                Color.fromARGB(255, 255, 90, 78),
+                Color.fromARGB(255, 245, 157, 157),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
           ),
-          title: const Text(
-            'Bill history',
-            style: TextStyle(
-                fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
-          ),
-          leading: Builder(builder: (BuildContext context) {
-            return IconButton(
-              icon: const Icon(
-                Icons.menu,
-                color: Colors.white, // Change the color here
-              ),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          }),
         ),
-        drawer: const MyDrawer(),
-        body: StreamBuilder<List<DocumentSnapshot>>(
-            stream: _streamController.stream,
-            builder: (BuildContext context,
-                AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.all(10.0),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              return SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: 5,
-                  ),
-                  child: SizedBox(
-                    height: MediaQuery.of(context).size.height - 100,
-                    width: 400,
-                    child: ListView(
-                      children: snapshot.data!.map((DocumentSnapshot document) {
-                        Map<String, dynamic> data =
-                            document.data() as Map<String, dynamic>;
-                        int customerId = data['costomer_id'];
-                        String productQuantity = data['product_quantity'];
-                        String productPrice = data['product_price'];
+        title: const Text(
+          'Bill history',
+          style: TextStyle(
+              fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+        ),
+        leading: Builder(builder: (BuildContext context) {
+          return IconButton(
+            icon: const Icon(
+              Icons.menu,
+              color: Colors.white, // Change the color here
+            ),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          );
+        }),
+      ),
+      drawer: const MyDrawer(),
+      body: StreamBuilder<List<DocumentSnapshot>>(
+          stream: _streamController.stream,
+          builder: (BuildContext context,
+              AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.all(10.0),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  top: 5,
+                ),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height - 100,
+                  width: 400,
+                  child: ListView(
+                    children: snapshot.data!.map((DocumentSnapshot document) {
+                      Map<String, dynamic> data =
+                          document.data() as Map<String, dynamic>;
+                      int customerId = data['costomer_id'];
+                      String productQuantity = data['product_quantity'];
+                      String productPrice = data['product_price'];
 
-                        return Padding(
-                          padding: const EdgeInsets.only(
-                              left: 5, right: 5, bottom: 10),
-                          child: Card(
-                            child: Container(
-                              height: 160,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                color: Colors.white,
-                                border:
-                                    Border.all(color: Colors.grey, width: 1),
-                              ),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 15, right: 20, top: 5),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          productQuantity,
-                                          style: const TextStyle(
-                                              color: Colors.black87,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                        SizedBox(
-                                          child: IconButton(
-                                            icon: const Icon(
-                                              Icons.delete,
-                                              color: Colors.black,
-                                            ),
-                                            onPressed: () {
-                                              removeItem(
-                                                context,
-                                              );
-                                            },
-                                            iconSize: 28.0,
-                                            color: Colors.blue,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Column(
+                      return Padding(
+                        padding: const EdgeInsets.only(
+                            left: 5, right: 5, bottom: 10),
+                        child: Card(
+                          child: Container(
+                            height: 160,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: Colors.white,
+                              border: Border.all(color: Colors.grey, width: 1),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 15, right: 20, top: 5),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 15, right: 20, bottom: 8),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    const Text(
-                                                      "Bill Id :",
-                                                      style: TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    Text(
-                                                      " $customerId",
-                                                      style: const TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w400),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    const Text(
-                                                      "₹",
-                                                      style: TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    Text(
-                                                      " $productPrice",
-                                                      style: const TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w400),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ],
+                                      Text(
+                                        productQuantity,
+                                        style: const TextStyle(
+                                            color: Colors.black87,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                      SizedBox(
+                                        child: IconButton(
+                                          icon: const Icon(
+                                            Icons.delete,
+                                            color: Colors.black,
+                                          ),
+                                          onPressed: () {
+                                            removeItem(
+                                              context,
+                                            );
+                                          },
+                                          iconSize: 28.0,
+                                          color: Colors.blue,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 0),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        SizedBox(
-                                          child: IconButton(
-                                            icon: const Icon(
-                                              Icons.remove_red_eye,
-                                            ),
-                                            onPressed: () {
-                                              String quantity =
-                                                  data['product_quantity'];
-                                              int id = data['costomer_id'];
-                                              String price =
-                                                  data['product_price'];
-
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      BillDetail(
-                                                    productQuantity: quantity,
-                                                    customerId: id,
-                                                    productPrice: price,
+                                ),
+                                Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 15, right: 20, bottom: 8),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  const Text(
+                                                    "Bill Id :",
+                                                    style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold),
                                                   ),
-                                                ),
-                                              );
-                                            },
-                                            iconSize: 25.0,
-                                            color: Colors.blue,
+                                                  Text(
+                                                    " $customerId",
+                                                    style: const TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w400),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  const Text(
+                                                    "₹",
+                                                    style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  Text(
+                                                    " $productPrice",
+                                                    style: const TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w400),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                        const SizedBox(
-                                          width: 10,
-                                        ),
-                                        SizedBox(
-                                          child: IconButton(
-                                            icon: const Icon(
-                                              Icons.download,
-                                            ),
-                                            onPressed: () {},
-                                            iconSize:
-                                                28.0, // Adjust the size of the icon as needed
-                                            color: Colors
-                                                .blue, // Customize the color of the icon
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          width: 20,
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
+                                  ],
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      SizedBox(
+                                        child: IconButton(
+                                          icon: const Icon(
+                                            Icons.remove_red_eye,
+                                          ),
+                                          onPressed: () {
+                                            String quantity =
+                                                data['product_quantity'];
+                                            int id = data['costomer_id'];
+                                            String price =
+                                                data['product_price'];
 
-                              //trailing: ,
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    BillDetail(
+                                                  productQuantity: quantity,
+                                                  customerId: id,
+                                                  productPrice: price,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          iconSize: 25.0,
+                                          color: Colors.blue,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      SizedBox(
+                                        child: IconButton(
+                                          icon: const Icon(
+                                            Icons.download,
+                                          ),
+                                          onPressed: () {},
+                                          iconSize:
+                                              28.0, // Adjust the size of the icon as needed
+                                          color: Colors
+                                              .blue, // Customize the color of the icon
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 20,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
+
+                            //trailing: ,
                           ),
-                        );
-                      }).toList(),
-                    ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
-              );
-            }),
-      ),
+              ),
+            );
+          }),
     );
   }
 }

@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:raw_material/NewApp/card.dart';
 
 import '../helpers/app_constants.dart';
-import '../mainfiles/homepage.dart';
 import '../helpers/controller.dart';
 
 class LoginPage extends StatefulWidget {
@@ -21,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   String user = '';
   String pass = '';
   String id = '';
+  bool _isLoading = true;
 
   Future getadmindata(String id) async {
     await FirebaseFirestore.instance
@@ -37,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
           LocalStorageHelper.saveValue('userid', user);
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const MyHomePage()),
+            MaterialPageRoute(builder: (context) => const NewHome()),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -67,6 +68,16 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {
+        _isLoading = false;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -76,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
             height: MediaQuery.of(context).size.height,
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/background1.avif'),
+                image: AssetImage('assets/images/background1.jpg'),
                 fit: BoxFit.fitHeight,
               ),
             ),
@@ -123,35 +134,74 @@ class _LoginPageState extends State<LoginPage> {
                               'Enter password',
                             ),
                             const SizedBox(height: 25),
-                            const SizedBox(height: 25),
+                            const SizedBox(height: 50),
+
                             Align(
                               alignment: Alignment.center,
-                              child: MaterialButton(
-                                minWidth: 250,
-                                shape: RoundedRectangleBorder(
+                              child: Container(
+                                width: 280,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color.fromARGB(255, 255, 90, 78),
+                                      Color.fromARGB(255, 255, 155, 137),
+                                      Color.fromARGB(255, 255, 90, 78),
+                                    ],
+                                    begin: Alignment.bottomLeft,
+                                    end: Alignment.topRight,
+                                  ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                padding: const EdgeInsets.all(20),
-                                color: greenLightShadeColor,
-                                child: Text(
-                                  'Sign In',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 16,
-                                    color: whiteColor,
-                                    fontWeight: FontWeight.w600,
+                                child: MaterialButton(
+                                  minWidth: 250,
+                                  padding: const EdgeInsets.all(15),
+                                  onPressed: () {
+                                    if (userid.text.isNotEmpty &&
+                                        password.text.isNotEmpty) {
+                                      // setState(() {
+                                      //   id = userid.text;
+                                      // });
+                                      getadmindata(userid.text);
+                                    }
+                                  },
+                                  child: Text(
+                                    'Sign In',
+                                    style: GoogleFonts.poppins(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
                                   ),
                                 ),
-                                onPressed: () {
-                                  if (userid.text.isNotEmpty &&
-                                      password.text.isNotEmpty) {
-                                    // setState(() {
-                                    //   id = userid.text;
-                                    // });
-                                    getadmindata(userid.text);
-                                  }
-                                },
                               ),
                             ),
+                            // Align(
+                            //   alignment: Alignment.center,
+                            //   child: MaterialButton(
+                            //     minWidth: 250,
+                            //     shape: RoundedRectangleBorder(
+                            //       borderRadius: BorderRadius.circular(10),
+                            //     ),
+                            //     padding: const EdgeInsets.all(20),
+                            //     color: greenLightShadeColor,
+                            //     child: Text(
+                            //       'Sign In',
+                            //       style: GoogleFonts.poppins(
+                            //         fontSize: 16,
+                            //         color: whiteColor,
+                            //         fontWeight: FontWeight.w600,
+                            //       ),
+                            //     ),
+                            //     onPressed: () {
+                            //       if (userid.text.isNotEmpty &&
+                            //           password.text.isNotEmpty) {
+                            //         // setState(() {
+                            //         //   id = userid.text;
+                            //         // });
+                            //         getadmindata(userid.text);
+                            //       }
+                            //     },
+                            //   ),
+                            // ),
                           ],
                         ),
                       )

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:raw_material/helpers/app_constants.dart';
+import 'package:raw_material/logins/login.dart';
 import 'package:raw_material/mainfiles/add_product.dart';
 import 'package:raw_material/mainfiles/add_user.dart';
 import 'package:raw_material/mainfiles/bill_history.dart';
@@ -400,7 +401,6 @@ class _ManageUserState extends State<ManageUser> {
                     return Card(
                       color: Color.fromARGB(255, 255, 247, 247),
                       child: Container(
-                        height: 65,
                         child: ListTile(
                             leading: CircleAvatar(
                               backgroundImage: NetworkImage(data['user_image']),
@@ -431,7 +431,7 @@ class _ManageUserState extends State<ManageUser> {
                             ),
                             trailing: PopupMenuButton<String>(
                                 icon: Padding(
-                                  padding: const EdgeInsets.only(bottom: 10),
+                                  padding: const EdgeInsets.only(bottom: 0),
                                   child: const Icon(
                                     Icons
                                         .more_vert, // Customize the icon as needed
@@ -616,7 +616,7 @@ class _NewBillState extends State<MyNewBill> {
                       Map<String, dynamic> data =
                           document.data() as Map<String, dynamic>;
                       String costumerName = data['customer_name'];
-                      String price = data['price'];
+                      String price = data['product_price'];
 
                       return InkWell(
                         onTap: () {
@@ -627,39 +627,50 @@ class _NewBillState extends State<MyNewBill> {
                             ),
                           );
                         },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                costumerName,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    costumerName,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    "itemDescription",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    "Price : ₹ $price",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 5),
-                              Text(
-                                "itemDescription",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  top: 5, left: 10, right: 10),
+                              child: const Divider(
+                                height: 0,
                               ),
-                              const SizedBox(height: 5),
-                              Text(
-                                "Price : ₹ $price",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green,
-                                ),
-                              ),
-                              const Divider(),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       );
                     }).toList(),
@@ -859,6 +870,22 @@ class MenuTab extends StatelessWidget {
                       //   context,
                       //   MaterialPageRoute(builder: (context) => ManageUser()),
                       // );
+                    },
+                  ),
+                ),
+                Card(
+                  elevation:
+                      2, // Adjust the elevation to control the intensity of the shadow
+                  shadowColor: const Color.fromARGB(255, 68, 255, 224),
+                  child: ListTile(
+                    leading: const Icon(Icons.logout_outlined),
+                    title: const Text('Logout'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LoginPage()),
+                      );
                     },
                   ),
                 ),

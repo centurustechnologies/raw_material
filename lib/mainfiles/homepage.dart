@@ -283,13 +283,6 @@ class MyDrawer extends StatelessWidget {
               // Add the functionality for Settings
             },
           ),
-          ListTile(
-            title: Text('Logout'),
-            leading: Icon(Icons.person),
-            onTap: () {
-              // Add the functionality for Logout
-            },
-          ),
         ],
       ),
     );

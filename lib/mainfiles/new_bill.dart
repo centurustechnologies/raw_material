@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -19,6 +20,7 @@ class _NewBillState extends State<NewBill> {
   late StreamController<List<DocumentSnapshot>> _streamController;
   final TextEditingController _searchController = TextEditingController();
   TextEditingController nameController = TextEditingController();
+  String _errorMessage = '';
   late List<DocumentSnapshot> _document;
   List items = [];
 
@@ -36,19 +38,57 @@ class _NewBillState extends State<NewBill> {
     _streamController.close();
   }
 
-  void addDataToRawCart() async {
+  // void addDataToRawCart() async {
+  //   try {
+  //     var snapshot =
+  //         await FirebaseFirestore.instance.collection('raw_user').get();
+  //     int currentCount = snapshot.size;
+  //     await FirebaseFirestore.instance
+  //         .collection('raw_cart')
+  //         .doc(nameController.text)
+  //         .set({
+  //       'costomer_id': currentCount + 1,
+  //       'product_name': '',
+  //       'product_quantity': currentCount + 1,
+  //       'customer_name': nameController.text,
+  //       'product_price': '0',
+  //       'Grand_total': '0',
+  //     }).whenComplete(() {
+  //       setState(() {
+  //         nameController.clear();
+
+  //         Navigator.push(
+  //           context,
+  //           MaterialPageRoute(builder: (context) => const NewBill()),
+  //         );
+  //       });
+  //     });
+  //     if (kDebugMode) {
+  //       print("Data added successfully!");
+  //     }
+  //   } catch (error) {
+  //     if (kDebugMode) {
+  //       print("Failed to add data: $error");
+  //     }
+  //   }
+  // }
+
+  void addproductdatToRawCart(List productDetail) async {
     try {
       var snapshot =
-          await FirebaseFirestore.instance.collection('raw_users').get();
+          await FirebaseFirestore.instance.collection('raw_cart').get();
       int currentCount = snapshot.size;
-      await FirebaseFirestore.instance.collection('raw_cart').add({
-        'costomer_id': currentCount + 1,
-        'customer_name': nameController.text,
-        'price': '₹ 0',
+
+      await FirebaseFirestore.instance
+          .collection('raw_cart')
+          .doc(nameController.text)
+          .set({
+        'product_id': currentCount + 1,
+        'product_name': nameController.text,
+        'product_detail': productDetail,
       }).whenComplete(() {
         setState(() {
           nameController.clear();
-
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const NewBill()),
@@ -64,32 +104,36 @@ class _NewBillState extends State<NewBill> {
       }
     }
   }
-
-  void addproductdatToRawCart() async {
-    try {
-      var snapshot =
-          await FirebaseFirestore.instance.collection('raw_cart').get();
-      int currentCount = snapshot.size;
-      await FirebaseFirestore.instance.collection('raw_cart').add({
-        'costomer_id': currentCount + 1,
-        'product_name': nameController.text,
-        'product_quantity': nameController.text,
-        'product_price': '₹ 0',
-        'Grand_total': '₹ 0',
-      }).whenComplete(() {
-        setState(() {
-          nameController.clear();
-        });
-      });
-      if (kDebugMode) {
-        print("Data added successfully!");
-      }
-    } catch (error) {
-      if (kDebugMode) {
-        print("Failed to add data: $error");
-      }
-    }
-  }
+  // void addproductdatToRawCart() async {
+  //   try {
+  //     var snapshot =
+  //         await FirebaseFirestore.instance.collection('raw_cart').get();
+  //     int currentCount = snapshot.size;
+  //     await FirebaseFirestore.instance.collection('raw_cart').add({
+  //       'costomer_id': currentCount + 1,
+  //       'product_name': '',
+  //       'product_quantity': currentCount + 6,
+  //       'customer_name': nameController.text,
+  //       'product_price': ' 0',
+  //       'Grand_total': ' 0',
+  //     }).whenComplete(() {
+  //       setState(() {
+  //         nameController.clear();
+  //         Navigator.push(
+  //           context,
+  //           MaterialPageRoute(builder: (context) => const NewBill()),
+  //         );
+  //       });
+  //     });
+  //     if (kDebugMode) {
+  //       print("Data added successfully!");
+  //     }
+  //   } catch (error) {
+  //     if (kDebugMode) {
+  //       print("Failed to add data: $error");
+  //     }
+  //   }
+  // }
 
   Future<void> getData() async {
     try {
@@ -203,7 +247,7 @@ class _NewBillState extends State<NewBill> {
                       AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return const Padding(
-                        padding: EdgeInsets.all(10.0),
+                        padding: EdgeInsets.only(left: 10, right: 10),
                         child: Center(child: CircularProgressIndicator()),
                       );
                     }
@@ -215,86 +259,63 @@ class _NewBillState extends State<NewBill> {
                             snapshot.data!.map((DocumentSnapshot document) {
                           Map<String, dynamic> data =
                               document.data() as Map<String, dynamic>;
-                          int costomerid = data['costomer_id'];
-                          String price = data['product_price'];
+                          String productName = data['product_name'];
+                          dynamic productId = data['product_id'];
 
-                          return Padding(
-                            padding: const EdgeInsets.all(0),
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => GenerateNewBill(),
-                                  ),
-                                );
-                              },
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.only(left: 10, right: 10),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 5, top: 15, bottom: 5),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            '$costomerid',
-                                            style: const TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 5),
-                                          Text(
-                                            "itemDescription",
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.grey[600],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 5),
-                                          Row(
-                                            children: [
-                                              const Text(
-                                                "Price : ",
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.green,
-                                                ),
-                                              ),
-                                              const Text(
-                                                "₹ ",
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.blue,
-                                                ),
-                                              ),
-                                              Text(
-                                                "$price",
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.orange,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const Divider(
-                                      height: 1,
-                                    ),
-                                  ],
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const GenerateNewBill(),
                                 ),
-                              ),
+                              );
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 8),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        productName,
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        "itemDescription",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        "Price : ₹ $productId",
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.only(
+                                      top: 5, left: 10, right: 10),
+                                  child: Divider(
+                                    height: 0,
+                                  ),
+                                ),
+                              ],
                             ),
                           );
                         }).toList(),
@@ -334,8 +355,11 @@ class _NewBillState extends State<NewBill> {
                               children: [
                                 TextField(
                                   controller: nameController,
-                                  decoration: const InputDecoration(
+                                  decoration: InputDecoration(
                                     hintText: 'Enter Name',
+                                    errorText: _errorMessage.isNotEmpty
+                                        ? _errorMessage
+                                        : null,
                                   ),
                                 ),
                                 const SizedBox(height: 16),
@@ -359,13 +383,17 @@ class _NewBillState extends State<NewBill> {
                               ),
                               ElevatedButton(
                                 onPressed: () {
-                                  addDataToRawCart();
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => GenerateNewBill(),
-                                    ),
-                                  );
+                                  setState(() {
+                                    _errorMessage = '';
+                                  });
+                                  if (nameController.text.isEmpty) {
+                                    setState(() {
+                                      _errorMessage = 'Please fill the details';
+                                    });
+                                  } else
+                                    setState(() {
+                                      // addproductdatToRawCart();
+                                    });
                                 },
                                 child: const Text(
                                   'Create',
@@ -408,7 +436,7 @@ class _NewBillState extends State<NewBill> {
 }
 
 class GenerateNewBill extends StatefulWidget {
-  GenerateNewBill({super.key});
+  const GenerateNewBill({super.key});
 
   @override
   State<GenerateNewBill> createState() => _GenerateNewBillStateState();
@@ -426,12 +454,17 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
   String area = '';
   String productName = '';
   String name = '';
-  int _number = 0;
+  int _number = 1;
+  double _totalPrice = 0.0;
 
   // ignore: unused_field
   late StreamController<List<DocumentSnapshot>> _streamController;
   // ignore: unused_field
   late List<DocumentSnapshot> _document;
+  TextEditingController nameController = TextEditingController();
+
+  String priceController = '';
+  String quantityController = '';
 
   @override
   void initState() {
@@ -446,6 +479,73 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
     });
   }
 
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  void addProductToRawCart(
+      String productName, double price, int quantity) async {
+    try {
+      var snapshot =
+          await FirebaseFirestore.instance.collection('raw_cart').get();
+      DocumentReference docRef = _firestore.collection('raw_cart').doc();
+
+      DocumentSnapshot docSnapshot = await docRef.get();
+
+      if (docSnapshot.exists) {
+        // Get the existing data
+        Map<String, dynamic> data = docSnapshot.data() as Map<String, dynamic>;
+
+        if (data.containsKey('product_detail')) {
+          List<dynamic> productDetails = List.from(data['product_detail']);
+          productDetails.add({
+            'productName': productName,
+            'price': price,
+            'quantity': quantity
+          });
+          await docRef.update({'product_details': productDetails});
+        } else {
+          await docRef.set({
+            'product_detail': [
+              {'productName': productName, 'price': price, 'quantity': quantity}
+            ]
+          });
+        }
+
+        print('Product details added to Firestore document.');
+      } else {
+        print('Document does not exist.');
+      }
+    } catch (e) {
+      print('Error adding product details to Firestore document: $e');
+    }
+  }
+
+  // void addproductdatToRawCart(String pdName) async {
+  //   try {
+  //     var snapshot =
+  //         await FirebaseFirestore.instance.collection('raw_cart').get();
+  //     int currentCount = snapshot.size;
+  //     await FirebaseFirestore.instance.collection('raw_cart').add({
+  //       'costomer_id': currentCount + 1,
+  //       'product_name': pdName,
+  //       'product_quantity': currentCount + 6,
+  //       'customer_name': nameController.text,
+  //       'product_price': ' 0',
+  //       'Grand_total': ' 0',
+  //     }).whenComplete(() {
+  //       setState(() {
+  //         nameController.clear();
+  //       });
+  //     });
+  //     if (kDebugMode) {
+  //       print("Data added successfully!");
+  //     }
+  //   } catch (error) {
+  //     if (kDebugMode) {
+  //       print("Failed to add data: $error");
+  //     }
+  //   }
+  // }
+
   Future<void> fetchData() async {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -453,6 +553,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
           .get();
       _document = querySnapshot.docs;
       _streamController.add(_document);
+      print("data add successfully $_document");
     } catch (e) {
       print('error i fetching data: $e');
     }
@@ -464,18 +565,28 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
     _streamController.close();
   }
 
-  void _increment() {
+  void _increment() async {
     setState(() {
       _number++;
+      _totalPrice += 240;
     });
+    // await FirebaseFirestore.instance
+    //     .collection('raw_billing_product')
+    //     .doc('your_document_id')
+    //     .update({'product_quantity': _number});
   }
 
-  void _decrement() {
+  void _decrement() async {
     setState(() {
-      if (_number > 0) {
+      if (_number > 1) {
         _number--;
+        _totalPrice -= 240;
       }
     });
+    // await FirebaseFirestore.instance
+    //     .collection('raw_billing_product')
+    //     .doc('your_document_id')
+    //     .update({'product_quantity': _number});
   }
 
   @override
@@ -532,7 +643,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                             children: [
                               Text(
                                 textlist ? ' Image' : " Text",
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 16,
                                     color: Colors.blue,
                                     fontWeight: FontWeight.bold),
@@ -556,42 +667,48 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                     _buildTextAndImageList(),
                   ],
                 ),
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('raw_billing_product')
-                        .where(
-                          'product_name',
-                          // isEqualTo: widget.productName,
-                        )
-                        .snapshots(),
-                    builder: (BuildContext context,
-                        AsyncSnapshot<QuerySnapshot> snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      }
-                      return SizedBox(
-                        width: MediaQuery.of(context).size.width - 105,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 10, right: 10),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                children: [
-                                  const Text(
-                                    'Order details',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue,
-                                    ),
+                StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('raw_cart')
+                      .where(
+                        'product_name',
+                      )
+                      .where(
+                        'product_price',
+                      )
+                      .where(
+                        'product_quantity',
+                      )
+                      .snapshots(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    }
+                    return SizedBox(
+                      width: MediaQuery.of(context).size.width - 105,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 10, right: 10),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              children: [
+                                const Text(
+                                  'Order details',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue,
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 3),
+                                  child: SizedBox(
+                                    height: 506,
                                     child: ListView(
                                       shrinkWrap: true,
                                       physics:
@@ -600,46 +717,46 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                                           .map((DocumentSnapshot document) {
                                         Map<String, dynamic> data = document
                                             .data() as Map<String, dynamic>;
-                                        String productName =
-                                            data['product_name'];
-
-                                        return Padding(
-                                          padding: const EdgeInsets.only(),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Column(
+                                        // String productName =
+                                        //     data['product_name'];
+                                        // String productPrice =
+                                        //     data['product_price'];
+                                        // int productQuantity =
+                                        //     data['product_quantity'];
+                                        return Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.only(top: 3),
+                                              child: Column(
                                                 children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            bottom: 1),
-                                                    child: SizedBox(
-                                                      width: 300,
-                                                      child: Text(
-                                                        productName,
-                                                        style: const TextStyle(
-                                                          fontSize: 15,
-                                                          fontWeight:
-                                                              FontWeight.w800,
-                                                          color: Color.fromARGB(
-                                                              255, 8, 71, 123),
-                                                        ),
+                                                  SizedBox(
+                                                    width: 300,
+                                                    child: Text(
+                                                      'productName',
+                                                      style: const TextStyle(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                        color: Color.fromARGB(
+                                                            255, 8, 71, 123),
                                                       ),
                                                     ),
                                                   ),
                                                   Row(
                                                     children: [
-                                                      const Padding(
+                                                      Padding(
                                                         padding:
-                                                            EdgeInsets.only(
-                                                                right: 8),
+                                                            const EdgeInsets
+                                                                .only(right: 8),
                                                         child: SizedBox(
                                                           width: 50,
                                                           child: Text(
-                                                            "6 pcs",
-                                                            style: TextStyle(
+                                                            "productQuantity",
+                                                            style:
+                                                                const TextStyle(
                                                               fontSize: 12,
                                                               fontWeight:
                                                                   FontWeight
@@ -659,15 +776,16 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                                                           ),
                                                         ),
                                                       ),
-                                                      const Padding(
+                                                      Padding(
                                                         padding:
-                                                            EdgeInsets.only(
-                                                                right: 2),
+                                                            const EdgeInsets
+                                                                .only(right: 2),
                                                         child: SizedBox(
                                                           width: 50,
                                                           child: Text(
-                                                            "200 rs",
-                                                            style: TextStyle(
+                                                            'productPrice',
+                                                            style:
+                                                                const TextStyle(
                                                               fontSize: 12,
                                                               fontWeight:
                                                                   FontWeight
@@ -752,57 +870,65 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                                                       ),
                                                     ],
                                                   ),
-                                                  const Divider(
-                                                    height: 2,
-                                                  )
                                                 ],
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                            const Divider(
+                                              height: 2,
+                                            ),
+                                          ],
                                         );
                                       }).toList(),
                                     ),
                                   ),
-                                ],
-                              ),
-                              const Column(
-                                children: [
-                                  Divider(
-                                    height: 2,
-                                  ),
-                                  SizedBox(height: 15),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        'Grand Total :',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                ),
+                                const Column(
+                                  children: [
+                                    Divider(
+                                      height: 2,
+                                    ),
+                                    SizedBox(
+                                      height: 13,
+                                    ),
+                                    Padding(
+                                      padding:
+                                          EdgeInsets.only(left: 2, right: 2),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Grand Total :',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            '\$240',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.green,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        '\$240',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.green,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 15),
-                                  Divider(
-                                    height: 5,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                                    ),
+                                    SizedBox(
+                                      height: 13,
+                                    ),
+                                    Divider(
+                                      height: 5,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -871,23 +997,23 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                   String productName = data['product_name'];
                   String image = data['product_image'];
 
-                  return InkWell(
-                    onTap: () {
-                      fetchData();
-                      _increment();
-                    },
-                    child: Container(
-                        height: 67,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Colors.black,
-                            width: 1.0,
-                          ),
+                  return Container(
+                      height: 67,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.black,
+                          width: 1.0,
                         ),
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 6.0, vertical: 3.0),
-                        child: imagebool
-                            ? Padding(
+                      ),
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 6.0, vertical: 3.0),
+                      child: imagebool
+                          ? InkWell(
+                              onTap: () {
+                                fetchData();
+                                addProductToRawCart(productName, 10, 2);
+                              },
+                              child: Padding(
                                 padding: const EdgeInsets.only(
                                     top: 20, bottom: 20, right: 5, left: 5),
                                 child: Text(
@@ -901,8 +1027,14 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                              )
-                            : Padding(
+                              ),
+                            )
+                          : InkWell(
+                              onTap: () {
+                                fetchData();
+                                addProductToRawCart(productName, 25, 3);
+                              },
+                              child: Padding(
                                 padding: const EdgeInsets.all(2),
                                 child: Image.network(
                                   width: MediaQuery.of(context).size.width,
@@ -910,8 +1042,8 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                                   image,
                                   fit: BoxFit.cover,
                                 ),
-                              )),
-                  );
+                              ),
+                            ));
                 },
               ).toList(),
             ),

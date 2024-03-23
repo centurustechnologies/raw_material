@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:raw_material/helpers/app_constants.dart';
 import 'package:raw_material/mainfiles/homepage.dart';
@@ -68,6 +69,7 @@ class _product_listState extends State<product_list> {
         'product_name': productController.text,
         'product_price': priceController.text,
         'product_image': imageUrl,
+        'product_quantity': '2',
       }).then((value) {
         print("data added sucessfully");
       }).catchError((error) {
@@ -125,199 +127,359 @@ class _product_listState extends State<product_list> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.fromARGB(255, 245, 157, 157),
-                Color.fromARGB(255, 255, 90, 78),
-                Color.fromARGB(255, 245, 157, 157),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        title: const Text(
-          "Product List",
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: Builder(builder: (BuildContext context) {
-          return IconButton(
-            icon: const Icon(
-              Icons.menu,
-              color: Colors.white, // Change the color here
-            ),
-            onPressed: () {
-              Scaffold.of(context).openDrawer();
-            },
-          );
-        }),
-      ),
-      drawer: const MyDrawer(),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 0),
-        child: SizedBox(
-          height: displayHeight(context) / 1.1,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  //iklashjlkhasdlik
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 10, right: 10, top: 10, bottom: 10),
-                    child: Container(
-                      height: MediaQuery.of(context).size.height / 1.32,
-                      width: displayWidth(context),
-                      decoration: BoxDecoration(
-                        color: whiteColor,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.blue.withOpacity(0.3),
-                            blurRadius: 10,
-                            spreadRadius: 1,
+
+      body: Container(
+        decoration: const BoxDecoration(
+            // gradient: LinearGradient(
+            //   colors: [
+            //     Color.fromARGB(255, 255, 90, 78),
+            //     Color.fromARGB(255, 245, 157, 157),
+            //     Color.fromARGB(255, 253, 77, 64),
+            //   ],
+            //   begin: Alignment.topLeft,
+            //   end: Alignment.bottomRight,
+            // ),
+            color: Colors.redAccent),
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                Container(
+                  height: 150,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 35,
+                      ),
+                      Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.arrow_back,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.only(left: 25),
+                            child: Text(
+                              "Product List",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ],
                       ),
-                      child: StreamBuilder(
-                        stream: _streamController.stream,
-                        builder: (BuildContext context,
-                            AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
-                          if (snapshot.hasData) {
-                            return ListView(
-                                children: snapshot.data!.map(
-                              (DocumentSnapshot document) {
-                                Map<String, dynamic> data =
-                                    document.data() as Map<String, dynamic>;
-                                String category = data['category'];
-                                String productName = data['product_name'];
-                                String productPrice = data['product_price'];
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 5,
+                          blurRadius: 7,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: StreamBuilder(
+                      stream: _streamController.stream,
+                      builder: (BuildContext context,
+                          AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+                        if (snapshot.hasData) {
+                          return ListView(
+                            children:
+                                snapshot.data!.map((DocumentSnapshot document) {
+                              Map<String, dynamic> data =
+                                  document.data() as Map<String, dynamic>;
+                              String category = data['category'];
+                              String productName = data['product_name'];
+                              String productPrice = data['product_price'];
 
-                                return Padding(
-                                  padding: const EdgeInsets.all(5.0),
-                                  child: Card(
-                                    color: Colors.white,
-                                    child: ListTile(
-                                      leading: CircleAvatar(
-                                        backgroundImage:
-                                            NetworkImage(data['product_image']),
-                                      ),
-                                      title: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            productName,
-                                            style: const TextStyle(
-                                              fontSize: 18,
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            width: 10,
-                                          ),
-                                          Text(
-                                            category,
-                                            style: const TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(productPrice),
-                                        ],
-                                      ),
-                                      trailing: PopupMenuButton<String>(
-                                        onSelected: (String value) {
-                                          // Handle selected value
-                                        },
-                                        itemBuilder: (
-                                          context,
-                                        ) =>
-                                            <PopupMenuEntry<String>>[
-                                          PopupMenuItem<String>(
-                                            value: 'edit',
-                                            child: ListTile(
-                                              leading: const Icon(Icons.edit),
-                                              title: const Text('Edit'),
-                                              onTap: () {},
-                                            ),
-                                          ),
-                                          PopupMenuItem<String>(
-                                            value: 'remove',
-                                            child: ListTile(
-                                              leading: const Icon(Icons.delete),
-                                              title: const Text('Remove'),
-                                              onTap: () {
-                                                // removeItem(context, index);
-                                              },
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                    bottom: 10, left: 8, right: 8),
+                                child: Card(
+                                  elevation: 5,
+                                  shadowColor: Colors.redAccent,
+                                  child: ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundImage:
+                                          NetworkImage(data['product_image']),
                                     ),
+                                    title: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          productName,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(
+                                          category,
+                                          style: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(productPrice),
+                                      ],
+                                    ),
+                                    trailing: PopupMenuButton<String>(
+                                      onSelected: (String value) {
+                                        // Handle selected value
+                                      },
+                                      itemBuilder: (context) =>
+                                          <PopupMenuEntry<String>>[
+                                        PopupMenuItem<String>(
+                                          value: 'edit',
+                                          child: ListTile(
+                                            leading: const Icon(Icons.edit),
+                                            title: const Text('Edit'),
+                                            onTap: () {},
+                                          ),
+                                        ),
+                                        PopupMenuItem<String>(
+                                          value: 'remove',
+                                          child: ListTile(
+                                            leading: const Icon(Icons.delete),
+                                            title: const Text('Remove'),
+                                            onTap: () {
+                                              // removeItem(context, index);
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    onTap: () {},
                                   ),
-                                );
-                              },
-                            ).toList());
-                          }
-                          return const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(10.0),
-                              child: CircularProgressIndicator(),
-                            ),
+                                ),
+                              );
+                            }).toList(),
                           );
-                        },
+                        }
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(10.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              top: 114,
+              left: 0,
+              right: 0,
+              child: Align(
+                child: Container(
+                  width: 200,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Card(
+                    child: MaterialButton(
+                      minWidth: 200,
+                      padding: const EdgeInsets.all(20),
+                      onPressed: () {
+                        showAddProductDialog(context);
+                      },
+                      child: Text(
+                        'Add Product',
+                        style: GoogleFonts.poppins(
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16),
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
-      // bottomNavigationBar: Align(
-      //   alignment: Alignment.center,
-      //   child: Container(
-      //     width: 280,
-      //     decoration: BoxDecoration(
-      //       gradient: LinearGradient(
-      //         colors: [
-      //           Color.fromARGB(255, 245, 157, 157),
-      //           Color.fromARGB(255, 255, 90, 78),
-      //           Color.fromARGB(255, 245, 157, 157),
+
+      //Column(
+      //   children: [
+      //     Container(
+      //       height: 150,
+      //     ),
+      //     Container(
+      //       height: MediaQuery.of(context).size.height - 150,
+      //       width: displayWidth(context),
+      //       decoration: BoxDecoration(
+      //         color: Colors.white,
+      //         borderRadius: const BorderRadius.only(
+      //             topLeft: Radius.circular(20),
+      //             topRight: Radius.circular(20)),
+      //         boxShadow: [
+      //           BoxShadow(
+      //             color: Colors.grey.withOpacity(0.5),
+      //             spreadRadius: 5,
+      //             blurRadius: 7,
+      //             offset: const Offset(0, 3),
+      //           ),
       //         ],
-      //         begin: Alignment.bottomLeft,
-      //         end: Alignment.topRight,
       //       ),
-      //       borderRadius: BorderRadius.circular(10),
+      //       child: StreamBuilder(
+      //           stream: _streamController.stream,
+      //           builder: (BuildContext context,
+      //               AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+      //             if (snapshot.hasData) {
+      //               return ListView(
+      //                 children:
+      //                     snapshot.data!.map((DocumentSnapshot document) {
+      //                   Map<String, dynamic> data =
+      //                       document.data() as Map<String, dynamic>;
+      //                   String category = data['category'];
+      //                   String productName = data['product_name'];
+      //                   String productPrice = data['product_price'];
+
+      //                   return Padding(
+      //                     padding: const EdgeInsets.only(
+      //                         bottom: 10, left: 5, right: 5),
+      //                     child: Card(
+      //                       elevation:
+      //                           5, // Adjust the elevation to control the intensity of the shadow
+      //                       shadowColor: Colors.redAccent,
+      //                       child: ListTile(
+      //                         leading: CircleAvatar(
+      //                           backgroundImage:
+      //                               NetworkImage(data['product_image']),
+      //                         ),
+      //                         title: Row(
+      //                           crossAxisAlignment: CrossAxisAlignment.end,
+      //                           children: [
+      //                             Text(
+      //                               productName,
+      //                               style: const TextStyle(
+      //                                 fontSize: 18,
+      //                               ),
+      //                             ),
+      //                             const SizedBox(
+      //                               width: 10,
+      //                             ),
+      //                             Text(
+      //                               category,
+      //                               style: const TextStyle(
+      //                                   fontSize: 15,
+      //                                   fontWeight: FontWeight.bold),
+      //                             ),
+      //                           ],
+      //                         ),
+      //                         subtitle: Column(
+      //                           crossAxisAlignment: CrossAxisAlignment.start,
+      //                           children: [
+      //                             Text(productPrice),
+      //                           ],
+      //                         ),
+      //                         trailing: PopupMenuButton<String>(
+      //                           onSelected: (String value) {
+      //                             // Handle selected value
+      //                           },
+      //                           itemBuilder: (
+      //                             context,
+      //                           ) =>
+      //                               <PopupMenuEntry<String>>[
+      //                             PopupMenuItem<String>(
+      //                               value: 'edit',
+      //                               child: ListTile(
+      //                                 leading: const Icon(Icons.edit),
+      //                                 title: const Text('Edit'),
+      //                                 onTap: () {},
+      //                               ),
+      //                             ),
+      //                             PopupMenuItem<String>(
+      //                               value: 'remove',
+      //                               child: ListTile(
+      //                                 leading: const Icon(Icons.delete),
+      //                                 title: const Text('Remove'),
+      //                                 onTap: () {
+      //                                   // removeItem(context, index);
+      //                                 },
+      //                               ),
+      //                             ),
+      //                           ],
+      //                         ),
+      //                         onTap: () {},
+      //                       ),
+      //                     ),
+      //                   );
+      //                 }).toList(),
+      //               );
+      //             }
+      //             return const Center(
+      //               child: Padding(
+      //                 padding: EdgeInsets.all(10.0),
+      //                 child: CircularProgressIndicator(),
+      //               ),
+      //             );
+      //           }),
       //     ),
-      //     child: MaterialButton(
-      //       minWidth: 280,
-      //       padding: const EdgeInsets.all(20),
-      //       onPressed: () {
-      //         showAddProductDialog(context);
-      //       },
-      //       child: Text(
-      //         'Add Product',
-      //         style: GoogleFonts.poppins(
-      //           color: whiteColor,
-      //           fontWeight: FontWeight.w600,
-      //         ),
-      //       ),
-      //     ),
-      //   ),
+      //   ],
       // ),
     );
+
+    //  bottomNavigationBar: Align(
+    //   alignment: Alignment.center,
+    //   child: Container(
+    //     width: 280,
+    //     decoration: BoxDecoration(
+    //       gradient: LinearGradient(
+    //         colors: [
+    //           Color.fromARGB(255, 245, 157, 157),
+    //           Color.fromARGB(255, 255, 90, 78),
+    //           Color.fromARGB(255, 245, 157, 157),
+    //         ],
+    //         begin: Alignment.bottomLeft,
+    //         end: Alignment.topRight,
+    //       ),
+    //       borderRadius: BorderRadius.circular(10),
+    //     ),
+    //     child: MaterialButton(
+    //       minWidth: 280,
+    //       padding: const EdgeInsets.all(20),
+    //       onPressed: () {
+    //         showAddProductDialog(context);
+    //       },
+    //       child: Text(
+    //         'Add Product',
+    //         style: GoogleFonts.poppins(
+    //           color: whiteColor,
+    //           fontWeight: FontWeight.w600,
+    //         ),
+    //       ),
+    //     ),
+    //   ),
+    // ),
   }
 
   showAddProductDialog(BuildContext context) {
@@ -325,7 +487,7 @@ class _product_listState extends State<product_list> {
       context: context,
       builder: (BuildContext context) {
         return SingleChildScrollView(
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           child: StatefulBuilder(
             builder: (BuildContext context,
                 void Function(void Function()) setState) {
@@ -500,13 +662,15 @@ class _product_listState extends State<product_list> {
                         height: 44,
                         width: 120,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                              colors: [
-                                Colors.blue,
-                                Color.fromARGB(255, 2, 52, 93)
-                              ],
-                              begin: Alignment.bottomLeft,
-                              end: Alignment.topRight),
+                          gradient: LinearGradient(
+                            colors: [
+                              Color.fromARGB(255, 255, 90, 78),
+                              Color.fromARGB(255, 245, 157, 157),
+                              Color.fromARGB(255, 253, 77, 64),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: MaterialButton(

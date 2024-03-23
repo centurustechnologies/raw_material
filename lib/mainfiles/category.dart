@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:raw_material/NewApp/card.dart';
 import 'package:raw_material/helpers/app_constants.dart';
 import 'package:raw_material/mainfiles/homepage.dart';
@@ -112,51 +113,91 @@ class _CategoryPageState extends State<CategoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.fromARGB(255, 245, 157, 157),
-                Color.fromARGB(255, 255, 90, 78),
-                Color.fromARGB(255, 245, 157, 157),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+      // appBar: AppBar(
+      //   flexibleSpace: Container(
+      //     decoration: BoxDecoration(
+      //       gradient: LinearGradient(
+      //         colors: [
+      //           Color.fromARGB(255, 245, 157, 157),
+      //           Color.fromARGB(255, 255, 90, 78),
+      //           Color.fromARGB(255, 245, 157, 157),
+      //         ],
+      //         begin: Alignment.topLeft,
+      //         end: Alignment.bottomRight,
+      //       ),
+      //     ),
+      //   ),
+      //   title: const Text(
+      //     "Category List",
+      //     style: TextStyle(color: Colors.white),
+      //   ),
+      //   leading: Builder(builder: (BuildContext context) {
+      //     return IconButton(
+      //       icon: const Icon(
+      //         Icons.menu,
+      //         color: Colors.white, // Change the color here
+      //       ),
+      //       onPressed: () {
+      //         Scaffold.of(context).openDrawer();
+      //       },
+      //     );
+      //   }),
+      // ),
+      drawer: const MyDrawer(),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromARGB(255, 255, 90, 78),
+              Color.fromARGB(255, 245, 157, 157),
+              Color.fromARGB(255, 253, 77, 64),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
-        title: const Text(
-          "Category List",
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: Builder(builder: (BuildContext context) {
-          return IconButton(
-            icon: const Icon(
-              Icons.menu,
-              color: Colors.white, // Change the color here
-            ),
-            onPressed: () {
-              Scaffold.of(context).openDrawer();
-            },
-          );
-        }),
-      ),
-      drawer: const MyDrawer(),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
+        child: Stack(
+          children: [
+            Column(
               children: [
-                Center(
+                Container(
+                  height: 200,
                   child: Column(
                     children: [
+                      SizedBox(
+                        height: 40,
+                      ),
+                      Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 0),
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.arrow_back,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.only(left: 5),
+                            child: Text(
+                              "Category",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
                       Padding(
-                        padding: const EdgeInsets.only(top: 10),
+                        padding: const EdgeInsets.only(top: 13),
                         child: SizedBox(
                           height: 60,
-                          width: 280,
+                          width: 250,
                           child: TextFormField(
                             textAlign: TextAlign.start,
                             controller: categoryNameController,
@@ -180,133 +221,124 @@ class _CategoryPageState extends State<CategoryPage> {
                           ),
                         ),
                       ),
-                      // save button
-                      Container(
-                        height: 44,
-                        width: 170,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                              colors: [
-                                Color.fromARGB(255, 255, 159, 159),
-                                Color.fromARGB(255, 253, 94, 83)
-                              ],
-                              begin: Alignment.bottomLeft,
-                              end: Alignment.topRight),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: MaterialButton(
-                          onPressed: () {
-                            addCategoryToFirestore();
-                          },
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(26),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Text(
-                                'Add Category',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
-                Container(
-                  height: MediaQuery.of(context).size.height / 1.49,
-                  width: displayWidth(context),
-                  child: StreamBuilder<List<DocumentSnapshot>>(
-                      stream: _streamController.stream,
-                      builder: (BuildContext context,
-                          AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
-                        if (snapshot.hasData) {
-                          return ListView(
-                            children:
-                                snapshot.data!.map((DocumentSnapshot document) {
-                              Map<String, dynamic> data =
-                                  document.data() as Map<String, dynamic>;
-                              int categoryId = data['category_id'];
-                              String category = data['category'];
+                Expanded(
+                  child: Container(
+                    height: MediaQuery.of(context).size.height - 180,
+                    width: displayWidth(context),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 5,
+                          blurRadius: 7,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: StreamBuilder<List<DocumentSnapshot>>(
+                        stream: _streamController.stream,
+                        builder: (BuildContext context,
+                            AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+                          if (snapshot.hasData) {
+                            return ListView(
+                              children: snapshot.data!
+                                  .map((DocumentSnapshot document) {
+                                Map<String, dynamic> data =
+                                    document.data() as Map<String, dynamic>;
+                                int categoryId = data['category_id'];
+                                String category = data['category'];
 
-                              return Padding(
-                                padding: const EdgeInsets.only(
-                                    top: 10, left: 5, right: 5),
-                                child: Container(
-                                  color:
-                                      const Color.fromARGB(255, 190, 190, 190),
-                                  child: ListTile(
-                                    contentPadding: EdgeInsets.zero,
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        MaterialButton(
-                                          color: Colors.red,
-                                          padding: const EdgeInsets.all(6.0),
-                                          minWidth: 0,
-                                          height: 0,
-                                          onPressed: () {},
-                                          child: Icon(
-                                            Icons.delete,
-                                            size: 18,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    leading: Padding(
-                                      padding: const EdgeInsets.only(left: 10),
-                                      child: CircleAvatar(
-                                        // Wrap with CircleAvatar
-                                        backgroundColor: Colors.white,
-                                        child: Text(
-                                          "$categoryId",
-                                          style: const TextStyle(
-                                              fontSize: 20,
-                                              color: Colors
-                                                  .black), // Example text style
-                                        ),
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                      bottom: 10, left: 10, right: 10),
+                                  child: Card(
+                                    elevation:
+                                        5, // Adjust the elevation to control the intensity of the shadow
+                                    shadowColor: Colors.redAccent,
+                                    child: ListTile(
+                                      leading: Text(
+                                        "0$categoryId.",
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            color: Colors
+                                                .black), // Example text style
                                       ),
-                                    ),
-                                    title: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              bottom: 5, left: 10),
-                                          child: Text(
-                                            category,
-                                            style:
-                                                const TextStyle(fontSize: 20),
+                                      title: Text(category),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          MaterialButton(
+                                            color: Color.fromARGB(
+                                                255, 76, 161, 241),
+                                            padding: const EdgeInsets.all(6.0),
+                                            minWidth: 0,
+                                            height: 0,
+                                            onPressed: () {},
+                                            child: Icon(
+                                              Icons.delete,
+                                              size: 18,
+                                              color: Colors.white,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const CategoryPage()),
+                                        );
+                                      },
                                     ),
                                   ),
-                                ),
-                              );
-                            }).toList(),
+                                );
+                              }).toList(),
+                            );
+                          }
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(10.0),
+                              child: CircularProgressIndicator(),
+                            ),
                           );
-                        }
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(10.0),
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }),
+                        }),
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+            Positioned(
+              top: 170,
+              left: 0,
+              right: 0,
+              child: Align(
+                child: Card(
+                  child: MaterialButton(
+                    minWidth: 160,
+                    padding: const EdgeInsets.all(10),
+                    onPressed: () {
+                      addCategoryToFirestore();
+                    },
+                    child: Text(
+                      'Add New Category',
+                      style: GoogleFonts.poppins(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
