@@ -623,7 +623,10 @@ class _NewBillState extends State<MyNewBill> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => GenerateNewBill(),
+                              builder: (context) => GenerateNewBill(
+                                productName: '',
+                                productprice: '',
+                              ),
                             ),
                           );
                         },
@@ -738,7 +741,10 @@ class _NewBillState extends State<MyNewBill> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => GenerateNewBill(),
+                                  builder: (context) => GenerateNewBill(
+                                    productName: '',
+                                    productprice: '',
+                                  ),
                                 ),
                               );
                             },

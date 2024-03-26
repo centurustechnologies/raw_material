@@ -4,8 +4,10 @@ import 'dart:ffi';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:raw_material/NewApp/card.dart';
 import 'package:raw_material/helpers/app_constants.dart';
+import 'package:raw_material/logins/duplicate.dart';
 
 import 'homepage.dart';
 
@@ -23,6 +25,10 @@ class _NewBillState extends State<NewBill> {
   String _errorMessage = '';
   late List<DocumentSnapshot> _document;
   List items = [];
+  String price = '0';
+  String quantity = '';
+  String grandprice = '';
+  String _tableSelected = '';
 
   @override
   void initState() {
@@ -73,19 +79,26 @@ class _NewBillState extends State<NewBill> {
   //   }
   // }
 
-  void addproductdatToRawCart(List productDetail) async {
+  void addproductdatToRawCart(String id) async {
     try {
       var snapshot =
           await FirebaseFirestore.instance.collection('raw_cart').get();
-      int currentCount = snapshot.size;
-
+      int id = snapshot.size;
       await FirebaseFirestore.instance
           .collection('raw_cart')
-          .doc(nameController.text)
+          .doc(id.toString())
           .set({
-        'product_id': currentCount + 1,
+        'product_id': id,
         'product_name': nameController.text,
-        'product_detail': productDetail,
+        'product_details': FieldValue.arrayUnion([
+          {
+            'product_id': id,
+            'product_price': price,
+            'product_quantity': quantity,
+          }
+        ]),
+        'time': DateFormat('MMM d, y hh:mm a').format(DateTime.now()),
+        'grand_price': grandprice,
       }).whenComplete(() {
         setState(() {
           nameController.clear();
@@ -260,14 +273,19 @@ class _NewBillState extends State<NewBill> {
                           Map<String, dynamic> data =
                               document.data() as Map<String, dynamic>;
                           String productName = data['product_name'];
-                          dynamic productId = data['product_id'];
+                          dynamic productprice = data['product_price'];
 
                           return InkWell(
                             onTap: () {
+                              String name = data['product_name'];
+                              dynamic pprice = data['product_price'];
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const GenerateNewBill(),
+                                  builder: (context) => GenerateNewBill(
+                                    productName: name,
+                                    productprice: pprice,
+                                  ),
                                 ),
                               );
                             },
@@ -298,7 +316,7 @@ class _NewBillState extends State<NewBill> {
                                       ),
                                       const SizedBox(height: 5),
                                       Text(
-                                        "Price : ₹ $productId",
+                                        "Price : ₹ $productprice",
                                         style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
@@ -392,7 +410,8 @@ class _NewBillState extends State<NewBill> {
                                     });
                                   } else
                                     setState(() {
-                                      // addproductdatToRawCart();
+                                      addproductdatToRawCart(
+                                          _tableSelected.toString());
                                     });
                                 },
                                 child: const Text(
@@ -436,7 +455,10 @@ class _NewBillState extends State<NewBill> {
 }
 
 class GenerateNewBill extends StatefulWidget {
-  const GenerateNewBill({super.key});
+  final String productName;
+  final String productprice;
+
+  GenerateNewBill({required this.productName, required this.productprice});
 
   @override
   State<GenerateNewBill> createState() => _GenerateNewBillStateState();
@@ -453,6 +475,8 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
 
   String area = '';
   String productName = '';
+  String price = '';
+  String quantity = '';
   String name = '';
   int _number = 1;
   double _totalPrice = 0.0;
@@ -481,8 +505,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  void addProductToRawCart(
-      String productName, double price, int quantity) async {
+  void addProductToRawCart() async {
     try {
       var snapshot =
           await FirebaseFirestore.instance.collection('raw_cart').get();
@@ -949,7 +972,14 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
             ),
           ),
           child: MaterialButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddProductScreen(),
+                ),
+              );
+            },
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             child: const Padding(
@@ -1011,7 +1041,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                           ? InkWell(
                               onTap: () {
                                 fetchData();
-                                addProductToRawCart(productName, 10, 2);
+                                addProductToRawCart();
                               },
                               child: Padding(
                                 padding: const EdgeInsets.only(
@@ -1032,7 +1062,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                           : InkWell(
                               onTap: () {
                                 fetchData();
-                                addProductToRawCart(productName, 25, 3);
+                                addProductToRawCart();
                               },
                               child: Padding(
                                 padding: const EdgeInsets.all(2),
