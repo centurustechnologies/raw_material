@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -7,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:raw_material/NewApp/card.dart';
 import 'package:raw_material/helpers/app_constants.dart';
-import 'package:raw_material/logins/duplicate.dart';
 
 import 'homepage.dart';
 
@@ -22,6 +20,7 @@ class _NewBillState extends State<NewBill> {
   late StreamController<List<DocumentSnapshot>> _streamController;
   final TextEditingController _searchController = TextEditingController();
   TextEditingController nameController = TextEditingController();
+  TextEditingController productNameController = TextEditingController();
   String _errorMessage = '';
   late List<DocumentSnapshot> _document;
   List items = [];
@@ -29,6 +28,95 @@ class _NewBillState extends State<NewBill> {
   String quantity = '';
   String grandprice = '';
   String _tableSelected = '';
+
+  void addproductdatToRawCart(String id) async {
+    try {
+      var snapshot =
+          await FirebaseFirestore.instance.collection('raw_cart').get();
+      int id = snapshot.size;
+
+      Map<String, dynamic> productDetails = {
+        'product_name': productNameController.text,
+        'product_price': price,
+        'product_quantity': quantity,
+        'pieces': '6',
+      };
+
+      await FirebaseFirestore.instance
+          .collection('raw_cart')
+          .doc(id.toString())
+          .set({
+        'bill_name': nameController.text,
+        'product_id': id,
+        'time': DateFormat('MMM d, y hh:mm a').format(DateTime.now()),
+        'grand_price': grandprice,
+      }).then((_) async {
+        await FirebaseFirestore.instance
+            .collection('raw_cart')
+            .doc(id.toString())
+            .collection('product_details')
+            .add(productDetails);
+      }).whenComplete(() {
+        setState(() {
+          nameController.clear();
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const NewBill()),
+          );
+        });
+      });
+
+      if (kDebugMode) {
+        print("Data added successfully!");
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print("Failed to add data: $error");
+      }
+    }
+  }
+
+  void printRawCartData() async {
+    try {
+      StreamSubscription<QuerySnapshot> subscription = FirebaseFirestore
+          .instance
+          .collection('raw_cart')
+          .snapshots()
+          .listen((QuerySnapshot snapshot) {
+        snapshot.docs.forEach((doc) async {
+          print('Raw Cart Document ID: ${doc.id}');
+          print('Raw Cart Document Data: ${doc.data()}');
+          var productDetailsSnapshot =
+              await doc.reference.collection('product_details').get();
+          productDetailsSnapshot.docs.forEach((productDoc) {
+            var productName = productDoc.data()['product_name'];
+            var productPrice = productDoc.data()['product_price'];
+            print('Product Name: $productName');
+            print('Product Price: $productPrice');
+          });
+        });
+      });
+
+      if (kDebugMode) {
+        print("Listening to raw_cart changes...");
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print("Failed to fetch raw cart data: $error");
+      }
+    }
+  }
+
+  Future<void> getData() async {
+    try {
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('raw_cart').get();
+      _document = querySnapshot.docs;
+      _streamController.add(_document);
+    } catch (e) {
+      print('error in fetching data: $e');
+    }
+  }
 
   @override
   void initState() {
@@ -42,121 +130,6 @@ class _NewBillState extends State<NewBill> {
   void dispose() {
     super.dispose();
     _streamController.close();
-  }
-
-  // void addDataToRawCart() async {
-  //   try {
-  //     var snapshot =
-  //         await FirebaseFirestore.instance.collection('raw_user').get();
-  //     int currentCount = snapshot.size;
-  //     await FirebaseFirestore.instance
-  //         .collection('raw_cart')
-  //         .doc(nameController.text)
-  //         .set({
-  //       'costomer_id': currentCount + 1,
-  //       'product_name': '',
-  //       'product_quantity': currentCount + 1,
-  //       'customer_name': nameController.text,
-  //       'product_price': '0',
-  //       'Grand_total': '0',
-  //     }).whenComplete(() {
-  //       setState(() {
-  //         nameController.clear();
-
-  //         Navigator.push(
-  //           context,
-  //           MaterialPageRoute(builder: (context) => const NewBill()),
-  //         );
-  //       });
-  //     });
-  //     if (kDebugMode) {
-  //       print("Data added successfully!");
-  //     }
-  //   } catch (error) {
-  //     if (kDebugMode) {
-  //       print("Failed to add data: $error");
-  //     }
-  //   }
-  // }
-
-  void addproductdatToRawCart(String id) async {
-    try {
-      var snapshot =
-          await FirebaseFirestore.instance.collection('raw_cart').get();
-      int id = snapshot.size;
-      await FirebaseFirestore.instance
-          .collection('raw_cart')
-          .doc(id.toString())
-          .set({
-        'product_id': id,
-        'product_name': nameController.text,
-        'product_details': FieldValue.arrayUnion([
-          {
-            'product_id': id,
-            'product_price': price,
-            'product_quantity': quantity,
-          }
-        ]),
-        'time': DateFormat('MMM d, y hh:mm a').format(DateTime.now()),
-        'grand_price': grandprice,
-      }).whenComplete(() {
-        setState(() {
-          nameController.clear();
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const NewBill()),
-          );
-        });
-      });
-      if (kDebugMode) {
-        print("Data added successfully!");
-      }
-    } catch (error) {
-      if (kDebugMode) {
-        print("Failed to add data: $error");
-      }
-    }
-  }
-  // void addproductdatToRawCart() async {
-  //   try {
-  //     var snapshot =
-  //         await FirebaseFirestore.instance.collection('raw_cart').get();
-  //     int currentCount = snapshot.size;
-  //     await FirebaseFirestore.instance.collection('raw_cart').add({
-  //       'costomer_id': currentCount + 1,
-  //       'product_name': '',
-  //       'product_quantity': currentCount + 6,
-  //       'customer_name': nameController.text,
-  //       'product_price': ' 0',
-  //       'Grand_total': ' 0',
-  //     }).whenComplete(() {
-  //       setState(() {
-  //         nameController.clear();
-  //         Navigator.push(
-  //           context,
-  //           MaterialPageRoute(builder: (context) => const NewBill()),
-  //         );
-  //       });
-  //     });
-  //     if (kDebugMode) {
-  //       print("Data added successfully!");
-  //     }
-  //   } catch (error) {
-  //     if (kDebugMode) {
-  //       print("Failed to add data: $error");
-  //     }
-  //   }
-  // }
-
-  Future<void> getData() async {
-    try {
-      QuerySnapshot querySnapshot =
-          await FirebaseFirestore.instance.collection('raw_cart').get();
-      _document = querySnapshot.docs;
-      _streamController.add(_document);
-    } catch (e) {
-      print('error in fetching data: $e');
-    }
   }
 
   @override
@@ -227,7 +200,9 @@ class _NewBillState extends State<NewBill> {
                   ),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.search),
-                    onPressed: () {},
+                    onPressed: () {
+                      printRawCartData();
+                    },
                   ),
                 ),
               ),
@@ -272,19 +247,18 @@ class _NewBillState extends State<NewBill> {
                             snapshot.data!.map((DocumentSnapshot document) {
                           Map<String, dynamic> data =
                               document.data() as Map<String, dynamic>;
-                          String productName = data['product_name'];
-                          dynamic productprice = data['product_price'];
+                          String billName = data['bill_name'];
+
+                          dynamic grandPrice = data['grand_price'];
 
                           return InkWell(
                             onTap: () {
-                              String name = data['product_name'];
-                              dynamic pprice = data['product_price'];
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => GenerateNewBill(
-                                    productName: name,
-                                    productprice: pprice,
+                                    billName: billName,
+                                    mainid: document.data().toString(),
                                   ),
                                 ),
                               );
@@ -300,7 +274,7 @@ class _NewBillState extends State<NewBill> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        productName,
+                                        billName,
                                         style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
@@ -316,7 +290,7 @@ class _NewBillState extends State<NewBill> {
                                       ),
                                       const SizedBox(height: 5),
                                       Text(
-                                        "Price : ₹ $productprice",
+                                        "Price : ₹ $grandPrice",
                                         style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
@@ -455,10 +429,10 @@ class _NewBillState extends State<NewBill> {
 }
 
 class GenerateNewBill extends StatefulWidget {
-  final String productName;
-  final String productprice;
+  final String billName;
+  final String mainid;
 
-  GenerateNewBill({required this.productName, required this.productprice});
+  GenerateNewBill({required this.billName, required this.mainid});
 
   @override
   State<GenerateNewBill> createState() => _GenerateNewBillStateState();
@@ -478,8 +452,10 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
   String price = '';
   String quantity = '';
   String name = '';
-  int _number = 1;
+  int productDQuantity = 1;
   double _totalPrice = 0.0;
+  String mainid = '0';
+  String scid = '0';
 
   // ignore: unused_field
   late StreamController<List<DocumentSnapshot>> _streamController;
@@ -503,71 +479,63 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
     });
   }
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  void addProductToRawCart() async {
+  Future<void> addNewTableProduct(
+    String mainid,
+  ) async {
     try {
-      var snapshot =
-          await FirebaseFirestore.instance.collection('raw_cart').get();
-      DocumentReference docRef = _firestore.collection('raw_cart').doc();
+      var docRef = FirebaseFirestore.instance
+          .collection('raw_cart')
+          .doc(mainid)
+          .collection('product_details')
+          .doc(scid);
+      var doc = await docRef.get();
 
-      DocumentSnapshot docSnapshot = await docRef.get();
-
-      if (docSnapshot.exists) {
-        // Get the existing data
-        Map<String, dynamic> data = docSnapshot.data() as Map<String, dynamic>;
-
-        if (data.containsKey('product_detail')) {
-          List<dynamic> productDetails = List.from(data['product_detail']);
-          productDetails.add({
-            'productName': productName,
-            'price': price,
-            'quantity': quantity
-          });
-          await docRef.update({'product_details': productDetails});
-        } else {
-          await docRef.set({
-            'product_detail': [
-              {'productName': productName, 'price': price, 'quantity': quantity}
-            ]
-          });
-        }
-
-        print('Product details added to Firestore document.');
+      if (doc.exists) {
+        String basePrice = price;
+        String totalPrice = doc.get('total_price');
+        String total = "${int.parse(totalPrice) + int.parse(basePrice)}";
+        String quantity = doc.get('quantity');
+        await FirebaseFirestore.instance
+            .collection('raw_cart')
+            .doc(mainid)
+            .collection('product_details')
+            .doc(scid)
+            .update(
+          {
+            'total_price': total,
+            'quantity': '${int.parse(quantity) + 1}',
+          },
+        );
       } else {
-        print('Document does not exist.');
+        await FirebaseFirestore.instance
+            .collection('raw_cart')
+            .doc(mainid)
+            .collection('product_details')
+            .doc(scid)
+            .set(
+          {
+            'product_name': productName,
+            'pieces': '10',
+            'product_price': price,
+            'product_quantity': '1',
+          },
+        );
       }
     } catch (e) {
-      print('Error adding product details to Firestore document: $e');
+      print('Error adding product: $e');
     }
   }
 
-  // void addproductdatToRawCart(String pdName) async {
-  //   try {
-  //     var snapshot =
-  //         await FirebaseFirestore.instance.collection('raw_cart').get();
-  //     int currentCount = snapshot.size;
-  //     await FirebaseFirestore.instance.collection('raw_cart').add({
-  //       'costomer_id': currentCount + 1,
-  //       'product_name': pdName,
-  //       'product_quantity': currentCount + 6,
-  //       'customer_name': nameController.text,
-  //       'product_price': ' 0',
-  //       'Grand_total': ' 0',
-  //     }).whenComplete(() {
-  //       setState(() {
-  //         nameController.clear();
-  //       });
-  //     });
-  //     if (kDebugMode) {
-  //       print("Data added successfully!");
-  //     }
-  //   } catch (error) {
-  //     if (kDebugMode) {
-  //       print("Failed to add data: $error");
-  //     }
-  //   }
-  // }
+  Future<void> getdatafromCart() async {
+    try {
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('raw_cart').get();
+      _document = querySnapshot.docs;
+      _streamController.add(_document);
+    } catch (e) {
+      print('error in fetching data: $e');
+    }
+  }
 
   Future<void> fetchData() async {
     try {
@@ -586,30 +554,6 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
   void dispose() {
     super.dispose();
     _streamController.close();
-  }
-
-  void _increment() async {
-    setState(() {
-      _number++;
-      _totalPrice += 240;
-    });
-    // await FirebaseFirestore.instance
-    //     .collection('raw_billing_product')
-    //     .doc('your_document_id')
-    //     .update({'product_quantity': _number});
-  }
-
-  void _decrement() async {
-    setState(() {
-      if (_number > 1) {
-        _number--;
-        _totalPrice -= 240;
-      }
-    });
-    // await FirebaseFirestore.instance
-    //     .collection('raw_billing_product')
-    //     .doc('your_document_id')
-    //     .update({'product_quantity': _number});
   }
 
   @override
@@ -690,27 +634,23 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                     _buildTextAndImageList(),
                   ],
                 ),
-                StreamBuilder<QuerySnapshot>(
+                StreamBuilder(
                   stream: FirebaseFirestore.instance
                       .collection('raw_cart')
-                      .where(
-                        'product_name',
-                      )
-                      .where(
-                        'product_price',
-                      )
-                      .where(
-                        'product_quantity',
-                      )
+                      .doc(mainid)
+                      .collection('product_details')
                       .snapshots(),
                   builder: (BuildContext context,
                       AsyncSnapshot<QuerySnapshot> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
+                      return const Padding(
+                        padding: EdgeInsets.only(left: 100),
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
                     }
-                    if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    }
+
                     return SizedBox(
                       width: MediaQuery.of(context).size.width - 105,
                       child: Padding(
@@ -732,20 +672,28 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                                   padding: const EdgeInsets.only(top: 3),
                                   child: SizedBox(
                                     height: 506,
-                                    child: ListView(
+                                    child: ListView.builder(
                                       shrinkWrap: true,
                                       physics:
                                           const AlwaysScrollableScrollPhysics(),
-                                      children: snapshot.data!.docs
-                                          .map((DocumentSnapshot document) {
-                                        Map<String, dynamic> data = document
-                                            .data() as Map<String, dynamic>;
-                                        // String productName =
-                                        //     data['product_name'];
-                                        // String productPrice =
-                                        //     data['product_price'];
-                                        // int productQuantity =
-                                        //     data['product_quantity'];
+                                      itemCount: snapshot.data!.docs.length,
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        DocumentSnapshot documentSnapshot =
+                                            snapshot.data!.docs[index];
+                                        Map<String, dynamic> subData =
+                                            documentSnapshot.data()
+                                                as Map<String, dynamic>;
+                                        String productDName =
+                                            subData['product_name'];
+                                        String productDPrice =
+                                            subData['product_price'];
+                                        String productDQuantity =
+                                            subData['product_quantity'];
+                                        String pieces = subData['pieces'];
+
+                                        final scid = documentSnapshot;
+
                                         return Column(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
@@ -758,7 +706,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                                                   SizedBox(
                                                     width: 300,
                                                     child: Text(
-                                                      'productName',
+                                                      productDName,
                                                       style: const TextStyle(
                                                         fontSize: 15,
                                                         fontWeight:
@@ -772,14 +720,13 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                                                     children: [
                                                       Padding(
                                                         padding:
-                                                            const EdgeInsets
-                                                                .only(right: 8),
+                                                            EdgeInsets.only(
+                                                                right: 8),
                                                         child: SizedBox(
                                                           width: 50,
                                                           child: Text(
-                                                            "productQuantity",
-                                                            style:
-                                                                const TextStyle(
+                                                            pieces,
+                                                            style: TextStyle(
                                                               fontSize: 12,
                                                               fontWeight:
                                                                   FontWeight
@@ -801,14 +748,13 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                                                       ),
                                                       Padding(
                                                         padding:
-                                                            const EdgeInsets
-                                                                .only(right: 2),
+                                                            EdgeInsets.only(
+                                                                right: 2),
                                                         child: SizedBox(
                                                           width: 50,
                                                           child: Text(
-                                                            'productPrice',
-                                                            style:
-                                                                const TextStyle(
+                                                            productDPrice,
+                                                            style: TextStyle(
                                                               fontSize: 12,
                                                               fontWeight:
                                                                   FontWeight
@@ -836,7 +782,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                                                         minWidth: 0,
                                                         height: 0,
                                                         onPressed: () {
-                                                          _decrement();
+                                                          // _decrement();
                                                         },
                                                         child: Icon(
                                                           size: 18,
@@ -853,7 +799,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                                                         child: SizedBox(
                                                           width: 20,
                                                           child: Text(
-                                                            "$_number",
+                                                            "$productDQuantity",
                                                             style:
                                                                 const TextStyle(
                                                               fontSize: 12,
@@ -883,7 +829,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                                                         minWidth: 0,
                                                         height: 0,
                                                         onPressed: () {
-                                                          _increment();
+                                                          // _increment();
                                                         },
                                                         child: Icon(
                                                           Icons.add,
@@ -901,7 +847,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                                             ),
                                           ],
                                         );
-                                      }).toList(),
+                                      },
                                     ),
                                   ),
                                 ),
@@ -973,12 +919,12 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
           ),
           child: MaterialButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddProductScreen(),
-                ),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) => AddProductScreen(),
+              //   ),
+              // );
             },
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1040,8 +986,9 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                       child: imagebool
                           ? InkWell(
                               onTap: () {
+                                addNewTableProduct(mainid);
                                 fetchData();
-                                addProductToRawCart();
+                                getdatafromCart();
                               },
                               child: Padding(
                                 padding: const EdgeInsets.only(
@@ -1062,7 +1009,7 @@ class _GenerateNewBillStateState extends State<GenerateNewBill> {
                           : InkWell(
                               onTap: () {
                                 fetchData();
-                                addProductToRawCart();
+                                getdatafromCart();
                               },
                               child: Padding(
                                 padding: const EdgeInsets.all(2),

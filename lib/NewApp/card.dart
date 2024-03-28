@@ -13,6 +13,8 @@ import 'package:raw_material/mainfiles/homepage.dart';
 import 'package:raw_material/mainfiles/my_order.dart';
 import 'package:raw_material/mainfiles/new_bill.dart';
 
+import '../lastoption.dart';
+
 // Assuming MyDrawer is defined in another file
 
 class NewHome extends StatefulWidget {
@@ -261,7 +263,7 @@ class _HomeBodyState extends State<_HomeBody> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const NewBill(),
+                            builder: (context) => const BillGeneration(),
                           ),
                         );
                       },
@@ -543,6 +545,7 @@ class _NewBillState extends State<MyNewBill> {
   TextEditingController nameController = TextEditingController();
   late List<DocumentSnapshot> _document;
   List items = [];
+  String mainid = '';
 
   @override
   void initState() {
@@ -624,8 +627,8 @@ class _NewBillState extends State<MyNewBill> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => GenerateNewBill(
-                                productName: '',
-                                productprice: '',
+                                billName: '',
+                                mainid: mainid,
                               ),
                             ),
                           );
@@ -742,8 +745,8 @@ class _NewBillState extends State<MyNewBill> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => GenerateNewBill(
-                                    productName: '',
-                                    productprice: '',
+                                    billName: '',
+                                    mainid: mainid,
                                   ),
                                 ),
                               );

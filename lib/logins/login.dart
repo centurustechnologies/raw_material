@@ -21,7 +21,6 @@ class _LoginPageState extends State<LoginPage> {
   String user = '';
   String pass = '';
   String id = '';
-  bool _isLoading = true;
 
   Future getadmindata(String id) async {
     await FirebaseFirestore.instance
@@ -71,9 +70,7 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() {});
     });
   }
 
