@@ -64,33 +64,40 @@ class _product_listState extends State<product_list> {
     try {
       await referenceImageToUpload.putFile(File(pickedFile.path));
       String imageUrl = await referenceImageToUpload.getDownloadURL();
-      FirebaseFirestore.instance.collection('raw_billing_product').doc().set({
-        'category': selectedCategory,
+
+      var snapshot = await FirebaseFirestore.instance
+          .collection('raw_billing_product')
+          .get();
+      int currentCount = snapshot.size;
+      String productId = (currentCount + 1).toString();
+
+      await FirebaseFirestore.instance
+          .collection('raw_billing_product')
+          .doc(productId)
+          .set({
+        'categery': selectedCategory,
         'product_name': productController.text,
         'product_price': priceController.text,
+        'product_id': productId, // Set product ID same as document ID
         'product_image': imageUrl,
-        'product_quantity': '2',
-      }).then((value) {
-        print("data added sucessfully");
-      }).catchError((error) {
-        print("failed to add data: $error");
-      }).whenComplete(() {
-        setState(() {
-          productController.clear();
-          priceController.clear();
-          unitController.clear();
-          _Image = null;
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const product_list()),
-          );
-        });
+        'product_type': 'full',
       });
-      // ignore: avoid_print
+
+      print("Data added successfully");
+
+      setState(() {
+        productController.clear();
+        priceController.clear();
+        unitController.clear();
+        _Image = null;
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const product_list()),
+        );
+      });
     } catch (error) {
-      // ignore: avoid_print
-      print("Error occurred while uploading image and Data: $error");
+      print("Error occurred while uploading image and data: $error");
     }
   }
 
@@ -124,362 +131,346 @@ class _product_listState extends State<product_list> {
   Future<void> addProductToFirestore() async {}
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color.fromARGB(255, 245, 157, 157),
+                Color.fromARGB(255, 255, 90, 78),
+                Color.fromARGB(255, 245, 157, 157),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        title: const Text(
+          'Add Product',
+          style: TextStyle(
+              fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+        ),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.white, // Change the color here
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: MaterialButton(
+              onPressed: () {
+                showAddProductDialog(context);
+              },
+              color: Colors.red,
+              textColor: Colors.white,
+              child: Text('Add New Product'),
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder(
+                stream: _streamController.stream,
+                builder: (BuildContext context,
+                    AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: snapshot.data!.length,
+                      itemBuilder: (context, index) {
+                        DocumentSnapshot document = snapshot.data![index];
+                        Map<String, dynamic> data =
+                            document.data() as Map<String, dynamic>;
+                        String category = data['product_id'];
+                        String productName = data['product_name'];
+                        String productPrice = data['product_price'];
 
-      body: Container(
-        decoration: const BoxDecoration(
-            // gradient: LinearGradient(
-            //   colors: [
-            //     Color.fromARGB(255, 255, 90, 78),
-            //     Color.fromARGB(255, 245, 157, 157),
-            //     Color.fromARGB(255, 253, 77, 64),
-            //   ],
-            //   begin: Alignment.topLeft,
-            //   end: Alignment.bottomRight,
-            // ),
-            color: Colors.redAccent),
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                Container(
-                  height: 150,
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 35,
-                      ),
-                      Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 10),
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.arrow_back,
-                                color: Colors.white,
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {});
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  width: 2,
+                                  color: Colors.greenAccent, // Border color
+                                ),
                               ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.only(left: 25),
-                            child: Text(
-                              "Product List",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          spreadRadius: 5,
-                          blurRadius: 7,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: StreamBuilder(
-                      stream: _streamController.stream,
-                      builder: (BuildContext context,
-                          AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
-                        if (snapshot.hasData) {
-                          return ListView(
-                            children:
-                                snapshot.data!.map((DocumentSnapshot document) {
-                              Map<String, dynamic> data =
-                                  document.data() as Map<String, dynamic>;
-                              String category = data['category'];
-                              String productName = data['product_name'];
-                              String productPrice = data['product_price'];
-
-                              return Padding(
-                                padding: const EdgeInsets.only(
-                                    bottom: 10, left: 8, right: 8),
-                                child: Card(
-                                  elevation: 5,
-                                  shadowColor: Colors.redAccent,
-                                  child: ListTile(
-                                    leading: CircleAvatar(
-                                      backgroundImage:
-                                          NetworkImage(data['product_image']),
-                                    ),
-                                    title: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(10),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           productName,
                                           style: const TextStyle(
-                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Colors.black,
                                           ),
-                                        ),
-                                        const SizedBox(
-                                          width: 10,
                                         ),
                                         Text(
-                                          category,
+                                          productPrice,
                                           style: const TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
-                                    ),
-                                    subtitle: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(productPrice),
-                                      ],
-                                    ),
-                                    trailing: PopupMenuButton<String>(
-                                      onSelected: (String value) {
-                                        // Handle selected value
-                                      },
-                                      itemBuilder: (context) =>
-                                          <PopupMenuEntry<String>>[
-                                        PopupMenuItem<String>(
-                                          value: 'edit',
-                                          child: ListTile(
-                                            leading: const Icon(Icons.edit),
-                                            title: const Text('Edit'),
-                                            onTap: () {},
-                                          ),
-                                        ),
-                                        PopupMenuItem<String>(
-                                          value: 'remove',
-                                          child: ListTile(
-                                            leading: const Icon(Icons.delete),
-                                            title: const Text('Remove'),
-                                            onTap: () {
-                                              // removeItem(context, index);
-                                            },
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Colors.black,
                                           ),
                                         ),
                                       ],
                                     ),
-                                    onTap: () {},
                                   ),
-                                ),
-                              );
-                            }).toList(),
-                          );
-                        }
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(10.0),
-                            child: CircularProgressIndicator(),
+                                  const SizedBox(height: 20),
+                                  Container(
+                                    height: 30,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.purple,
+                                      borderRadius: BorderRadius.only(
+                                        bottomLeft: Radius.circular(8),
+                                        bottomRight: Radius.circular(8),
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            category,
+                                            // documentSnapshot['time'],
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: whiteColor,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         );
                       },
                     ),
-                  ),
-                ),
-              ],
-            ),
-            Positioned(
-              top: 114,
-              left: 0,
-              right: 0,
-              child: Align(
-                child: Container(
-                  width: 200,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Card(
-                    child: MaterialButton(
-                      minWidth: 200,
-                      padding: const EdgeInsets.all(20),
-                      onPressed: () {
-                        showAddProductDialog(context);
-                      },
-                      child: Text(
-                        'Add Product',
-                        style: GoogleFonts.poppins(
-                            color: Colors.redAccent,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+                  );
+                }),
+          ),
+        ],
       ),
 
-      //Column(
-      //   children: [
-      //     Container(
-      //       height: 150,
-      //     ),
-      //     Container(
-      //       height: MediaQuery.of(context).size.height - 150,
-      //       width: displayWidth(context),
-      //       decoration: BoxDecoration(
-      //         color: Colors.white,
-      //         borderRadius: const BorderRadius.only(
-      //             topLeft: Radius.circular(20),
-      //             topRight: Radius.circular(20)),
-      //         boxShadow: [
-      //           BoxShadow(
-      //             color: Colors.grey.withOpacity(0.5),
-      //             spreadRadius: 5,
-      //             blurRadius: 7,
-      //             offset: const Offset(0, 3),
+      // body: Container(
+      //   decoration: const BoxDecoration(
+
+      //       color: Colors.redAccent),
+      //   child: Stack(
+      //     children: [
+      //       Column(
+      //         children: [
+      //           Container(
+      //             height: 150,
+      //             child: Column(
+      //               children: [
+      //                 SizedBox(
+      //                   height: 35,
+      //                 ),
+      //                 Row(
+      //                   children: [
+      //                     Padding(
+      //                       padding: const EdgeInsets.only(left: 10),
+      //                       child: IconButton(
+      //                         icon: const Icon(
+      //                           Icons.arrow_back,
+      //                           color: Colors.white,
+      //                         ),
+      //                         onPressed: () {
+      //                           Navigator.pop(context);
+      //                         },
+      //                       ),
+      //                     ),
+      //                     const Padding(
+      //                       padding: EdgeInsets.only(left: 25),
+      //                       child: Text(
+      //                         "Product List",
+      //                         style: TextStyle(
+      //                             color: Colors.white,
+      //                             fontSize: 20,
+      //                             fontWeight: FontWeight.bold),
+      //                       ),
+      //                     ),
+      //                   ],
+      //                 ),
+      //               ],
+      //             ),
+      //           ),
+      //           Expanded(
+      //             child: Container(
+      //               decoration: BoxDecoration(
+      //                 color: Colors.white,
+      //                 borderRadius: const BorderRadius.only(
+      //                     topLeft: Radius.circular(20),
+      //                     topRight: Radius.circular(20)),
+      //                 boxShadow: [
+      //                   BoxShadow(
+      //                     color: Colors.grey.withOpacity(0.5),
+      //                     spreadRadius: 5,
+      //                     blurRadius: 7,
+      //                     offset: const Offset(0, 3),
+      //                   ),
+      //                 ],
+      //               ),
+      //   StreamBuilder(
+      //                 stream: _streamController.stream,
+      //                 builder: (BuildContext context,
+      //                     AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+      //                   if (snapshot.hasData) {
+      //                     return ListView(
+      //                       children:
+      //                           snapshot.data!.map((DocumentSnapshot document) {
+      //                         Map<String, dynamic> data =
+      //                             document.data() as Map<String, dynamic>;
+      //                         String category = data['category'];
+      //                         String productName = data['product_name'];
+      //                         String productPrice = data['product_price'];
+
+      //                         return Padding(
+      //                           padding: const EdgeInsets.only(
+      //                               bottom: 10, left: 8, right: 8),
+      //                           child: Card(
+      //                             elevation: 5,
+      //                             shadowColor: Colors.redAccent,
+      //                             child: ListTile(
+      //                               leading: CircleAvatar(
+      //                                 backgroundImage:
+      //                                     NetworkImage(data['product_image']),
+      //                               ),
+      //                               title: Row(
+      //                                 crossAxisAlignment:
+      //                                     CrossAxisAlignment.end,
+      //                                 children: [
+      //                                   Text(
+      //                                     productName,
+      //                                     style: const TextStyle(
+      //                                       fontSize: 18,
+      //                                     ),
+      //                                   ),
+      //                                   const SizedBox(
+      //                                     width: 10,
+      //                                   ),
+      //                                   Text(
+      //                                     category,
+      //                                     style: const TextStyle(
+      //                                         fontSize: 15,
+      //                                         fontWeight: FontWeight.bold),
+      //                                   ),
+      //                                 ],
+      //                               ),
+      //                               subtitle: Column(
+      //                                 crossAxisAlignment:
+      //                                     CrossAxisAlignment.start,
+      //                                 children: [
+      //                                   Text(productPrice),
+      //                                 ],
+      //                               ),
+      //                               trailing: PopupMenuButton<String>(
+      //                                 onSelected: (String value) {
+      //                                   // Handle selected value
+      //                                 },
+      //                                 itemBuilder: (context) =>
+      //                                     <PopupMenuEntry<String>>[
+      //                                   PopupMenuItem<String>(
+      //                                     value: 'edit',
+      //                                     child: ListTile(
+      //                                       leading: const Icon(Icons.edit),
+      //                                       title: const Text('Edit'),
+      //                                       onTap: () {},
+      //                                     ),
+      //                                   ),
+      //                                   PopupMenuItem<String>(
+      //                                     value: 'remove',
+      //                                     child: ListTile(
+      //                                       leading: const Icon(Icons.delete),
+      //                                       title: const Text('Remove'),
+      //                                       onTap: () {
+      //                                         // removeItem(context, index);
+      //                                       },
+      //                                     ),
+      //                                   ),
+      //                                 ],
+      //                               ),
+      //                               onTap: () {},
+      //                             ),
+      //                           ),
+      //                         );
+      //                       }).toList(),
+      //                     );
+      //                   }
+      //                   return const Center(
+      //                     child: Padding(
+      //                       padding: EdgeInsets.all(10.0),
+      //                       child: CircularProgressIndicator(),
+      //                     ),
+      //                   );
+      //                 },
+      //               ),
+      //             ),
       //           ),
       //         ],
       //       ),
-      //       child: StreamBuilder(
-      //           stream: _streamController.stream,
-      //           builder: (BuildContext context,
-      //               AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
-      //             if (snapshot.hasData) {
-      //               return ListView(
-      //                 children:
-      //                     snapshot.data!.map((DocumentSnapshot document) {
-      //                   Map<String, dynamic> data =
-      //                       document.data() as Map<String, dynamic>;
-      //                   String category = data['category'];
-      //                   String productName = data['product_name'];
-      //                   String productPrice = data['product_price'];
-
-      //                   return Padding(
-      //                     padding: const EdgeInsets.only(
-      //                         bottom: 10, left: 5, right: 5),
-      //                     child: Card(
-      //                       elevation:
-      //                           5, // Adjust the elevation to control the intensity of the shadow
-      //                       shadowColor: Colors.redAccent,
-      //                       child: ListTile(
-      //                         leading: CircleAvatar(
-      //                           backgroundImage:
-      //                               NetworkImage(data['product_image']),
-      //                         ),
-      //                         title: Row(
-      //                           crossAxisAlignment: CrossAxisAlignment.end,
-      //                           children: [
-      //                             Text(
-      //                               productName,
-      //                               style: const TextStyle(
-      //                                 fontSize: 18,
-      //                               ),
-      //                             ),
-      //                             const SizedBox(
-      //                               width: 10,
-      //                             ),
-      //                             Text(
-      //                               category,
-      //                               style: const TextStyle(
-      //                                   fontSize: 15,
-      //                                   fontWeight: FontWeight.bold),
-      //                             ),
-      //                           ],
-      //                         ),
-      //                         subtitle: Column(
-      //                           crossAxisAlignment: CrossAxisAlignment.start,
-      //                           children: [
-      //                             Text(productPrice),
-      //                           ],
-      //                         ),
-      //                         trailing: PopupMenuButton<String>(
-      //                           onSelected: (String value) {
-      //                             // Handle selected value
-      //                           },
-      //                           itemBuilder: (
-      //                             context,
-      //                           ) =>
-      //                               <PopupMenuEntry<String>>[
-      //                             PopupMenuItem<String>(
-      //                               value: 'edit',
-      //                               child: ListTile(
-      //                                 leading: const Icon(Icons.edit),
-      //                                 title: const Text('Edit'),
-      //                                 onTap: () {},
-      //                               ),
-      //                             ),
-      //                             PopupMenuItem<String>(
-      //                               value: 'remove',
-      //                               child: ListTile(
-      //                                 leading: const Icon(Icons.delete),
-      //                                 title: const Text('Remove'),
-      //                                 onTap: () {
-      //                                   // removeItem(context, index);
-      //                                 },
-      //                               ),
-      //                             ),
-      //                           ],
-      //                         ),
-      //                         onTap: () {},
-      //                       ),
-      //                     ),
-      //                   );
-      //                 }).toList(),
-      //               );
-      //             }
-      //             return const Center(
-      //               child: Padding(
-      //                 padding: EdgeInsets.all(10.0),
-      //                 child: CircularProgressIndicator(),
+      //       Positioned(
+      //         top: 114,
+      //         left: 0,
+      //         right: 0,
+      //         child: Align(
+      //           child: Container(
+      //             width: 200,
+      //             decoration: BoxDecoration(
+      //               borderRadius: BorderRadius.circular(20),
+      //             ),
+      //             child: Card(
+      //               child: MaterialButton(
+      //                 minWidth: 200,
+      //                 padding: const EdgeInsets.all(20),
+      //                 onPressed: () {
+      //                   showAddProductDialog(context);
+      //                 },
+      //                 child: Text(
+      //                   'Add Product',
+      //                   style: GoogleFonts.poppins(
+      //                       color: Colors.redAccent,
+      //                       fontWeight: FontWeight.w600,
+      //                       fontSize: 16),
+      //                 ),
       //               ),
-      //             );
-      //           }),
-      //     ),
-      //   ],
+      //             ),
+      //           ),
+      //         ),
+      //       ),
+      //     ],
+      //   ),
       // ),
     );
-
-    //  bottomNavigationBar: Align(
-    //   alignment: Alignment.center,
-    //   child: Container(
-    //     width: 280,
-    //     decoration: BoxDecoration(
-    //       gradient: LinearGradient(
-    //         colors: [
-    //           Color.fromARGB(255, 245, 157, 157),
-    //           Color.fromARGB(255, 255, 90, 78),
-    //           Color.fromARGB(255, 245, 157, 157),
-    //         ],
-    //         begin: Alignment.bottomLeft,
-    //         end: Alignment.topRight,
-    //       ),
-    //       borderRadius: BorderRadius.circular(10),
-    //     ),
-    //     child: MaterialButton(
-    //       minWidth: 280,
-    //       padding: const EdgeInsets.all(20),
-    //       onPressed: () {
-    //         showAddProductDialog(context);
-    //       },
-    //       child: Text(
-    //         'Add Product',
-    //         style: GoogleFonts.poppins(
-    //           color: whiteColor,
-    //           fontWeight: FontWeight.w600,
-    //         ),
-    //       ),
-    //     ),
-    //   ),
-    // ),
   }
 
   showAddProductDialog(BuildContext context) {
@@ -556,7 +547,7 @@ class _product_listState extends State<product_list> {
                                 alignedDropdown: true,
                                 child: StreamBuilder<QuerySnapshot>(
                                   stream: FirebaseFirestore.instance
-                                      .collection('raw_category')
+                                      .collection('raw_categery')
                                       .snapshots(),
                                   builder: (context, snapshot) {
                                     if (!snapshot.hasError) {
@@ -576,7 +567,7 @@ class _product_listState extends State<product_list> {
                                             DropdownMenuItem(
                                               value: data.id,
                                               child: Text(
-                                                data['category'],
+                                                data['raw_categery'],
                                               ),
                                             ),
                                           );
@@ -662,7 +653,7 @@ class _product_listState extends State<product_list> {
                         height: 44,
                         width: 120,
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
+                          gradient: const LinearGradient(
                             colors: [
                               Color.fromARGB(255, 255, 90, 78),
                               Color.fromARGB(255, 245, 157, 157),

@@ -6,7 +6,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:raw_material/NewApp/card.dart';
 import 'package:raw_material/helpers/app_constants.dart';
 import 'package:raw_material/mainfiles/homepage.dart';
 
@@ -53,7 +52,7 @@ class _CategoryPageState extends State<CategoryPage> {
   Future<void> getData() async {
     try {
       QuerySnapshot querySnapshot =
-          await FirebaseFirestore.instance.collection('raw_category').get();
+          await FirebaseFirestore.instance.collection('raw_categery').get();
 
       _document = querySnapshot.docs;
       _streamController.add(_document);
@@ -72,18 +71,23 @@ class _CategoryPageState extends State<CategoryPage> {
     try {
       // Get the current count from Firestore
       var snapshot =
-          await FirebaseFirestore.instance.collection('raw_category').get();
+          await FirebaseFirestore.instance.collection('raw_categery').get();
       int currentCount =
           snapshot.size; // Get the number of documents as the current count
 
+      // Increment the count for the next category ID
+      String nextCategoryId = (currentCount + 1).toString();
+
       // Add the new category with incremented count
-      await FirebaseFirestore.instance.collection('raw_category').add({
-        'category': categoryNameController.text,
-        'category_id': currentCount + 1,
-      }).whenComplete(() {
+      await FirebaseFirestore.instance
+          .collection('raw_categery')
+          .doc(nextCategoryId)
+          .set({
+        'raw_categery': categoryNameController.text,
+        'categery_id': nextCategoryId,
+      }).then((value) {
         setState(() {
           categoryNameController.clear();
-
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const CategoryPage()),
@@ -91,7 +95,6 @@ class _CategoryPageState extends State<CategoryPage> {
         });
       });
 
-      categoryNameController.clear();
       if (kDebugMode) {
         print("Data added successfully!");
       }
@@ -145,7 +148,7 @@ class _CategoryPageState extends State<CategoryPage> {
       // ),
       drawer: const MyDrawer(),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
               Color.fromARGB(255, 255, 90, 78),
@@ -160,11 +163,11 @@ class _CategoryPageState extends State<CategoryPage> {
           children: [
             Column(
               children: [
-                Container(
+                SizedBox(
                   height: 200,
                   child: Column(
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         height: 40,
                       ),
                       Row(
@@ -252,8 +255,9 @@ class _CategoryPageState extends State<CategoryPage> {
                                   .map((DocumentSnapshot document) {
                                 Map<String, dynamic> data =
                                     document.data() as Map<String, dynamic>;
-                                int categoryId = data['category_id'];
-                                String category = data['category'];
+                                String categoryId =
+                                    data['categery_id'].toString();
+                                String category = data['raw_categery'];
 
                                 return Padding(
                                   padding: const EdgeInsets.only(
@@ -275,13 +279,13 @@ class _CategoryPageState extends State<CategoryPage> {
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           MaterialButton(
-                                            color: Color.fromARGB(
+                                            color: const Color.fromARGB(
                                                 255, 76, 161, 241),
                                             padding: const EdgeInsets.all(6.0),
                                             minWidth: 0,
                                             height: 0,
                                             onPressed: () {},
-                                            child: Icon(
+                                            child: const Icon(
                                               Icons.delete,
                                               size: 18,
                                               color: Colors.white,

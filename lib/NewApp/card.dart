@@ -245,15 +245,7 @@ class _HomeBodyState extends State<_HomeBody> {
                   child: Container(
                     width: 280,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color.fromARGB(255, 245, 157, 157),
-                          Color.fromARGB(255, 255, 90, 78),
-                          Color.fromARGB(255, 245, 157, 157),
-                        ],
-                        begin: Alignment.bottomLeft,
-                        end: Alignment.topRight,
-                      ),
+                      color: Color.fromARGB(255, 255, 90, 78),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: MaterialButton(
@@ -285,15 +277,7 @@ class _HomeBodyState extends State<_HomeBody> {
                   child: Container(
                     width: 280,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color.fromARGB(255, 245, 157, 157),
-                          Color.fromARGB(255, 255, 90, 78),
-                          Color.fromARGB(255, 245, 157, 157),
-                        ],
-                        begin: Alignment.bottomLeft,
-                        end: Alignment.topRight,
-                      ),
+                      color: Color.fromARGB(255, 255, 90, 78),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: MaterialButton(
