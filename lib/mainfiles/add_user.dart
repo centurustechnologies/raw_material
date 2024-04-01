@@ -67,9 +67,16 @@ class _AddNewUserState extends State<AddNewUser> {
     try {
       await referenceImageToUpload.putFile(File(pickedFile.path));
       String imageURL = await referenceImageToUpload.getDownloadURL();
-      FirebaseFirestore.instance.collection('raw_user').doc().set({
+
+      var snapshot =
+          await FirebaseFirestore.instance.collection('raw_user').get();
+      int currentCount = snapshot.size;
+
+      String productId = (currentCount + 1).toString();
+
+      FirebaseFirestore.instance.collection('raw_user').doc(productId).set({
         'user_name': nameController.text,
-        'user_id': userIdController.text,
+        'user_id': productId,
         'user_number': numberController.text,
         'user_email': eMailController.text,
         'user_image': imageURL,
@@ -80,7 +87,6 @@ class _AddNewUserState extends State<AddNewUser> {
       }).whenComplete(() {
         setState(() {
           nameController.clear();
-          userIdController.clear();
           numberController.clear();
           eMailController.clear();
           _image = null;
@@ -201,28 +207,28 @@ class _AddNewUserState extends State<AddNewUser> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10),
-                      child: TextFormField(
-                        controller: userIdController,
-                        keyboardType: TextInputType.text,
-                        decoration: const InputDecoration(
-                          isDense: true,
-                          hintText: 'User id',
-                        ),
-                        style: const TextStyle(
-                          color: Colors.black54,
-                          fontSize: 16,
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your name';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
+                    // const SizedBox(height: 10),
+                    // Padding(
+                    //   padding: const EdgeInsets.only(left: 10),
+                    //   child: TextFormField(
+                    //     controller: userIdController,
+                    //     keyboardType: TextInputType.text,
+                    //     decoration: const InputDecoration(
+                    //       isDense: true,
+                    //       hintText: 'User id',
+                    //     ),
+                    //     style: const TextStyle(
+                    //       color: Colors.black54,
+                    //       fontSize: 16,
+                    //     ),
+                    //     validator: (value) {
+                    //       if (value == null || value.isEmpty) {
+                    //         return 'Please enter your name';
+                    //       }
+                    //       return null;
+                    //     },
+                    //   ),
+                    // ),
                     const SizedBox(height: 10),
                     Padding(
                       padding: const EdgeInsets.only(left: 10),

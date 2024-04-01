@@ -148,17 +148,7 @@ class _CategoryPageState extends State<CategoryPage> {
       // ),
       drawer: const MyDrawer(),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color.fromARGB(255, 255, 90, 78),
-              Color.fromARGB(255, 245, 157, 157),
-              Color.fromARGB(255, 253, 77, 64),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        decoration: const BoxDecoration(color: Colors.red),
         child: Stack(
           children: [
             Column(
@@ -233,7 +223,7 @@ class _CategoryPageState extends State<CategoryPage> {
                     width: displayWidth(context),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.only(
+                      borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(20),
                           topRight: Radius.circular(20)),
                       boxShadow: [
@@ -241,7 +231,7 @@ class _CategoryPageState extends State<CategoryPage> {
                           color: Colors.grey.withOpacity(0.5),
                           spreadRadius: 5,
                           blurRadius: 7,
-                          offset: Offset(0, 3),
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
@@ -324,6 +314,7 @@ class _CategoryPageState extends State<CategoryPage> {
               right: 0,
               child: Align(
                 child: Card(
+                  color: Color.fromARGB(255, 76, 240, 161),
                   child: MaterialButton(
                     minWidth: 160,
                     padding: const EdgeInsets.all(10),
@@ -333,7 +324,7 @@ class _CategoryPageState extends State<CategoryPage> {
                     child: Text(
                       'Add New Category',
                       style: GoogleFonts.poppins(
-                          color: Colors.redAccent,
+                          color: Colors.white,
                           fontWeight: FontWeight.w600,
                           fontSize: 16),
                     ),

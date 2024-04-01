@@ -27,6 +27,8 @@ class BillGeneration extends StatefulWidget {
 class _BillGenerationState extends State<BillGeneration> {
   String selectedCategoryIndex = '';
   bool showCart = false;
+  bool textlist = true;
+  bool imagebool = true;
   bool showCategories = true;
   bool showOrders = true;
   bool showProducts = false;
@@ -1617,7 +1619,7 @@ class _BillGenerationState extends State<BillGeneration> {
               vertical: 5,
             ),
             decoration: BoxDecoration(
-              color: Color.fromARGB(255, 255, 90, 78),
+              color: Colors.red,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
@@ -1939,7 +1941,6 @@ class _BillGenerationState extends State<BillGeneration> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              height: MediaQuery.of(context).size.height / 1.5,
               width: 80,
               child: SingleChildScrollView(
                 child: StreamBuilder(
@@ -1957,7 +1958,7 @@ class _BillGenerationState extends State<BillGeneration> {
                     if (streamSnapshot.hasData) {
                       return ListView.builder(
                         shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
+                        physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: streamSnapshot.data!.docs
                             .where((element) =>
                                 element['product_name']
@@ -2003,11 +2004,12 @@ class _BillGenerationState extends State<BillGeneration> {
                               }
                             },
                             child: Padding(
-                              padding: const EdgeInsets.all(2),
+                              padding: const EdgeInsets.only(
+                                  bottom: 3, right: 5, top: 2),
                               child: Container(
                                 // Increase the size of the Container to make the InkWell tappable
                                 height: 100,
-                                width: 100,
+
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
@@ -2029,19 +2031,18 @@ class _BillGenerationState extends State<BillGeneration> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Padding(
-                                          padding: const EdgeInsets.all(5),
+                                          padding: const EdgeInsets.all(6),
                                           child: Row(
                                             children: [
                                               SizedBox(
-                                                width:
-                                                    100, // Adjust width as needed
+                                                // Adjust width as needed
                                                 child: Text(
                                                   documentSnapshot[
                                                       'product_name'],
                                                   style: TextStyle(
                                                     fontWeight: FontWeight.w600,
                                                     color: Colors.black,
-                                                    fontSize: 20,
+                                                    fontSize: 10,
                                                   ),
                                                 ),
                                               ),
@@ -3077,10 +3078,9 @@ class _BillGenerationState extends State<BillGeneration> {
       child: Container(
         decoration: BoxDecoration(
           color: _tableSelected == '0' ? Colors.black : whiteColor,
-          borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: Colors.greenAccent.withOpacity(0.3),
+              color: Colors.greenAccent.withOpacity(0.2),
               blurRadius: 10,
               spreadRadius: 1,
             ),
@@ -3131,7 +3131,7 @@ class _BillGenerationState extends State<BillGeneration> {
                           color: Colors.black.withOpacity(0.05),
                         ),
                       ),
-                      padding: const EdgeInsets.only(left: 2),
+                      padding: const EdgeInsets.only(left: 5),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -3159,7 +3159,7 @@ class _BillGenerationState extends State<BillGeneration> {
                                     Icon(
                                       Icons.description_rounded,
                                       color: whiteColor,
-                                      size: 6,
+                                      size: 14,
                                     ),
                                     SizedBox(width: 5),
                                     Text(
@@ -3168,7 +3168,7 @@ class _BillGenerationState extends State<BillGeneration> {
                                           fontWeight: FontWeight.w600,
                                           letterSpacing: 0.3,
                                           color: whiteColor,
-                                          fontSize: 8),
+                                          fontSize: 12),
                                       textAlign: TextAlign.start,
                                     ),
                                   ],
@@ -3228,152 +3228,174 @@ class _BillGenerationState extends State<BillGeneration> {
                                       width: 1,
                                     ),
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(
-                                        width: 120,
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            SizedBox(
-                                              width: 100,
-                                              child: Text(
-                                                " ${productDocumentSnapshot['product_name']} ${productDocumentSnapshot['product_type']}",
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 2),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          width: 100,
+                                          child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              SizedBox(
+                                                width: 100,
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      " ${productDocumentSnapshot['product_name']} ",
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      " ${productDocumentSnapshot['product_type']}",
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: 40,
-                                            child: Text(
-                                              '$rupeeSign${productDocumentSnapshot['product_price']}',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 10,
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 5),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              SizedBox(
+                                                width: 40,
+                                                child: Text(
+                                                  '$rupeeSign${productDocumentSnapshot['product_price']}',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: 5,
-                                          ),
-                                          MaterialButton(
-                                            padding: const EdgeInsets.all(6.0),
-                                            minWidth: 0,
-                                            height: 0,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(5),
-                                            ),
-                                            color: Colors.greenAccent,
-                                            onPressed: () {
-                                              MinusNewTableProduct(
-                                                  _tableSelected,
-                                                  productDocumentSnapshot);
-                                            },
-                                            child: FaIcon(
-                                              FontAwesomeIcons.minus,
-                                              size:
-                                                  8, // Adjust icon size as needed
-                                              color: whiteColor,
-                                            ),
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 2,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: whiteColor,
-                                              borderRadius:
-                                                  BorderRadius.circular(5),
-                                            ),
-                                            width: 30,
-                                            height: 30,
-                                            child: TextFormField(
-                                              inputFormatters: [
-                                                FilteringTextInputFormatter
-                                                    .digitsOnly,
-                                                LengthLimitingTextInputFormatter(
-                                                    3),
-                                              ],
-                                              controller: TextEditingController(
-                                                text: productDocumentSnapshot[
-                                                    'quantity'],
+                                              MaterialButton(
+                                                padding:
+                                                    const EdgeInsets.all(6.0),
+                                                minWidth: 0,
+                                                height: 0,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                ),
+                                                color: Colors.greenAccent,
+                                                onPressed: () {
+                                                  MinusNewTableProduct(
+                                                      _tableSelected,
+                                                      productDocumentSnapshot);
+                                                },
+                                                child: FaIcon(
+                                                  FontAwesomeIcons.minus,
+                                                  size: 8,
+                                                  color: whiteColor,
+                                                ),
                                               ),
-                                              focusNode: FocusNode(),
-                                              decoration: InputDecoration(
-                                                isDense: true,
-                                                border: InputBorder.none,
+                                              Container(
+                                                padding: EdgeInsets.symmetric(
+                                                  vertical: 2,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: whiteColor,
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                ),
+                                                width: 30,
+                                                height: 30,
+                                                child: TextFormField(
+                                                  inputFormatters: [
+                                                    FilteringTextInputFormatter
+                                                        .digitsOnly,
+                                                    LengthLimitingTextInputFormatter(
+                                                        3),
+                                                  ],
+                                                  controller:
+                                                      TextEditingController(
+                                                    text:
+                                                        productDocumentSnapshot[
+                                                            'quantity'],
+                                                  ),
+                                                  focusNode: FocusNode(),
+                                                  decoration: InputDecoration(
+                                                    isDense: true,
+                                                    border: InputBorder.none,
+                                                  ),
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 10,
+                                                    color: Colors.black,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                ),
                                               ),
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 10,
-                                                color: Colors.black,
+                                              MaterialButton(
+                                                padding:
+                                                    const EdgeInsets.all(5),
+                                                minWidth: 4,
+                                                height: 4,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(2),
+                                                ),
+                                                color: Colors.greenAccent,
+                                                onPressed: () {
+                                                  addNewTableProduct(
+                                                      _tableSelected,
+                                                      productDocumentSnapshot);
+                                                },
+                                                child: FaIcon(
+                                                  FontAwesomeIcons.plus,
+                                                  size: 10,
+                                                  color: whiteColor,
+                                                ),
                                               ),
-                                              textAlign: TextAlign.center,
-                                            ),
+                                              SizedBox(
+                                                width: 30,
+                                                child: Text(
+                                                  '$rupeeSign${productDocumentSnapshot['total_price']}',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 10),
+                                                ),
+                                              ),
+                                              MaterialButton(
+                                                padding:
+                                                    const EdgeInsets.all(5),
+                                                minWidth: 4,
+                                                height: 4,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                ),
+                                                color: mainColor,
+                                                onPressed: () {
+                                                  deleteTableProduct(
+                                                      _tableSelected,
+                                                      productDocumentSnapshot);
+                                                },
+                                                child: FaIcon(
+                                                  Icons.delete,
+                                                  color: Colors.white,
+                                                  size: 10,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          MaterialButton(
-                                            padding: const EdgeInsets.all(5),
-                                            minWidth: 4,
-                                            height: 4,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(2),
-                                            ),
-                                            color: Colors.greenAccent,
-                                            onPressed: () {
-                                              addNewTableProduct(_tableSelected,
-                                                  productDocumentSnapshot);
-                                            },
-                                            child: FaIcon(
-                                              FontAwesomeIcons.plus,
-                                              size: 10,
-                                              color: whiteColor,
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: 40,
-                                            child: Text(
-                                              '$rupeeSign${productDocumentSnapshot['total_price']}',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 10),
-                                            ),
-                                          ),
-                                          MaterialButton(
-                                            padding: const EdgeInsets.all(5),
-                                            minWidth: 4,
-                                            height: 4,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(5),
-                                            ),
-                                            color: mainColor,
-                                            onPressed: () {
-                                              deleteTableProduct(_tableSelected,
-                                                  productDocumentSnapshot);
-                                            },
-                                            child: FaIcon(
-                                              Icons.delete,
-                                              color: Colors.white,
-                                              size: 10,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 );
                               },
@@ -3425,264 +3447,305 @@ class _BillGenerationState extends State<BillGeneration> {
                         },
                       );
 
-                      return Column(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.blue.withOpacity(0.1),
+                      return Padding(
+                        padding: const EdgeInsets.all(0),
+                        child: Column(
+                          children: [
+                            Container(
+                              height: 30,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.blue.withOpacity(0.1),
+                                ),
                               ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                SizedBox(
-                                  child: Text(
-                                    'Item Count: ${snapshot.data!.docs.length}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: 0.3,
-                                      fontSize: 10,
-                                      color: Colors.black.withOpacity(0.5),
-                                    ),
-                                    textAlign: TextAlign.start,
-                                  ),
-                                ),
-                                SizedBox(
-                                  child: Text(
-                                    'Sub Total',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black.withOpacity(0.5),
-                                      letterSpacing: 0.3,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                SizedBox(
-                                  child: Text(
-                                    '$rupeeSign$totalprice',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.3,
-                                    ),
-                                    textAlign: TextAlign.end,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          showProducts
-                              ? Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Colors.blue.withOpacity(0.1),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 5),
+                                    child: SizedBox(
+                                      child: Text(
+                                        'Item Count : ${snapshot.data!.docs.length}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          letterSpacing: 0.3,
+                                          fontSize: 12,
+                                          color: Colors.black.withOpacity(0.5),
+                                        ),
+                                        textAlign: TextAlign.start,
+                                      ),
                                     ),
                                   ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                  Row(
                                     children: [
-                                      discountbutton
-                                          ? MaterialButton(
-                                              minWidth: 80,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                              color: greenShadeColor,
-                                              onPressed: () {
-                                                setState(() {
-                                                  discountbutton = false;
-                                                });
-                                              },
-                                              child: Text(
-                                                'Discount',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.w600,
-                                                  letterSpacing: 0.3,
-                                                  fontSize: 10,
-                                                  color: whiteColor,
-                                                ),
-                                                textAlign: TextAlign.start,
-                                              ))
-                                          : Row(
-                                              children: [
-                                                MaterialButton(
-                                                  minWidth: 60,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
-                                                  ),
-                                                  color: discountstatus
-                                                      ? whiteColor
-                                                      : greenShadeColor,
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      discountController
-                                                          .clear();
-                                                      discountstatus = false;
-                                                      discount = 0;
-                                                    });
-                                                  },
-                                                  child: Text(
-                                                    '%',
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      fontSize: 10,
-                                                      letterSpacing: 0.3,
-                                                      color: discountstatus
-                                                          ? Colors.black
-                                                          : whiteColor,
-                                                    ),
-                                                    textAlign: TextAlign.start,
-                                                  ),
-                                                ),
-                                                const SizedBox(
-                                                  width: 3,
-                                                ),
-                                                SizedBox(
-                                                  width: 60,
-                                                  child: TextField(
-                                                    onChanged: (value) {
-                                                      if (value.isNotEmpty) {
-                                                        setState(() {
-                                                          discount =
-                                                              int.parse(value);
-                                                        });
-                                                      } else {
-                                                        setState(() {
-                                                          discountController
-                                                              .clear();
-                                                          discountstatus = true;
-                                                          discount = 0;
-                                                        });
-                                                      }
-                                                      log("hjlksdgfljkhdsgflhjksd $value");
-                                                    },
-                                                    keyboardType:
-                                                        TextInputType.number,
-                                                    inputFormatters: [
-                                                      LengthLimitingTextInputFormatter(
-                                                          3)
-                                                    ],
-                                                    controller:
-                                                        discountController,
-                                                    decoration: InputDecoration(
-                                                        contentPadding:
-                                                            EdgeInsets.all(10),
-                                                        isDense: true,
-                                                        hintText:
-                                                            discountController
-                                                                .text,
-                                                        border:
-                                                            OutlineInputBorder()),
-                                                  ),
-                                                ),
-                                                const SizedBox(
-                                                  width: 3,
-                                                ),
-                                                MaterialButton(
-                                                  minWidth: 60,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
-                                                  ),
-                                                  color: discountstatus
-                                                      ? greenShadeColor
-                                                      : whiteColor,
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      discountController
-                                                          .clear();
-                                                      discountstatus = true;
-                                                      discount = 0;
-                                                    });
-                                                  },
-                                                  child: Text(
-                                                    // ignore: unnecessary_string_interpolations
-                                                    '$rupeeSign',
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      letterSpacing: 0.3,
-                                                      color: discountstatus
-                                                          ? whiteColor
-                                                          : Colors.black,
-                                                    ),
-                                                    textAlign: TextAlign.start,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
                                       SizedBox(
-                                          width: 120,
-                                          child: discountstatus
-                                              ? Text(
-                                                  '$rupeeSign$discount',
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    letterSpacing: 0.3,
-                                                  ),
-                                                  textAlign: TextAlign.end,
-                                                )
-                                              : Text(
-                                                  '$discount${"%"}',
-                                                  style: TextStyle(
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.bold,
-                                                    letterSpacing: 0.3,
-                                                  ),
-                                                  textAlign: TextAlign.end,
-                                                )),
+                                        child: Text(
+                                          'Sub Total :  ',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color:
+                                                Colors.black.withOpacity(0.5),
+                                            letterSpacing: 0.3,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 5),
+                                        child: SizedBox(
+                                          child: Text(
+                                            '$rupeeSign $totalprice',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 0.3,
+                                            ),
+                                            textAlign: TextAlign.end,
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   ),
-                                )
-                              : Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 16,
-                                  ),
-                                ),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: greenShadeColor,
+                                ],
+                              ),
                             ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 5,
-                              vertical: 10,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Grand Total',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: whiteColor,
-                                    fontSize: 10,
-                                    letterSpacing: 0.3,
-                                  ),
+                            // showProducts
+                            //     ? Container(
+                            //         decoration: BoxDecoration(
+                            //           border: Border.all(
+                            //             color: Colors.blue.withOpacity(0.1),
+                            //           ),
+                            //         ),
+                            //         child: Row(
+                            //           mainAxisAlignment:
+                            //               MainAxisAlignment.spaceBetween,
+                            //           children: [
+                            //             discountbutton
+                            //                 ? Padding(
+                            //                     padding: const EdgeInsets.only(
+                            //                         left: 5),
+                            //                     child: MaterialButton(
+                            //                       minWidth: 80,
+                            //                       shape: RoundedRectangleBorder(
+                            //                         borderRadius:
+                            //                             BorderRadius.circular(
+                            //                                 10),
+                            //                       ),
+                            //                       color: greenShadeColor,
+                            //                       onPressed: () {
+                            //                         setState(() {
+                            //                           discountbutton = false;
+                            //                         });
+                            //                       },
+                            //                       child: Text(
+                            //                         'Discount',
+                            //                         style: TextStyle(
+                            //                           fontWeight:
+                            //                               FontWeight.w600,
+                            //                           letterSpacing: 0.3,
+                            //                           fontSize: 12 ,
+                            //                           color: whiteColor,
+                            //                         ),
+                            //                         textAlign: TextAlign.start,
+                            //                       ),
+                            //                     ),
+                            //                   )
+                            //                 : Row(
+                            //                     children: [
+                            //                       MaterialButton(
+                            //                         minWidth: 60,
+                            //                         shape:
+                            //                             RoundedRectangleBorder(
+                            //                           borderRadius:
+                            //                               BorderRadius.circular(
+                            //                                   10),
+                            //                         ),
+                            //                         color: discountstatus
+                            //                             ? whiteColor
+                            //                             : greenShadeColor,
+                            //                         onPressed: () {
+                            //                           setState(() {
+                            //                             discountController
+                            //                                 .clear();
+                            //                             discountstatus = false;
+                            //                             discount = 0;
+                            //                           });
+                            //                         },
+                            //                         child: Text(
+                            //                           '%',
+                            //                           style: TextStyle(
+                            //                             fontWeight:
+                            //                                 FontWeight.w600,
+                            //                             fontSize: 10,
+                            //                             letterSpacing: 0.3,
+                            //                             color: discountstatus
+                            //                                 ? Colors.black
+                            //                                 : whiteColor,
+                            //                           ),
+                            //                           textAlign:
+                            //                               TextAlign.start,
+                            //                         ),
+                            //                       ),
+                            //                       const SizedBox(
+                            //                         width: 0,
+                            //                       ),
+                            //                       SizedBox(
+                            //                         width: 60,
+                            //                         child: TextField(
+                            //                           onChanged: (value) {
+                            //                             if (value.isNotEmpty) {
+                            //                               setState(() {
+                            //                                 discount =
+                            //                                     int.parse(
+                            //                                         value);
+                            //                               });
+                            //                             } else {
+                            //                               setState(() {
+                            //                                 discountController
+                            //                                     .clear();
+                            //                                 discountstatus =
+                            //                                     true;
+                            //                                 discount = 0;
+                            //                               });
+                            //                             }
+                            //                             log("hjlksdgfljkhdsgflhjksd $value");
+                            //                           },
+                            //                           keyboardType:
+                            //                               TextInputType.number,
+                            //                           inputFormatters: [
+                            //                             LengthLimitingTextInputFormatter(
+                            //                                 3)
+                            //                           ],
+                            //                           controller:
+                            //                               discountController,
+                            //                           decoration: InputDecoration(
+                            //                               contentPadding:
+                            //                                   EdgeInsets.all(
+                            //                                       10),
+                            //                               isDense: true,
+                            //                               hintText:
+                            //                                   discountController
+                            //                                       .text,
+                            //                               border:
+                            //                                   OutlineInputBorder()),
+                            //                         ),
+                            //                       ),
+                            //                       const SizedBox(
+                            //                         width: 3,
+                            //                       ),
+                            //                       MaterialButton(
+                            //                         minWidth: 60,
+                            //                         shape:
+                            //                             RoundedRectangleBorder(
+                            //                           borderRadius:
+                            //                               BorderRadius.circular(
+                            //                                   10),
+                            //                         ),
+                            //                         color: discountstatus
+                            //                             ? greenShadeColor
+                            //                             : whiteColor,
+                            //                         onPressed: () {
+                            //                           setState(() {
+                            //                             discountController
+                            //                                 .clear();
+                            //                             discountstatus = true;
+                            //                             discount = 0;
+                            //                           });
+                            //                         },
+                            //                         child: Text(
+                            //                           // ignore: unnecessary_string_interpolations
+                            //                           '$rupeeSign ',
+                            //                           style: TextStyle(
+                            //                             fontWeight:
+                            //                                 FontWeight.w600,
+                            //                             letterSpacing: 0.3,
+                            //                             color: discountstatus
+                            //                                 ? whiteColor
+                            //                                 : Colors.black,
+                            //                           ),
+                            //                           textAlign:
+                            //                               TextAlign.start,
+                            //                         ),
+                            //                       ),
+                            //                     ],
+                            //                   ),
+                            //             Padding(
+                            //               padding:
+                            //                   const EdgeInsets.only(right: 5),
+                            //               child: SizedBox(
+                            //                   width: 120,
+                            //                   child: discountstatus
+                            //                       ? Text(
+                            //                           '$rupeeSign $discount',
+                            //                           style: TextStyle(
+                            //                             fontWeight:
+                            //                                 FontWeight.bold,
+                            //                             letterSpacing: 0.3,
+                            //                           ),
+                            //                           textAlign: TextAlign.end,
+                            //                         )
+                            //                       : Text(
+                            //                           '$discount${"%"}',
+                            //                           style: TextStyle(
+                            //                             fontSize: 10,
+                            //                             fontWeight:
+                            //                                 FontWeight.bold,
+                            //                             letterSpacing: 0.3,
+                            //                           ),
+                            //                           textAlign: TextAlign.end,
+                            //                         )),
+                            //             ),
+                            //           ],
+                            //         ),
+                            //       )
+                            //     : Container(
+                            //         padding: const EdgeInsets.symmetric(
+                            //           horizontal: 10,
+                            //           vertical: 16,
+                            //         ),
+                            //       ),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: greenShadeColor,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 10,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 1),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Grand Total',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: whiteColor,
+                                        fontSize: 14,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                    Text(
+                                      "$rupeeSign${grandtotal.toString()}",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.3,
+                                        color: whiteColor,
+                                        fontSize: 14,
+                                      ),
+                                      textAlign: TextAlign.end,
+                                    ),
+                                  ],
                                 ),
-                                Text(
-                                  "$rupeeSign${grandtotal.toString()}",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.3,
-                                    color: whiteColor,
-                                    fontSize: 10,
-                                  ),
-                                  textAlign: TextAlign.end,
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       );
                     }
                     return Container();
@@ -3690,52 +3753,60 @@ class _BillGenerationState extends State<BillGeneration> {
                 ),
               ],
             ),
-            // button stream builder
-            // StreamBuilder(
-            //   stream: FirebaseFirestore.instance
-            //       .collection('tablesraw')
-            //       .where('table_id', isEqualTo: _tableSelected)
-            //       .snapshots(),
-            //   builder: (context, snapshot) {
-            //     if (snapshot.hasData) {
-            //       for (var v = 0; v < snapshot.data!.docs.length;) {
-            //         DocumentSnapshot documentSnapshot = snapshot.data!.docs[v];
-            //         return Padding(
-            //           padding: const EdgeInsets.all(8.0),
-            //           child: documentSnapshot['kot_done'] == 'true' &&
-            //                   documentSnapshot['bill_done'] == 'false'
-            //               ? Stack(
-            //                   children: [
-            //                     clearButton(context, documentSnapshot),
-            //                     paymentsButton(context, documentSnapshot),
-            //                     kotPrintDone(context, documentSnapshot),
-            //                     printBillButton(context, documentSnapshot),
-            //                   ],
-            //                 )
-            //               : documentSnapshot['bill_done'] == 'true' &&
-            //                       documentSnapshot['kot_done'] == 'true'
-            //                   ? Stack(
-            //                       children: [
-            //                         clearButton(context, documentSnapshot),
-            //                         kotPrintDone(context, documentSnapshot),
-            //                         printBillButton(context, documentSnapshot),
-            //                         paymentsButton(context, documentSnapshot),
-            //                       ],
-            //                     )
-            //                   : Stack(
-            //                       children: [
-            //                         clearButton(context, documentSnapshot),
-            //                         paymentsButton(context, documentSnapshot),
-            //                         printBillButton(context, documentSnapshot),
-            //                         kotPrintDone(context, documentSnapshot),
-            //                       ],
-            //                     ),
-            //         );
-            //       }
-            //     }
-            //     return Container();
-            //   },
-            // ),
+            StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('tablesraw')
+                  .where('table_id', isEqualTo: _tableSelected)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  for (var v = 0; v < snapshot.data!.docs.length;) {
+                    DocumentSnapshot documentSnapshot = snapshot.data!.docs[v];
+                    // Adjusting for a Row inside a fixed width Container.
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 2),
+                      child: SizedBox(
+                        width: 260, // Fixed width for the Row
+                        child: Row(
+                          children: [
+                            // Assuming clearButton, paymentsButton, kotPrintDone, and printBillButton are widget builder functions.
+                            if (documentSnapshot['kot_done'] == 'true' &&
+                                documentSnapshot['bill_done'] == 'false') ...[
+                              clearButton(context, documentSnapshot),
+                              paymentsButton(context, documentSnapshot),
+                              kotPrintDone(context, documentSnapshot),
+                              printBillButton(context, documentSnapshot),
+                            ] else if (documentSnapshot['bill_done'] ==
+                                    'true' &&
+                                documentSnapshot['kot_done'] == 'true') ...[
+                              clearButton(context, documentSnapshot),
+                              kotPrintDone(context, documentSnapshot),
+                              printBillButton(context, documentSnapshot),
+                              paymentsButton(context, documentSnapshot),
+                            ] else ...[
+                              //   clearButton(context, documentSnapshot),
+                              //   SizedBox(
+                              //     width: 2,
+                              //   ),
+                              //   paymentsButton(context, documentSnapshot),
+                              SizedBox(
+                                width: 2,
+                              ),
+                              printBillButton(context, documentSnapshot),
+                              SizedBox(
+                                width: 2,
+                              ),
+                              // kotPrintDone(context, documentSnapshot),
+                            ],
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                }
+                return Container(); // Fallback for no data.
+              },
+            ),
           ],
         ),
       ),
@@ -4541,11 +4612,10 @@ class _BillGenerationState extends State<BillGeneration> {
   }
 
   kotPrintDone(context, documentSnapshot) {
-    return Positioned(
-      right: MediaQuery.of(context).size.width / 4.65,
+    return SizedBox(
+      width: 55,
       child: MaterialButton(
-        height: MediaQuery.of(context).size.height / 19,
-        minWidth: MediaQuery.of(context).size.width / 10,
+        minWidth: 0,
         color: mainColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(17),
@@ -4591,25 +4661,19 @@ class _BillGenerationState extends State<BillGeneration> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             documentSnapshot['kot_done'] == 'true'
-                ? const Padding(
-                    padding: EdgeInsets.only(right: 5),
-                    child: FaIcon(
-                      Icons.done_all_rounded,
-                      color: Colors.greenAccent,
-                      size: 16,
-                    ),
+                ? FaIcon(
+                    Icons.done_all_rounded,
+                    color: Colors.greenAccent,
+                    size: 6,
                   )
                 : const SizedBox(),
-            Padding(
-              padding: const EdgeInsets.all(5),
-              child: Text(
-                'KOT',
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.3,
-                    color: whiteColor),
-              ),
+            Text(
+              'KOT',
+              style: TextStyle(
+                  fontSize: 8,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.3,
+                  color: whiteColor),
             ),
           ],
         ),
@@ -4618,11 +4682,10 @@ class _BillGenerationState extends State<BillGeneration> {
   }
 
   printBillButton(context, documentSnapshot) {
-    return Positioned(
-      right: MediaQuery.of(context).size.width / 7,
+    return SizedBox(
+      width: 245,
       child: MaterialButton(
-        height: MediaQuery.of(context).size.height / 19,
-        minWidth: MediaQuery.of(context).size.width / 11,
+        minWidth: 0,
         color: documentSnapshot['bill_done'] == 'true'
             ? Colors.amber
             : Colors.grey,
@@ -4691,25 +4754,19 @@ class _BillGenerationState extends State<BillGeneration> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             documentSnapshot['bill_done'] == 'true'
-                ? Padding(
-                    padding: EdgeInsets.only(right: 5),
-                    child: FaIcon(
-                      Icons.done_all_rounded,
-                      color: Colors.greenAccent,
-                      size: 16,
-                    ),
+                ? FaIcon(
+                    Icons.done_all_rounded,
+                    color: Colors.greenAccent,
+                    size: 6,
                   )
                 : const SizedBox(),
-            Padding(
-              padding: const EdgeInsets.all(7),
-              child: Text(
-                'Print Bill',
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.3,
-                    color: whiteColor),
-              ),
+            Text(
+              'Generate PDF',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.3,
+                  color: whiteColor),
             ),
           ],
         ),
@@ -4718,11 +4775,10 @@ class _BillGenerationState extends State<BillGeneration> {
   }
 
   paymentsButton(context, documentSnapshot) {
-    return Positioned(
-      right: MediaQuery.of(context).size.width / 14,
+    return SizedBox(
+      width: 68,
       child: MaterialButton(
-        height: MediaQuery.of(context).size.height / 19,
-        minWidth: MediaQuery.of(context).size.width / 11,
+        minWidth: 0,
         color: documentSnapshot['payment_done'] == 'true'
             ? Colors.green
             : Colors.grey[600],
@@ -4792,25 +4848,19 @@ class _BillGenerationState extends State<BillGeneration> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             documentSnapshot['payment_done'] == 'true'
-                ? const Padding(
-                    padding: EdgeInsets.only(right: 5),
-                    child: FaIcon(
-                      Icons.done_all_rounded,
-                      color: Colors.greenAccent,
-                      size: 16,
-                    ),
+                ? FaIcon(
+                    Icons.done_all_rounded,
+                    color: Colors.greenAccent,
+                    size: 6,
                   )
                 : const SizedBox(),
-            Padding(
-              padding: const EdgeInsets.all(5),
-              child: Text(
-                'Payment',
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.3,
-                    color: whiteColor),
-              ),
+            Text(
+              'Payment',
+              style: TextStyle(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                  color: whiteColor),
             ),
           ],
         ),
@@ -4820,8 +4870,9 @@ class _BillGenerationState extends State<BillGeneration> {
 
   clearButton(context, documentSnapshot) {
     return SizedBox(
-      width: 30,
+      width: 55,
       child: MaterialButton(
+        minWidth: 0,
         color: Colors.black.withOpacity(0.6),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(17),
@@ -4890,34 +4941,25 @@ class _BillGenerationState extends State<BillGeneration> {
             discount = 0;
           });
         },
-        child: Padding(
-          padding: const EdgeInsets.all(5),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              cancelTableDone
-                  ? const Padding(
-                      padding: EdgeInsets.only(right: 5),
-                      child: FaIcon(
-                        Icons.done_all_rounded,
-                        color: Colors.greenAccent,
-                        size: 16,
-                      ),
-                    )
-                  : const SizedBox(),
-              Padding(
-                padding: const EdgeInsets.all(5),
-                child: Text(
-                  'Close Table',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                      color: whiteColor),
-                ),
-              ),
-            ],
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            cancelTableDone
+                ? FaIcon(
+                    Icons.done_all_rounded,
+                    color: Colors.greenAccent,
+                    size: 6,
+                  )
+                : const SizedBox(),
+            Text(
+              'Clear',
+              style: TextStyle(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                  color: whiteColor),
+            ),
+          ],
         ),
       ),
     );

@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:raw_material/helpers/app_constants.dart';
 import 'package:raw_material/logins/login.dart';
 import 'package:raw_material/mainfiles/add_product.dart';
@@ -41,7 +45,7 @@ class _NewHomeState extends State<NewHome> {
           children: [
             const _HomeBody(),
             const ManageUser(),
-            const MyNewBill(),
+            const _productTab(),
             MenuTab(),
           ],
         ),
@@ -94,8 +98,9 @@ class _NewHomeState extends State<NewHome> {
       ),
       gradient: LinearGradient(
         colors: [
-          Color.fromARGB(255, 255, 159, 159),
-          Color.fromARGB(255, 253, 94, 83)
+          Colors.red,
+          Colors.redAccent,
+          Colors.red,
         ],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
@@ -149,7 +154,7 @@ class _NewHomeState extends State<NewHome> {
         Tab(
           iconMargin: EdgeInsets.all(0),
           icon: Icon(Icons.notifications),
-          text: 'New Bills',
+          text: 'Products',
         ),
         Tab(
           iconMargin: EdgeInsets.all(0),
@@ -189,12 +194,6 @@ class _HomeBodyState extends State<_HomeBody> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height,
-      // decoration: const BoxDecoration(
-      //   image: DecorationImage(
-      //     image: AssetImage('assets/images/white-abstract.png'),
-      //     fit: BoxFit.fitHeight,
-      //   ),
-      // ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -203,37 +202,7 @@ class _HomeBodyState extends State<_HomeBody> {
             padding: EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Row(
-                //   crossAxisAlignment: CrossAxisAlignment.end,
-                //   children: [
-                //     Text(
-                //       'Welcome',
-                //       style: TextStyle(
-                //           fontSize: 28,
-                //           color: Colors.blue,
-                //           fontWeight: FontWeight.bold),
-                //       textAlign: TextAlign.center,
-                //     ),
-                //     Text(
-                //       ',',
-                //       style: TextStyle(
-                //         fontSize: 30,
-                //         color: Colors.green, // Change the text color to red
-                //       ),
-                //       textAlign: TextAlign.center,
-                //     ),
-                //     Text(
-                //       ' Here',
-                //       style: TextStyle(
-                //           fontSize: 26,
-                //           color: Colors.red,
-                //           fontWeight: FontWeight.bold),
-                //       textAlign: TextAlign.center,
-                //     ),
-                //   ],
-                // ),
-              ],
+              children: [],
             ),
           ),
           Padding(
@@ -245,7 +214,7 @@ class _HomeBodyState extends State<_HomeBody> {
                   child: Container(
                     width: 280,
                     decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 255, 90, 78),
+                      color: Colors.red,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: MaterialButton(
@@ -277,7 +246,7 @@ class _HomeBodyState extends State<_HomeBody> {
                   child: Container(
                     width: 280,
                     decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 255, 90, 78),
+                      color: Colors.red,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: MaterialButton(
@@ -380,33 +349,21 @@ class _ManageUserState extends State<ManageUser> {
                     Map<String, dynamic> data =
                         document.data() as Map<String, dynamic>;
                     String userName = data['user_name'];
-                    String userId = data['user_id'];
                     String userEmail = data['user_email'];
                     String userNumber = data['user_number'];
 
                     return Card(
-                      color: Color.fromARGB(255, 255, 247, 247),
-                      child: Container(
+                      shadowColor: Colors.redAccent,
+                      child: Padding(
+                        padding: const EdgeInsets.all(2),
                         child: ListTile(
                             leading: CircleAvatar(
                               backgroundImage: NetworkImage(data['user_image']),
                             ),
-                            title: Row(
-                              children: [
-                                Text(
-                                  userName,
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text(
-                                  "[ $userId ]",
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                              ],
+                            title: Text(
+                              userName,
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -460,15 +417,11 @@ class _ManageUserState extends State<ManageUser> {
               }),
         ),
         Padding(
-          padding: const EdgeInsets.only(top: 10),
+          padding: const EdgeInsets.only(top: 2, left: 10, right: 10),
           child: Container(
             height: 44,
-            width: 160,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                  colors: [Color.fromARGB(255, 247, 125, 125), Colors.red],
-                  begin: Alignment.bottomLeft,
-                  end: Alignment.topRight),
+              color: Colors.greenAccent,
               borderRadius: BorderRadius.circular(26),
             ),
             child: MaterialButton(
@@ -486,6 +439,7 @@ class _ManageUserState extends State<ManageUser> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
+                    color: Color.fromARGB(255, 73, 238, 158),
                     child: const Text(
                       '+',
                       style: TextStyle(
@@ -515,21 +469,108 @@ class _ManageUserState extends State<ManageUser> {
   }
 }
 
-// New Bill Tab
+// product Tab
 
-class MyNewBill extends StatefulWidget {
-  const MyNewBill({Key? key}) : super(key: key);
+class _productTab extends StatefulWidget {
+  const _productTab({super.key});
 
   @override
-  State<MyNewBill> createState() => _NewBillState();
+  State<_productTab> createState() => __productTabState();
 }
 
-class _NewBillState extends State<MyNewBill> {
+// ignore: camel_case_types
+class __productTabState extends State<_productTab> {
+  // ignore: non_constant_identifier_names
+  List category_List = [];
+  String categorytype = "";
+  String categoryname = "";
+  String? selectedCategory;
+
+  TextEditingController productController = TextEditingController();
+  TextEditingController priceController = TextEditingController();
+  TextEditingController unitController = TextEditingController();
+
+  // ignore: unused_field
   late StreamController<List<DocumentSnapshot>> _streamController;
-  TextEditingController nameController = TextEditingController();
+  // ignore: unused_field
   late List<DocumentSnapshot> _document;
-  List items = [];
-  String mainid = '';
+
+  File? _Image;
+  Future pickImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (pickedFile != null) {
+        _Image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  Future uploadDataToStorage(pickedFile) async {
+    if (pickedFile == null) {
+      print('No image selected.');
+      return;
+    }
+    String fileName = DateTime.now().microsecondsSinceEpoch.toString() + '.png';
+
+    Reference referenceRoot = FirebaseStorage.instance.ref();
+    Reference referenceDireImages = referenceRoot.child('product_Image');
+    Reference referenceImageToUpload = referenceDireImages.child(fileName);
+
+    try {
+      await referenceImageToUpload.putFile(File(pickedFile.path));
+      String imageUrl = await referenceImageToUpload.getDownloadURL();
+
+      var snapshot = await FirebaseFirestore.instance
+          .collection('raw_billing_product')
+          .get();
+      int currentCount = snapshot.size;
+      String productId = (currentCount + 1).toString();
+
+      await FirebaseFirestore.instance
+          .collection('raw_billing_product')
+          .doc(productId)
+          .set({
+        'categery': selectedCategory,
+        'product_name': productController.text,
+        'product_price': priceController.text,
+        'product_id': productId, // Set product ID same as document ID
+        'product_image': imageUrl,
+        'product_type': 'full',
+      });
+
+      print("Data added successfully");
+
+      setState(() {
+        productController.clear();
+        priceController.clear();
+        unitController.clear();
+        _Image = null;
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const product_list()),
+        );
+      });
+    } catch (error) {
+      print("Error occurred while uploading image and data: $error");
+    }
+  }
+
+  Future<void> getData() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('raw_billing_product')
+          .get();
+
+      _document = querySnapshot.docs;
+      _streamController.add(_document);
+    } catch (e) {
+      print('error i fetching data: $e');
+    }
+  }
 
   @override
   void initState() {
@@ -545,207 +586,140 @@ class _NewBillState extends State<MyNewBill> {
     _streamController.close();
   }
 
-  void addDataToRawCart() async {
-    try {
-      var snapshot =
-          await FirebaseFirestore.instance.collection('raw_cart').get();
-      int currentCount = snapshot.size;
-      await FirebaseFirestore.instance.collection('raw_cart').add({
-        'costomer_id': currentCount + 1,
-        'customer_name': nameController.text,
-        'price': '₹ 0',
-      }).whenComplete(() {
-        setState(() {
-          nameController.clear();
-        });
-      });
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const MyNewBill()),
-      );
-    } catch (error) {
-      print("Failed to add data: $error");
-    }
-  }
-
-  Future<void> getData() async {
-    try {
-      QuerySnapshot querySnapshot =
-          await FirebaseFirestore.instance.collection('raw_cart').get();
-      _document = querySnapshot.docs;
-      _streamController.add(_document);
-    } catch (e) {
-      print('error in fetching data: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(
-          child: StreamBuilder<List<DocumentSnapshot>>(
+          child: StreamBuilder(
               stream: _streamController.stream,
               builder: (BuildContext context,
                   AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.only(left: 10, right: 10),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
                 }
-                return SizedBox(
-                  height: MediaQuery.of(context).size.height - 250,
-                  width: 400,
-                  child: ListView(
-                    children: snapshot.data!.map((DocumentSnapshot document) {
-                      Map<String, dynamic> data =
-                          document.data() as Map<String, dynamic>;
-                      String costumerName = data['customer_name'];
-                      String price = data['product_price'];
+                return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListView(
+                        shrinkWrap: true,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children:
+                            snapshot.data!.map((DocumentSnapshot document) {
+                          Map<String, dynamic> data =
+                              document.data() as Map<String, dynamic>;
+                          String productId = data['product_id'];
+                          String productType = data['product_type'];
+                          String productName = data['product_name'];
+                          String productPrice = data['product_price'];
 
-                      return InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => GenerateNewBill(
-                                billName: '',
-                                mainid: mainid,
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {});
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    width: 2,
+                                    color: Colors.greenAccent, // Border color
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                productName,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              Text(
+                                                productId,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Text(
+                                            productType,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Container(
+                                      height: 30,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.purple,
+                                        borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(8),
+                                          bottomRight: Radius.circular(8),
+                                        ),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              productPrice,
+                                              // documentSnapshot['time'],
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: whiteColor,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );
-                        },
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 8),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    costumerName,
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Text(
-                                    "itemDescription",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Text(
-                                    "Price : ₹ $price",
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  top: 5, left: 10, right: 10),
-                              child: const Divider(
-                                height: 0,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                );
+                        }).toList()));
               }),
         ),
         Padding(
-          padding: const EdgeInsets.only(top: 10),
+          padding: const EdgeInsets.only(top: 2, right: 10, left: 10),
           child: Center(
             child: Container(
               height: 44,
-              width: 160,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                    colors: [Color.fromARGB(255, 247, 125, 125), Colors.red],
-                    begin: Alignment.bottomLeft,
-                    end: Alignment.topRight),
+                color: Color.fromARGB(255, 73, 238, 158),
                 borderRadius: BorderRadius.circular(26),
               ),
               child: MaterialButton(
                 onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text(
-                          'Create New Bill',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black54,
-                          ),
-                        ),
-                        content: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TextField(
-                              controller: nameController,
-                              decoration: const InputDecoration(
-                                hintText: 'Enter Name',
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              "Price : ₹0",
-                              style: TextStyle(fontSize: 18),
-                            )
-                          ],
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
-                                  color: Color.fromARGB(255, 247, 125, 125)),
-                            ),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              addDataToRawCart();
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => GenerateNewBill(
-                                    billName: '',
-                                    mainid: mainid,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: const Text(
-                              'Create',
-                              style: TextStyle(
-                                color: Color.fromARGB(255, 247, 125, 125),
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  );
+                  showAddProductDialog(context);
                 },
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(26),
@@ -769,6 +743,230 @@ class _NewBillState extends State<MyNewBill> {
           ),
         ),
       ],
+    );
+  }
+
+  showAddProductDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: StatefulBuilder(
+            builder: (BuildContext context,
+                void Function(void Function()) setState) {
+              return AlertDialog(
+                title: const Text(
+                  'Add Product',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.black54),
+                ),
+                titlePadding: const EdgeInsets.only(left: 80, top: 15),
+                content: Container(
+                  height: 360,
+                  child: Column(
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              StatefulBuilder(
+                                builder: (BuildContext context,
+                                    void Function(void Function()) setState) {
+                                  return InkWell(
+                                    onTap: () {
+                                      pickImage();
+                                    },
+                                    child: Container(
+                                      width: 200,
+                                      height: 150,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(10),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.1),
+                                            blurRadius: 10,
+                                            spreadRadius: 1,
+                                          ),
+                                        ],
+                                      ),
+                                      child: _Image != null
+                                          ? Image.file(
+                                              _Image!,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : Icon(
+                                              Icons.camera_alt,
+                                              size: 70,
+                                              color: Colors.grey.shade400,
+                                            ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ButtonTheme(
+                                alignedDropdown: true,
+                                child: StreamBuilder<QuerySnapshot>(
+                                  stream: FirebaseFirestore.instance
+                                      .collection('raw_categery')
+                                      .snapshots(),
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasError) {
+                                      print(
+                                          'Some Error Occured ${snapshot.error}');
+                                    }
+                                    List<DropdownMenuItem> rawCategory = [];
+                                    if (!snapshot.hasData) {
+                                      const CircularProgressIndicator();
+                                    } else {
+                                      final selectProgram =
+                                          snapshot.data?.docs.reversed.toList();
+
+                                      if (selectProgram != null) {
+                                        for (var data in selectProgram) {
+                                          rawCategory.add(
+                                            DropdownMenuItem(
+                                              value: data.id,
+                                              child: Text(
+                                                data['raw_categery'],
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    }
+                                    return DropdownButton(
+                                        value: selectedCategory,
+                                        items: rawCategory,
+                                        hint: const Text('Select Category'),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            selectedCategory = value;
+                                          });
+                                        });
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10),
+                                child: TextField(
+                                  controller: productController,
+                                  keyboardType: TextInputType.text,
+                                  decoration: const InputDecoration(
+                                    isDense: true,
+                                    hintText: 'Product Name',
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10),
+                                child: TextField(
+                                  controller: unitController,
+                                  keyboardType: TextInputType.text,
+                                  decoration: const InputDecoration(
+                                    isDense: true,
+                                    hintText: 'Item Unit',
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10),
+                                child: TextField(
+                                  controller: priceController,
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                        RegExp(r'[0-9]')),
+                                    LengthLimitingTextInputFormatter(10)
+                                  ],
+                                  decoration: const InputDecoration(
+                                    isDense: true,
+                                    hintText: 'Enter Price ',
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 44,
+                        width: 120,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color.fromARGB(255, 255, 90, 78),
+                              Color.fromARGB(255, 245, 157, 157),
+                              Color.fromARGB(255, 253, 77, 64),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: MaterialButton(
+                          onPressed: () {
+                            uploadDataToStorage(_Image);
+                          },
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(26),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(
+                                'Save',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
