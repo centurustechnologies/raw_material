@@ -17,6 +17,8 @@ import 'package:printing/printing.dart';
 import 'package:raw_material/helpers/app_constants.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
 
+import 'NewApp/alertdialog.dart';
+
 class BillGeneration extends StatefulWidget {
   const BillGeneration({super.key});
 
@@ -272,23 +274,19 @@ class _BillGenerationState extends State<BillGeneration> {
         String total = "${int.parse(totalPrice) - int.parse(basePrice)}";
         String quantity = doc.get('quantity');
         if (int.parse(quantity) > 1) {
-          if (kIsWeb) {
-            await FirebaseFirestore.instance
-                .collection('tablesraw')
-                .doc(id)
-                .collection('productraw')
-                .doc(documentSnapshot.id)
-                .update(
-              {
-                'total_price': total,
-                'quantity': '${int.parse(quantity) - 1}',
-              },
-            );
-          }
+          await FirebaseFirestore.instance
+              .collection('tablesraw')
+              .doc(id)
+              .collection('productraw')
+              .doc(documentSnapshot.id)
+              .update(
+            {
+              'total_price': total,
+              'quantity': '${int.parse(quantity) - 1}',
+            },
+          );
         } else {
-          if (kIsWeb) {
-            deleteTableProduct(id, documentSnapshot);
-          }
+          deleteTableProduct(id, documentSnapshot);
         }
       }
     } catch (e) {
@@ -339,7 +337,7 @@ class _BillGenerationState extends State<BillGeneration> {
     }
     newProductString = v3.join(', ');
     String apiurl =
-        "http://dominatortechnology.com/ankit/admin_api/insert_order.php?key=$securityKey&user_id=$userId&products_name=$newProductString&order_ammount=${productPrice.toString().replaceAll('[', '').replaceAll(']', '').replaceAll(' ', '')}&discount=$discount&total_ammount=$grandtotal&payment_type=$paymenttype&product_quantity=${quantitytype.toString().replaceAll('[', '').replaceAll(']', '').replaceAll(' ', '')}&product_quantity_type=${productType.toString().replaceAll('[', '').replaceAll(']', '').replaceAll(' ', '')}&discount_amount=$discountAmount";
+        "http://shreeumeshsons.com/ankit/admin_api/insert_orders_raw.php?key=$securityKey&user_id=$userId&products_name=$newProductString&order_ammount=${productPrice.toString().replaceAll('[', '').replaceAll(']', '').replaceAll(' ', '')}&discount=$discount&total_ammount=$grandtotal&payment_type=$paymenttype&product_quantity=${quantitytype.toString().replaceAll('[', '').replaceAll(']', '').replaceAll(' ', '')}&product_quantity_type=${productType.toString().replaceAll('[', '').replaceAll(']', '').replaceAll(' ', '')}&discount_amount=$discountAmount";
     try {
       print('place order $apiurl');
       final response = await http.get(
@@ -428,7 +426,7 @@ class _BillGenerationState extends State<BillGeneration> {
 
   Future updateBillStatus(key, orderId, orderStatus) async {
     String apiurl =
-        "http://dominatortechnology.com/ankit/admin_api/update_bill_clicked_status.php?key=$key&&order_id=$orderId&&bill_clicked=$orderStatus";
+        "http://shreeumeshsons.com/ankit/admin_api/update_raw_status.php?key=$key&&order_id=$orderId&&bill_clicked=$orderStatus";
 
     try {
       var response = await http.get(Uri.parse(apiurl));
@@ -437,6 +435,7 @@ class _BillGenerationState extends State<BillGeneration> {
 
         setState(() {
           updateBillingStatus = idData["data"];
+          getBillPrintingData(securityKey);
         });
         log("Update your status $apiurl $updateBillingStatus");
       } else {
@@ -859,9 +858,9 @@ class _BillGenerationState extends State<BillGeneration> {
 
   List billPrintData = [];
 
-  Future getBillPrintingData(key) async {
+  Future getBillPrintingData(securityKey) async {
     String apiurl =
-        "http://dominatortechnology.com/ankit/admin_api/get_billing_bill_status.php?key=$key";
+        "http://shreeumeshsons.com/ankit/admin_api/billing_status_raw.php?key=$securityKey";
     try {
       var response = await http.get(
         Uri.parse(apiurl),
@@ -958,6 +957,7 @@ class _BillGenerationState extends State<BillGeneration> {
   void initState() {
     fetchinstruction();
     fetchtables();
+
     fetchcategories();
     super.initState();
   }
@@ -1613,35 +1613,38 @@ class _BillGenerationState extends State<BillGeneration> {
               );
             },
           ),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 5,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.red,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                FaIcon(
-                  FontAwesomeIcons.plus,
-                  color: whiteColor,
-                  size: 14,
-                ),
-                const SizedBox(width: 5),
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Text(
-                    "Add New Bill",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: whiteColor,
-                      fontSize: 12,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 5),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 5,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.redAccent,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  FaIcon(
+                    FontAwesomeIcons.plus,
+                    color: whiteColor,
+                    size: 14,
+                  ),
+                  const SizedBox(width: 5),
+                  Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Text(
+                      "Add New Bill",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: whiteColor,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -1936,136 +1939,261 @@ class _BillGenerationState extends State<BillGeneration> {
                   },
                 ),
               ),
-        const SizedBox(height: 30),
-        Row(
+        const SizedBox(height: 2),
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: 80,
-              child: SingleChildScrollView(
-                child: StreamBuilder(
-                  stream: categoryid.isEmpty
-                      ? FirebaseFirestore.instance
-                          .collection('raw_billing_product')
-                          .where('product_price', isNotEqualTo: "0")
-                          .snapshots()
-                      : FirebaseFirestore.instance
-                          .collection('raw_billing_product')
-                          .where('categery', isEqualTo: categoryid)
-                          .snapshots(),
-                  builder:
-                      (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
-                    if (streamSnapshot.hasData) {
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: streamSnapshot.data!.docs
-                            .where((element) =>
-                                element['product_name']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains(search) ||
-                                element['product_type']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains(search))
-                            .length,
-                        itemBuilder: (context, index) {
-                          final filteredData = streamSnapshot.data!.docs.where(
-                            (element) =>
-                                element['product_name']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains(search) ||
-                                element['product_type']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains(search),
-                          );
-                          final documentSnapshot =
-                              filteredData.elementAt(index);
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 100,
+                  height: 40,
+                  child: IconButton(
+                    iconSize: 30,
+                    splashColor: Colors.red,
+                    icon: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          textlist ? ' Image' : " Text",
+                          style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                        const Icon(
+                          Icons.swap_horiz,
+                          color: Colors.red,
+                        ),
+                      ],
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        imagebool = !imagebool;
+                        textlist = !textlist;
+                      });
+                    },
+                  ),
+                ),
+                // _buildTextAndImageList(),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 2),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 80,
+                    child: SingleChildScrollView(
+                      child: StreamBuilder(
+                        stream: categoryid.isEmpty
+                            ? FirebaseFirestore.instance
+                                .collection('raw_billing_product')
+                                .where('product_price', isNotEqualTo: "0")
+                                .snapshots()
+                            : FirebaseFirestore.instance
+                                .collection('raw_billing_product')
+                                .where('categery', isEqualTo: categoryid)
+                                .snapshots(),
+                        builder: (context,
+                            AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+                          if (streamSnapshot.hasData) {
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              itemCount: streamSnapshot.data!.docs
+                                  .where((element) =>
+                                      element['product_name']
+                                          .toString()
+                                          .toLowerCase()
+                                          .contains(search) ||
+                                      element['product_type']
+                                          .toString()
+                                          .toLowerCase()
+                                          .contains(search))
+                                  .length,
+                              itemBuilder: (context, index) {
+                                final filteredData =
+                                    streamSnapshot.data!.docs.where(
+                                  (element) =>
+                                      element['product_name']
+                                          .toString()
+                                          .toLowerCase()
+                                          .contains(search) ||
+                                      element['product_type']
+                                          .toString()
+                                          .toLowerCase()
+                                          .contains(search),
+                                );
+                                final documentSnapshot =
+                                    filteredData.elementAt(index);
+                                final String productImage =
+                                    documentSnapshot['product_image'];
+                                return InkWell(
+                                  onTap: () {
+                                    addNewTableProduct(
+                                      _tableSelected.toString(),
+                                      documentSnapshot,
+                                    );
+                                  },
+                                  onHover: (value) {
+                                    if (value) {
+                                      setState(() {
+                                        _productHover = index.toString();
+                                      });
+                                    } else {
+                                      setState(() {
+                                        _productHover = '';
+                                      });
+                                    }
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                        bottom: 3, right: 5, top: 2),
+                                    child: Container(
+                                      // Increase the size of the Container to make the InkWell tappable
+                                      height: 90,
 
-                          return InkWell(
-                            onTap: () {
-                              addNewTableProduct(
-                                _tableSelected.toString(),
-                                documentSnapshot,
-                              );
-                            },
-                            onHover: (value) {
-                              if (value) {
-                                setState(() {
-                                  _productHover = index.toString();
-                                });
-                              } else {
-                                setState(() {
-                                  _productHover = '';
-                                });
-                              }
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  bottom: 3, right: 5, top: 2),
-                              child: Container(
-                                // Increase the size of the Container to make the InkWell tappable
-                                height: 100,
-
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    width: _productHover == index.toString()
-                                        ? 2
-                                        : 1,
-                                    color: _productHover == index.toString()
-                                        ? Colors.greenAccent
-                                        : Colors.grey, // Border color
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.all(6),
-                                          child: Row(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          width:
+                                              _productHover == index.toString()
+                                                  ? 2
+                                                  : 1,
+                                          color:
+                                              _productHover == index.toString()
+                                                  ? Colors.greenAccent
+                                                  : Colors.grey, // Border color
+                                        ),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Column(
                                             children: [
-                                              SizedBox(
-                                                // Adjust width as needed
-                                                child: Text(
-                                                  documentSnapshot[
-                                                      'product_name'],
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.black,
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
-                                              ),
-                                              SizedBox(width: 5),
+                                              imagebool
+                                                  ? Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          SizedBox(
+                                                            height: 64,
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      left: 10,
+                                                                      top: 5),
+                                                              child: Text(
+                                                                documentSnapshot[
+                                                                    'product_name'],
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                  color: Colors
+                                                                      .black,
+                                                                  fontSize: 10,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Container(
+                                                            height: 20,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                                    borderRadius:
+                                                                        BorderRadius
+                                                                            .only(
+                                                                      bottomLeft:
+                                                                          Radius.circular(
+                                                                              8),
+                                                                      bottomRight:
+                                                                          Radius.circular(
+                                                                              8),
+                                                                    ),
+                                                                    color: Colors
+                                                                        .greenAccent),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    )
+                                                  : Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Column(
+                                                        children: [
+                                                          ClipRRect(
+                                                            borderRadius: BorderRadius.only(
+                                                                topLeft: Radius
+                                                                    .circular(
+                                                                        8),
+                                                                topRight: Radius
+                                                                    .circular(
+                                                                        8)), // Rounded corners for the image
+                                                            child:
+                                                                Image.network(
+                                                              documentSnapshot[
+                                                                  'product_image'],
+                                                              width:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
+                                                              height:
+                                                                  64, // Adjust height as needed
+                                                              fit: BoxFit.cover,
+                                                            ),
+                                                          ),
+                                                          Container(
+                                                            height: 20,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                                    borderRadius:
+                                                                        BorderRadius
+                                                                            .only(
+                                                                      bottomLeft:
+                                                                          Radius.circular(
+                                                                              8),
+                                                                      bottomRight:
+                                                                          Radius.circular(
+                                                                              8),
+                                                                    ),
+                                                                    color: Colors
+                                                                        .greenAccent),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ),
                                             ],
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
+                                  ),
+                                );
+                              },
+                            );
+                          }
+                          return Container();
                         },
-                      );
-                    }
-                    return Container();
-                  },
-                ),
+                      ),
+                    ),
+                  ),
+                  billingCart(context),
+                ],
               ),
             ),
-            billingCart(context),
           ],
         ),
       ],
@@ -4701,25 +4829,11 @@ class _BillGenerationState extends State<BillGeneration> {
               .then(
             (value) {
               if (value.size > 0) {
-                setState(() {
-                  showPayments = true;
-                  showProducts = false;
-                  showCustomer = false;
-                });
-                if (documentSnapshot['kot_done'] == 'true') {
+                if (value.size > 0) {
                   setState(() {
                     updateBillStatus(
                         securityKey, documentSnapshot['order_id'], '3');
                   });
-                  FirebaseFirestore.instance
-                      .collection('tables')
-                      .doc(_tableSelected)
-                      .update(
-                    {
-                      'bill_done': 'true',
-                      'status': 'bill-printed',
-                    },
-                  );
                 } else {
                   insertOrderbilling(
                     productNames,
@@ -4741,34 +4855,22 @@ class _BillGenerationState extends State<BillGeneration> {
                   );
                 }
               } else {
-                // alertDialogWidget(
-                //   context,
-                //   Colors.red,
-                //   'Please add any product to continue',
-                // );
+                alertDialogWidget(
+                  context,
+                  Colors.red,
+                  'Please add any product to continue',
+                );
               }
             },
           );
         },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            documentSnapshot['bill_done'] == 'true'
-                ? FaIcon(
-                    Icons.done_all_rounded,
-                    color: Colors.greenAccent,
-                    size: 6,
-                  )
-                : const SizedBox(),
-            Text(
-              'Generate PDF',
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.3,
-                  color: whiteColor),
-            ),
-          ],
+        child: Text(
+          'Generate PDF',
+          style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.3,
+              color: whiteColor),
         ),
       ),
     );
