@@ -1602,6 +1602,7 @@ class _BillGenerationState extends State<BillGeneration> {
           child: Padding(
             padding: const EdgeInsets.all(10.0),
             child: ListView.builder(
+              shrinkWrap: true,
               physics: AlwaysScrollableScrollPhysics(),
               itemCount: listtables.length,
               itemBuilder: (BuildContext context, int index) {
@@ -3499,7 +3500,7 @@ class _BillGenerationState extends State<BillGeneration> {
                                   padding: const EdgeInsets.only(left: 5),
                                   child: SizedBox(
                                     child: Text(
-                                      'Item Count : ${snapshot.data!.docs.length}',
+                                      'Item Count 5 : ${snapshot.data!.docs.length}',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         letterSpacing: 0.3,
