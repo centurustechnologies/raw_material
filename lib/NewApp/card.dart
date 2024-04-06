@@ -15,7 +15,6 @@ import 'package:raw_material/mainfiles/bill_history.dart';
 import 'package:raw_material/mainfiles/category.dart';
 import 'package:raw_material/mainfiles/homepage.dart';
 import 'package:raw_material/mainfiles/my_order.dart';
-import 'package:raw_material/mainfiles/new_bill.dart';
 
 import '../lastoption.dart';
 
@@ -29,6 +28,7 @@ class NewHome extends StatefulWidget {
 }
 
 class _NewHomeState extends State<NewHome> {
+  bool usertype = true;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final TextEditingController _searchText = TextEditingController();
@@ -36,19 +36,27 @@ class _NewHomeState extends State<NewHome> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
+      length: usertype ? 4 : 3,
       child: Scaffold(
         key: _scaffoldKey,
         appBar: _appBar(context),
         drawer: const MyDrawer(), // Assuming MyDrawer is defined somewhere
-        body: TabBarView(
-          children: [
-            const _HomeBody(),
-            const ManageUser(),
-            const _productTab(),
-            MenuTab(),
-          ],
-        ),
+        body: usertype
+            ? TabBarView(
+                children: [
+                  const _HomeBody(),
+                  const ManageUser(),
+                  const _productTab(),
+                  MenuTab(),
+                ],
+              )
+            : TabBarView(
+                children: [
+                  const _HomeBody(),
+                  const _productTab(),
+                  MenuTab(),
+                ],
+              ),
       ),
     );
   }
@@ -83,7 +91,7 @@ class _NewHomeState extends State<NewHome> {
               ),
               const SizedBox(height: 5),
               _searchBox(),
-              _tabBar(),
+              usertype ? _tabBar() : _tabBar2(),
             ],
           ),
         ),
@@ -150,6 +158,32 @@ class _NewHomeState extends State<NewHome> {
           iconMargin: EdgeInsets.all(0),
           icon: Icon(Icons.group),
           text: 'User',
+        ),
+        Tab(
+          iconMargin: EdgeInsets.all(0),
+          icon: Icon(Icons.notifications),
+          text: 'Products',
+        ),
+        Tab(
+          iconMargin: EdgeInsets.all(0),
+          icon: Icon(Icons.menu),
+          text: 'Menu',
+        ),
+      ],
+    );
+  }
+
+  Widget _tabBar2() {
+    return const TabBar(
+      labelPadding: EdgeInsets.all(0),
+      labelColor: Color.fromARGB(255, 68, 255, 224),
+      indicatorColor: Color.fromARGB(255, 68, 255, 224),
+      unselectedLabelColor: Colors.white,
+      tabs: [
+        Tab(
+          iconMargin: EdgeInsets.all(0),
+          icon: Icon(Icons.home),
+          text: 'Home',
         ),
         Tab(
           iconMargin: EdgeInsets.all(0),
@@ -350,7 +384,6 @@ class _ManageUserState extends State<ManageUser> {
                         document.data() as Map<String, dynamic>;
                     String userName = data['user_name'];
                     String userEmail = data['user_email'];
-                    String userNumber = data['user_number'];
 
                     return Card(
                       shadowColor: Colors.redAccent,
@@ -365,13 +398,7 @@ class _ManageUserState extends State<ManageUser> {
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("contact: $userNumber"),
-                                Text("email: $userEmail"),
-                              ],
-                            ),
+                            subtitle: Text("email: $userEmail"),
                             trailing: PopupMenuButton<String>(
                                 icon: Padding(
                                   padding: const EdgeInsets.only(bottom: 0),
@@ -421,7 +448,7 @@ class _ManageUserState extends State<ManageUser> {
           child: Container(
             height: 44,
             decoration: BoxDecoration(
-              color: Colors.greenAccent,
+              color: Colors.red,
               borderRadius: BorderRadius.circular(26),
             ),
             child: MaterialButton(
@@ -439,7 +466,6 @@ class _ManageUserState extends State<ManageUser> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    color: Color.fromARGB(255, 73, 238, 158),
                     child: const Text(
                       '+',
                       style: TextStyle(
@@ -624,7 +650,7 @@ class __productTabState extends State<_productTab> {
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
                                     width: 2,
-                                    color: Colors.greenAccent, // Border color
+                                    color: Colors.greenAccent,
                                   ),
                                 ),
                                 child: Column(
@@ -674,7 +700,7 @@ class __productTabState extends State<_productTab> {
                                     Container(
                                       height: 30,
                                       decoration: const BoxDecoration(
-                                        color: Colors.purple,
+                                        color: Colors.grey,
                                         borderRadius: BorderRadius.only(
                                           bottomLeft: Radius.circular(8),
                                           bottomRight: Radius.circular(8),
@@ -688,7 +714,7 @@ class __productTabState extends State<_productTab> {
                                               MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text(
-                                              productPrice,
+                                              '₹ $productPrice',
                                               // documentSnapshot['time'],
                                               style: TextStyle(
                                                 fontWeight: FontWeight.bold,
@@ -714,7 +740,7 @@ class __productTabState extends State<_productTab> {
             child: Container(
               height: 44,
               decoration: BoxDecoration(
-                color: Color.fromARGB(255, 73, 238, 158),
+                color: Colors.red,
                 borderRadius: BorderRadius.circular(26),
               ),
               child: MaterialButton(

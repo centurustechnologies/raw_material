@@ -2,6 +2,12 @@
 
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -49,6 +55,7 @@ class _BillGenerationState extends State<BillGeneration> {
   bool clickprintbill = false;
   bool clickpayment = false;
   bool addInstructions = false;
+  bool billprintshare = true;
 
   bool editGrandTotalPrice = false;
 
@@ -343,76 +350,21 @@ class _BillGenerationState extends State<BillGeneration> {
       final response = await http.get(
         Uri.parse(apiurl),
       );
-      log('order id is ${response.body}');
+      String inserted_id = '';
+      inserted_id = jsonDecode(json.encode(response.body));
+      log('order id is $inserted_id');
 
-      if (buttonType != 'kot') {
+      if (inserted_id is int) {
+        FirebaseFirestore.instance
+            .collection('tablesraw')
+            .doc(_tableSelected)
+            .update(
+          {
+            'order_id': inserted_id,
+          },
+        );
+
         updateBillStatus(securityKey, response.body, '3');
-      }
-
-      FirebaseFirestore.instance
-          .collection('tables')
-          .doc(_tableSelected)
-          .update(
-        {
-          'order_id': response.body,
-        },
-      );
-      if (buttonType == 'kot') {
-        FirebaseFirestore.instance
-            .collection('tables')
-            .doc(_tableSelected)
-            .update(
-          {
-            'kot_done': 'true',
-            'status': 'occupied',
-          },
-        );
-      } else if (buttonType == 'bill done') {
-        FirebaseFirestore.instance
-            .collection('tables')
-            .doc(_tableSelected)
-            .update(
-          {
-            'bill_done': 'true',
-            'kot_done': 'true',
-            'status': 'bill-printed',
-          },
-        );
-
-        setState(() {});
-      } else if (buttonType == 'payment done') {
-        if (kotDone != 'true') {
-          FirebaseFirestore.instance
-              .collection('tables')
-              .doc(_tableSelected)
-              .update(
-            {
-              'bill_done': 'true',
-              'kot_done': 'true',
-              'payment_done': 'true',
-              'status': 'payment',
-            },
-          );
-          setState(
-            () {},
-          );
-        } else {
-          updateBillStatus(securityKey, response.body, '3');
-          FirebaseFirestore.instance
-              .collection('tables')
-              .doc(_tableSelected)
-              .update(
-            {
-              'bill_done': 'true',
-              'kot_done': 'true',
-              'payment_done': 'true',
-              'status': 'payment',
-            },
-          );
-          setState(
-            () {},
-          );
-        }
       }
     } on Exception catch (e) {
       log('exception is $e');
@@ -437,7 +389,7 @@ class _BillGenerationState extends State<BillGeneration> {
           updateBillingStatus = idData["data"];
           getBillPrintingData(securityKey);
         });
-        log("Update your status $apiurl $updateBillingStatus");
+        log("Update your status $orderId $updateBillingStatus");
       } else {
         log("Update your Not update your status");
       }
@@ -496,7 +448,7 @@ class _BillGenerationState extends State<BillGeneration> {
                 "Shri Umesh Son's Healthy Foods",
                 style: pw.TextStyle(
                   fontWeight: pw.FontWeight.bold,
-                  fontSize: 10,
+                  fontSize: 8,
                 ),
               ),
               pw.SizedBox(height: 2),
@@ -537,7 +489,6 @@ class _BillGenerationState extends State<BillGeneration> {
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Align(
-                    alignment: pw.Alignment.centerLeft,
                     child: pw.SizedBox(
                       width: billType == 'billing' ? 85 : 80,
                       child: pw.Text(
@@ -550,7 +501,6 @@ class _BillGenerationState extends State<BillGeneration> {
                     ),
                   ),
                   pw.Align(
-                    alignment: pw.Alignment.centerRight,
                     child: pw.Row(
                       children: [
                         pw.SizedBox(
@@ -643,7 +593,6 @@ class _BillGenerationState extends State<BillGeneration> {
                     child: pw.Row(
                       children: [
                         pw.SizedBox(
-                          width: 20,
                           child: pw.Text(
                             rate,
                             style: pw.TextStyle(
@@ -653,7 +602,6 @@ class _BillGenerationState extends State<BillGeneration> {
                           ),
                         ),
                         pw.SizedBox(
-                          width: 20,
                           child: pw.Text(
                             qty,
                             style: pw.TextStyle(
@@ -850,10 +798,12 @@ class _BillGenerationState extends State<BillGeneration> {
         },
       ),
     );
-
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
-    );
+    try {
+      final bytes = await pdf.save();
+      await Printing.sharePdf(bytes: bytes, filename: '$orderNumber.pdf');
+    } catch (e) {
+      print(e.toString());
+    }
   }
 
   List billPrintData = [];
@@ -1014,7 +964,7 @@ class _BillGenerationState extends State<BillGeneration> {
                         padding: const EdgeInsets.only(
                             top: 15, bottom: 10, left: 10, right: 10),
                         child: Container(
-                          height: displayHeight(context) - 121,
+                          height: MediaQuery.of(context).size.height - 121,
                           decoration: BoxDecoration(
                             color: whiteColor,
                             borderRadius: BorderRadius.circular(10),
@@ -1027,13 +977,11 @@ class _BillGenerationState extends State<BillGeneration> {
                             ],
                           ),
                           padding: const EdgeInsets.only(left: 5),
-                          child: SingleChildScrollView(
-                            child: showProducts
-                                ? billingProducts()
-                                : showPayments
-                                    ? billingCart(context)
-                                    : billingTables(),
-                          ),
+                          child: showProducts
+                              ? billingProducts()
+                              : showPayments
+                                  ? billingCart(context)
+                                  : billingTables(),
                         ),
                       ),
                     ),
@@ -1649,101 +1597,105 @@ class _BillGenerationState extends State<BillGeneration> {
           ),
         ),
         const SizedBox(height: 10),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: listtables.length,
-            itemBuilder: (BuildContext context, int index) {
-              DocumentSnapshot documentSnapshot = listtables[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: InkWell(
-                  onTap: () {
-                    setState(() {
-                      _tableSelected = documentSnapshot.id.toString();
-                      _tableHover = '';
-                      showProducts = true;
-                    });
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        width: 2,
-                        color: Colors.greenAccent, // Border color
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                documentSnapshot['customer_name'],
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              MaterialButton(
-                                minWidth: 0,
-                                onPressed: () {},
-                                child: FaIcon(
-                                  FontAwesomeIcons.ellipsisVertical,
-                                  color: _tableSelected == documentSnapshot.id
-                                      ? whiteColor.withOpacity(0.8)
-                                      : Colors.black.withOpacity(0.5),
-                                ),
-                              ),
-                            ],
-                          ),
+        SizedBox(
+          height: MediaQuery.of(context).size.height - 183,
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: ListView.builder(
+              physics: AlwaysScrollableScrollPhysics(),
+              itemCount: listtables.length,
+              itemBuilder: (BuildContext context, int index) {
+                DocumentSnapshot documentSnapshot = listtables[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: InkWell(
+                    onTap: () {
+                      setState(() {
+                        _tableSelected = documentSnapshot.id.toString();
+                        _tableHover = '';
+                        showProducts = true;
+                      });
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          width: 2,
+                          color: Colors.greenAccent, // Border color
                         ),
-                        SizedBox(height: 20),
-                        Container(
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: documentSnapshot['status'] == 'vacant'
-                                ? Colors.blueGrey[100]!
-                                : documentSnapshot['status'] == 'occupied'
-                                    ? Colors.purple
-                                    : documentSnapshot['status'] ==
-                                            'bill-printed'
-                                        ? Colors.amber
-                                        : Colors.greenAccent,
-                            borderRadius: BorderRadius.only(
-                              bottomLeft: const Radius.circular(8),
-                              bottomRight: const Radius.circular(8),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(10),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  documentSnapshot['time'],
+                                  documentSnapshot['customer_name'],
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: whiteColor,
                                     fontSize: 16,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                MaterialButton(
+                                  minWidth: 0,
+                                  onPressed: () {},
+                                  child: FaIcon(
+                                    FontAwesomeIcons.ellipsisVertical,
+                                    color: _tableSelected == documentSnapshot.id
+                                        ? whiteColor.withOpacity(0.8)
+                                        : Colors.black.withOpacity(0.5),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ),
-                      ],
+                          SizedBox(height: 20),
+                          Container(
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: documentSnapshot['status'] == 'vacant'
+                                  ? Colors.blueGrey[100]!
+                                  : documentSnapshot['status'] == 'occupied'
+                                      ? Colors.purple
+                                      : documentSnapshot['status'] ==
+                                              'bill-printed'
+                                          ? Colors.amber
+                                          : Colors.greenAccent,
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: const Radius.circular(8),
+                                bottomRight: const Radius.circular(8),
+                              ),
+                            ),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    documentSnapshot['time'],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: whiteColor,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ],
@@ -1987,207 +1939,201 @@ class _BillGenerationState extends State<BillGeneration> {
                 children: [
                   SizedBox(
                     width: 80,
-                    child: SingleChildScrollView(
-                      child: StreamBuilder(
-                        stream: categoryid.isEmpty
-                            ? FirebaseFirestore.instance
-                                .collection('raw_billing_product')
-                                .where('product_price', isNotEqualTo: "0")
-                                .snapshots()
-                            : FirebaseFirestore.instance
-                                .collection('raw_billing_product')
-                                .where('categery', isEqualTo: categoryid)
-                                .snapshots(),
-                        builder: (context,
-                            AsyncSnapshot<QuerySnapshot> streamSnapshot) {
-                          if (streamSnapshot.hasData) {
-                            return ListView.builder(
-                              shrinkWrap: true,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              itemCount: streamSnapshot.data!.docs
-                                  .where((element) =>
-                                      element['product_name']
-                                          .toString()
-                                          .toLowerCase()
-                                          .contains(search) ||
-                                      element['product_type']
-                                          .toString()
-                                          .toLowerCase()
-                                          .contains(search))
-                                  .length,
-                              itemBuilder: (context, index) {
-                                final filteredData =
-                                    streamSnapshot.data!.docs.where(
-                                  (element) =>
-                                      element['product_name']
-                                          .toString()
-                                          .toLowerCase()
-                                          .contains(search) ||
-                                      element['product_type']
-                                          .toString()
-                                          .toLowerCase()
-                                          .contains(search),
-                                );
-                                final documentSnapshot =
-                                    filteredData.elementAt(index);
-                                final String productImage =
-                                    documentSnapshot['product_image'];
-                                return InkWell(
-                                  onTap: () {
-                                    addNewTableProduct(
-                                      _tableSelected.toString(),
-                                      documentSnapshot,
-                                    );
-                                  },
-                                  onHover: (value) {
-                                    if (value) {
-                                      setState(() {
-                                        _productHover = index.toString();
-                                      });
-                                    } else {
-                                      setState(() {
-                                        _productHover = '';
-                                      });
-                                    }
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        bottom: 3, right: 5, top: 2),
-                                    child: Container(
-                                      // Increase the size of the Container to make the InkWell tappable
-                                      height: 90,
+                    height: MediaQuery.of(context).size.height - 259,
+                    child: StreamBuilder(
+                      stream: categoryid.isEmpty
+                          ? FirebaseFirestore.instance
+                              .collection('raw_billing_product')
+                              .where('product_price', isNotEqualTo: "0")
+                              .snapshots()
+                          : FirebaseFirestore.instance
+                              .collection('raw_billing_product')
+                              .where('categery', isEqualTo: categoryid)
+                              .snapshots(),
+                      builder: (context,
+                          AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+                        if (streamSnapshot.hasData) {
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: streamSnapshot.data!.docs
+                                .where((element) =>
+                                    element['product_name']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains(search) ||
+                                    element['product_type']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains(search))
+                                .length,
+                            itemBuilder: (context, index) {
+                              final filteredData =
+                                  streamSnapshot.data!.docs.where(
+                                (element) =>
+                                    element['product_name']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains(search) ||
+                                    element['product_type']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains(search),
+                              );
+                              final documentSnapshot =
+                                  filteredData.elementAt(index);
 
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                          width:
-                                              _productHover == index.toString()
-                                                  ? 2
-                                                  : 1,
-                                          color:
-                                              _productHover == index.toString()
-                                                  ? Colors.greenAccent
-                                                  : Colors.grey, // Border color
-                                        ),
+                              return InkWell(
+                                onTap: () {
+                                  addNewTableProduct(
+                                    _tableSelected.toString(),
+                                    documentSnapshot,
+                                  );
+                                },
+                                onHover: (value) {
+                                  if (value) {
+                                    setState(() {
+                                      _productHover = index.toString();
+                                    });
+                                  } else {
+                                    setState(() {
+                                      _productHover = '';
+                                    });
+                                  }
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      bottom: 3, right: 5, top: 2),
+                                  child: Container(
+                                    // Increase the size of the Container to make the InkWell tappable
+                                    height: 90,
+
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        width: _productHover == index.toString()
+                                            ? 2
+                                            : 1,
+                                        color: _productHover == index.toString()
+                                            ? Colors.greenAccent
+                                            : Colors.grey, // Border color
                                       ),
-                                      child: Column(
-                                        children: [
-                                          Column(
-                                            children: [
-                                              imagebool
-                                                  ? Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              2.0),
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          SizedBox(
-                                                            height: 64,
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      left: 10,
-                                                                      top: 5),
-                                                              child: Text(
-                                                                documentSnapshot[
-                                                                    'product_name'],
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  color: Colors
-                                                                      .black,
-                                                                  fontSize: 10,
-                                                                ),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Column(
+                                          children: [
+                                            imagebool
+                                                ? Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            2.0),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        SizedBox(
+                                                          height: 64,
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    left: 10,
+                                                                    top: 5),
+                                                            child: Text(
+                                                              documentSnapshot[
+                                                                  'product_name'],
+                                                              style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                color: Colors
+                                                                    .black,
+                                                                fontSize: 10,
                                                               ),
                                                             ),
                                                           ),
-                                                          Container(
-                                                            height: 20,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .only(
-                                                                      bottomLeft:
-                                                                          Radius.circular(
-                                                                              8),
-                                                                      bottomRight:
-                                                                          Radius.circular(
-                                                                              8),
-                                                                    ),
-                                                                    color: Colors
-                                                                        .greenAccent),
-                                                          )
-                                                        ],
-                                                      ),
-                                                    )
-                                                  : Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              2.0),
-                                                      child: Column(
-                                                        children: [
-                                                          ClipRRect(
-                                                            borderRadius: BorderRadius.only(
-                                                                topLeft: Radius
-                                                                    .circular(
-                                                                        8),
-                                                                topRight: Radius
-                                                                    .circular(
-                                                                        8)), // Rounded corners for the image
-                                                            child:
-                                                                Image.network(
-                                                              documentSnapshot[
-                                                                  'product_image'],
-                                                              width:
-                                                                  MediaQuery.of(
-                                                                          context)
-                                                                      .size
-                                                                      .width,
-                                                              height:
-                                                                  64, // Adjust height as needed
-                                                              fit: BoxFit.cover,
-                                                            ),
-                                                          ),
-                                                          Container(
-                                                            height: 20,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .only(
-                                                                      bottomLeft:
-                                                                          Radius.circular(
-                                                                              8),
-                                                                      bottomRight:
-                                                                          Radius.circular(
-                                                                              8),
-                                                                    ),
-                                                                    color: Colors
-                                                                        .greenAccent),
-                                                          )
-                                                        ],
-                                                      ),
+                                                        ),
+                                                        Container(
+                                                          height: 20,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .only(
+                                                                    bottomLeft:
+                                                                        Radius.circular(
+                                                                            8),
+                                                                    bottomRight:
+                                                                        Radius.circular(
+                                                                            8),
+                                                                  ),
+                                                                  color: Colors
+                                                                      .greenAccent),
+                                                        )
+                                                      ],
                                                     ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
+                                                  )
+                                                : Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            2.0),
+                                                    child: Column(
+                                                      children: [
+                                                        ClipRRect(
+                                                          borderRadius:
+                                                              BorderRadius.only(
+                                                                  topLeft: Radius
+                                                                      .circular(
+                                                                          8),
+                                                                  topRight: Radius
+                                                                      .circular(
+                                                                          8)), // Rounded corners for the image
+                                                          child: Image.network(
+                                                            documentSnapshot[
+                                                                'product_image'],
+                                                            width:
+                                                                MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width,
+                                                            height:
+                                                                64, // Adjust height as needed
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                        ),
+                                                        Container(
+                                                          height: 20,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .only(
+                                                                    bottomLeft:
+                                                                        Radius.circular(
+                                                                            8),
+                                                                    bottomRight:
+                                                                        Radius.circular(
+                                                                            8),
+                                                                  ),
+                                                                  color: Colors
+                                                                      .greenAccent),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                );
-                              },
-                            );
-                          }
-                          return Container();
-                        },
-                      ),
+                                ),
+                              );
+                            },
+                          );
+                        }
+                        return Container();
+                      },
                     ),
                   ),
                   billingCart(context),
@@ -3202,804 +3148,571 @@ class _BillGenerationState extends State<BillGeneration> {
   }
 
   billingCart(context) {
-    return Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          color: _tableSelected == '0' ? Colors.black : whiteColor,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.greenAccent.withOpacity(0.2),
-              blurRadius: 10,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: whiteColor,
-                    border: Border.all(
-                      color: Colors.black.withOpacity(0.05),
-                    ),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      topRight: Radius.circular(10),
-                    ),
+    return Container(
+      height: MediaQuery.of(context).size.height - 258,
+      width: MediaQuery.of(context).size.width - 107,
+      decoration: BoxDecoration(
+          // color: _tableSelected == '0' ? Colors.black : whiteColor,
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: Colors.green.withOpacity(0.2),
+          //     blurRadius: 10,
+          //     spreadRadius: 1,
+          //   ),
+          // ],
+          ),
+      child: Column(
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: whiteColor,
+                  border: Border.all(
+                    color: Colors.black.withOpacity(0.05),
                   ),
-                  child: Expanded(
-                    child: InkWell(
-                      onTap: () => setState(() => billType = 'Eat'),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: billType == "Eat" ? mainColor : whiteColor,
-                        ),
-                        padding: const EdgeInsets.all(6),
-                        child: Center(
-                          child: billingHeaderWidget(
-                            'Product Cart',
-                            billType,
-                          ),
-                        ),
-                      ),
-                    ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10),
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
+                child: Expanded(
+                  child: InkWell(
+                    onTap: () => setState(() => billType = 'Eat'),
+                    child: Container(
                       decoration: BoxDecoration(
-                        color: whiteColor,
-                        border: Border.all(
-                          color: Colors.black.withOpacity(0.05),
+                        color: billType == "Eat" ? mainColor : whiteColor,
+                      ),
+                      padding: const EdgeInsets.all(6),
+                      child: Center(
+                        child: billingHeaderWidget(
+                          'Product Cart',
+                          billType,
                         ),
                       ),
-                      padding: const EdgeInsets.only(left: 5),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Order Details',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              color: Colors.black.withOpacity(0.5),
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              MaterialButton(
-                                minWidth: 60,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                color: Colors.orange,
-                                onPressed: () {
-                                  billingPreview(context);
-                                },
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.description_rounded,
-                                      color: whiteColor,
-                                      size: 14,
-                                    ),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      'View Bill',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.3,
-                                          color: whiteColor,
-                                          fontSize: 12),
-                                      textAlign: TextAlign.start,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(width: 10),
-                            ],
-                          ),
-                        ],
-                      ),
                     ),
-                    SizedBox(
-                      height: displayHeight(context) / 2.5,
-                      child: StreamBuilder(
-                        stream: FirebaseFirestore.instance
-                            .collection('tablesraw')
-                            .doc(_tableSelected)
-                            .collection('productraw')
-                            .snapshots(),
-                        builder: (context,
-                            AsyncSnapshot<QuerySnapshot> productSnapshot) {
-                          if (productSnapshot.hasData) {
-                            productNames.clear();
-                            productPrice.clear();
-                            productType.clear();
-                            quantitytype.clear();
-                            return ListView.builder(
-                              itemCount: productSnapshot.data!.docs.length,
-                              itemBuilder: (context, index) {
-                                DocumentSnapshot productDocumentSnapshot =
-                                    productSnapshot.data!.docs[index];
-                                productNames.add(
-                                    productDocumentSnapshot['product_name']
-                                        .toString());
-                                productPrice.add(
-                                    productDocumentSnapshot['product_price']
-                                        .toString());
-                                productType.add(
-                                    productDocumentSnapshot['product_type']
-                                        .toString());
-
-                                quantitytype
-                                    .add(productDocumentSnapshot['quantity']);
-
-                                log("ljiksdldfsljksdf $productType");
-
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    color: const Color.fromARGB(
-                                      255,
-                                      235,
-                                      246,
-                                      254,
-                                    ),
-                                    border: Border.all(
-                                      color: Colors.blue.withOpacity(0.05),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 2),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(
-                                          width: 100,
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              SizedBox(
-                                                width: 100,
-                                                child: Row(
-                                                  children: [
-                                                    Text(
-                                                      " ${productDocumentSnapshot['product_name']} ",
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.black,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      " ${productDocumentSnapshot['product_type']}",
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 5),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: [
-                                              SizedBox(
-                                                width: 40,
-                                                child: Text(
-                                                  '$rupeeSign${productDocumentSnapshot['product_price']}',
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
-                                              ),
-                                              MaterialButton(
-                                                padding:
-                                                    const EdgeInsets.all(6.0),
-                                                minWidth: 0,
-                                                height: 0,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(5),
-                                                ),
-                                                color: Colors.greenAccent,
-                                                onPressed: () {
-                                                  MinusNewTableProduct(
-                                                      _tableSelected,
-                                                      productDocumentSnapshot);
-                                                },
-                                                child: FaIcon(
-                                                  FontAwesomeIcons.minus,
-                                                  size: 8,
-                                                  color: whiteColor,
-                                                ),
-                                              ),
-                                              Container(
-                                                padding: EdgeInsets.symmetric(
-                                                  vertical: 2,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: whiteColor,
-                                                  borderRadius:
-                                                      BorderRadius.circular(5),
-                                                ),
-                                                width: 30,
-                                                height: 30,
-                                                child: TextFormField(
-                                                  inputFormatters: [
-                                                    FilteringTextInputFormatter
-                                                        .digitsOnly,
-                                                    LengthLimitingTextInputFormatter(
-                                                        3),
-                                                  ],
-                                                  controller:
-                                                      TextEditingController(
-                                                    text:
-                                                        productDocumentSnapshot[
-                                                            'quantity'],
-                                                  ),
-                                                  focusNode: FocusNode(),
-                                                  decoration: InputDecoration(
-                                                    isDense: true,
-                                                    border: InputBorder.none,
-                                                  ),
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 10,
-                                                    color: Colors.black,
-                                                  ),
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                              ),
-                                              MaterialButton(
-                                                padding:
-                                                    const EdgeInsets.all(5),
-                                                minWidth: 4,
-                                                height: 4,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(2),
-                                                ),
-                                                color: Colors.greenAccent,
-                                                onPressed: () {
-                                                  addNewTableProduct(
-                                                      _tableSelected,
-                                                      productDocumentSnapshot);
-                                                },
-                                                child: FaIcon(
-                                                  FontAwesomeIcons.plus,
-                                                  size: 10,
-                                                  color: whiteColor,
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                width: 30,
-                                                child: Text(
-                                                  '$rupeeSign${productDocumentSnapshot['total_price']}',
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 10),
-                                                ),
-                                              ),
-                                              MaterialButton(
-                                                padding:
-                                                    const EdgeInsets.all(5),
-                                                minWidth: 4,
-                                                height: 4,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(5),
-                                                ),
-                                                color: mainColor,
-                                                onPressed: () {
-                                                  deleteTableProduct(
-                                                      _tableSelected,
-                                                      productDocumentSnapshot);
-                                                },
-                                                child: FaIcon(
-                                                  Icons.delete,
-                                                  color: Colors.white,
-                                                  size: 10,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-                          }
-                          return Container();
-                        },
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-                StreamBuilder(
-                  stream: FirebaseFirestore.instance
-                      .collection('tablesraw')
-                      .doc(_tableSelected)
-                      .collection('productraw')
-                      .snapshots(),
-                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                    if (snapshot.hasData) {
-                      var totalprice = 0;
-                      for (var i = 0; i < snapshot.data!.docs.length; i++) {
-                        totalprice +=
-                            int.parse(snapshot.data!.docs[i]['total_price']);
-                      }
-
-                      var demoTotal = discountstatus
-                          ? discount
-                          : totalprice * discount / 100;
-
-                      totalDiscount = demoTotal.toString();
-
-                      log('total discount is $demoTotal');
-
-                      totalTax = totalprice * tax / 100;
-                      grandtotal = discountstatus
-                          ? (totalprice - discount + totalTax)
-                          : (totalprice -
-                              (totalprice * discount / 100) +
-                              totalTax);
-                      itemcount = "${snapshot.data!.docs.length}";
-
-                      FirebaseFirestore.instance
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: whiteColor,
+                      border: Border.all(
+                        color: Colors.black.withOpacity(0.05),
+                      ),
+                    ),
+                    padding: const EdgeInsets.only(left: 5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Order Details',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.black.withOpacity(0.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: displayHeight(context) / 2.35,
+                    child: StreamBuilder(
+                      stream: FirebaseFirestore.instance
                           .collection('tablesraw')
                           .doc(_tableSelected)
-                          .update(
-                        {
-                          'amount': '$grandtotal',
-                          'total_tax': '$totalTax',
-                        },
-                      );
+                          .collection('productraw')
+                          .snapshots(),
+                      builder: (context,
+                          AsyncSnapshot<QuerySnapshot> productSnapshot) {
+                        if (productSnapshot.hasData) {
+                          productNames.clear();
+                          productPrice.clear();
+                          productType.clear();
+                          quantitytype.clear();
+                          return ListView.builder(
+                            itemCount: productSnapshot.data!.docs.length,
+                            itemBuilder: (context, index) {
+                              DocumentSnapshot productDocumentSnapshot =
+                                  productSnapshot.data!.docs[index];
+                              productNames.add(
+                                  productDocumentSnapshot['product_name']
+                                      .toString());
+                              productPrice.add(
+                                  productDocumentSnapshot['product_price']
+                                      .toString());
+                              productType.add(
+                                  productDocumentSnapshot['product_type']
+                                      .toString());
 
-                      return Padding(
-                        padding: const EdgeInsets.all(0),
-                        child: Column(
-                          children: [
-                            Container(
-                              height: 30,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Colors.blue.withOpacity(0.1),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 5),
-                                    child: SizedBox(
-                                      child: Text(
-                                        'Item Count : ${snapshot.data!.docs.length}',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.3,
-                                          fontSize: 12,
-                                          color: Colors.black.withOpacity(0.5),
-                                        ),
-                                        textAlign: TextAlign.start,
-                                      ),
-                                    ),
+                              quantitytype
+                                  .add(productDocumentSnapshot['quantity']);
+
+                              log("ljiksdldfsljksdf $productType");
+
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: const Color.fromARGB(
+                                    255,
+                                    235,
+                                    246,
+                                    254,
                                   ),
-                                  Row(
+                                  border: Border.all(
+                                    color: Colors.blue.withOpacity(0.05),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 2),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       SizedBox(
-                                        child: Text(
-                                          'Sub Total :  ',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color:
-                                                Colors.black.withOpacity(0.5),
-                                            letterSpacing: 0.3,
-                                          ),
-                                          textAlign: TextAlign.center,
+                                        width: 100,
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              width: 100,
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    " ${productDocumentSnapshot['product_name']} ",
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    " ${productDocumentSnapshot['product_type']}",
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                       Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 5),
-                                        child: SizedBox(
-                                          child: Text(
-                                            '$rupeeSign $totalprice',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              letterSpacing: 0.3,
+                                        padding: const EdgeInsets.only(left: 5),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              width: 40,
+                                              child: Text(
+                                                '$rupeeSign${productDocumentSnapshot['product_price']}',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10,
+                                                ),
+                                              ),
                                             ),
-                                            textAlign: TextAlign.end,
-                                          ),
+                                            MaterialButton(
+                                              padding:
+                                                  const EdgeInsets.all(6.0),
+                                              minWidth: 0,
+                                              height: 0,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                              ),
+                                              color: Colors.greenAccent,
+                                              onPressed: () {
+                                                MinusNewTableProduct(
+                                                    _tableSelected,
+                                                    productDocumentSnapshot);
+                                              },
+                                              child: FaIcon(
+                                                FontAwesomeIcons.minus,
+                                                size: 8,
+                                                color: whiteColor,
+                                              ),
+                                            ),
+                                            Container(
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: 2,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: whiteColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                              ),
+                                              width: 30,
+                                              height: 30,
+                                              child: TextFormField(
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter
+                                                      .digitsOnly,
+                                                  LengthLimitingTextInputFormatter(
+                                                      3),
+                                                ],
+                                                controller:
+                                                    TextEditingController(
+                                                  text: productDocumentSnapshot[
+                                                      'quantity'],
+                                                ),
+                                                focusNode: FocusNode(),
+                                                decoration: InputDecoration(
+                                                  isDense: true,
+                                                  border: InputBorder.none,
+                                                ),
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10,
+                                                  color: Colors.black,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                            MaterialButton(
+                                              padding: const EdgeInsets.all(5),
+                                              minWidth: 4,
+                                              height: 4,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(2),
+                                              ),
+                                              color: Colors.greenAccent,
+                                              onPressed: () {
+                                                addNewTableProduct(
+                                                    _tableSelected,
+                                                    productDocumentSnapshot);
+                                              },
+                                              child: FaIcon(
+                                                FontAwesomeIcons.plus,
+                                                size: 10,
+                                                color: whiteColor,
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 30,
+                                              child: Text(
+                                                '$rupeeSign${productDocumentSnapshot['total_price']}',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 10),
+                                              ),
+                                            ),
+                                            MaterialButton(
+                                              padding: const EdgeInsets.all(5),
+                                              minWidth: 4,
+                                              height: 4,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                              ),
+                                              color: mainColor,
+                                              onPressed: () {
+                                                deleteTableProduct(
+                                                    _tableSelected,
+                                                    productDocumentSnapshot);
+                                              },
+                                              child: FaIcon(
+                                                Icons.delete,
+                                                color: Colors.white,
+                                                size: 10,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
-                                ],
+                                ),
+                              );
+                            },
+                          );
+                        }
+                        return Container();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection('tablesraw')
+                    .doc(_tableSelected)
+                    .collection('productraw')
+                    .snapshots(),
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasData) {
+                    var totalprice = 0;
+                    for (var i = 0; i < snapshot.data!.docs.length; i++) {
+                      totalprice +=
+                          int.parse(snapshot.data!.docs[i]['total_price']);
+                    }
+
+                    var demoTotal =
+                        discountstatus ? discount : totalprice * discount / 100;
+
+                    totalDiscount = demoTotal.toString();
+
+                    log('total discount is $demoTotal');
+
+                    totalTax = totalprice * tax / 100;
+                    grandtotal = discountstatus
+                        ? (totalprice - discount + totalTax)
+                        : (totalprice -
+                            (totalprice * discount / 100) +
+                            totalTax);
+                    itemcount = "${snapshot.data!.docs.length}";
+
+                    FirebaseFirestore.instance
+                        .collection('tablesraw')
+                        .doc(_tableSelected)
+                        .update(
+                      {
+                        'amount': '$grandtotal',
+                        'total_tax': '$totalTax',
+                      },
+                    );
+
+                    return Padding(
+                      padding: const EdgeInsets.all(0),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 35,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.blue.withOpacity(0.1),
                               ),
                             ),
-                            // showProducts
-                            //     ? Container(
-                            //         decoration: BoxDecoration(
-                            //           border: Border.all(
-                            //             color: Colors.blue.withOpacity(0.1),
-                            //           ),
-                            //         ),
-                            //         child: Row(
-                            //           mainAxisAlignment:
-                            //               MainAxisAlignment.spaceBetween,
-                            //           children: [
-                            //             discountbutton
-                            //                 ? Padding(
-                            //                     padding: const EdgeInsets.only(
-                            //                         left: 5),
-                            //                     child: MaterialButton(
-                            //                       minWidth: 80,
-                            //                       shape: RoundedRectangleBorder(
-                            //                         borderRadius:
-                            //                             BorderRadius.circular(
-                            //                                 10),
-                            //                       ),
-                            //                       color: greenShadeColor,
-                            //                       onPressed: () {
-                            //                         setState(() {
-                            //                           discountbutton = false;
-                            //                         });
-                            //                       },
-                            //                       child: Text(
-                            //                         'Discount',
-                            //                         style: TextStyle(
-                            //                           fontWeight:
-                            //                               FontWeight.w600,
-                            //                           letterSpacing: 0.3,
-                            //                           fontSize: 12 ,
-                            //                           color: whiteColor,
-                            //                         ),
-                            //                         textAlign: TextAlign.start,
-                            //                       ),
-                            //                     ),
-                            //                   )
-                            //                 : Row(
-                            //                     children: [
-                            //                       MaterialButton(
-                            //                         minWidth: 60,
-                            //                         shape:
-                            //                             RoundedRectangleBorder(
-                            //                           borderRadius:
-                            //                               BorderRadius.circular(
-                            //                                   10),
-                            //                         ),
-                            //                         color: discountstatus
-                            //                             ? whiteColor
-                            //                             : greenShadeColor,
-                            //                         onPressed: () {
-                            //                           setState(() {
-                            //                             discountController
-                            //                                 .clear();
-                            //                             discountstatus = false;
-                            //                             discount = 0;
-                            //                           });
-                            //                         },
-                            //                         child: Text(
-                            //                           '%',
-                            //                           style: TextStyle(
-                            //                             fontWeight:
-                            //                                 FontWeight.w600,
-                            //                             fontSize: 10,
-                            //                             letterSpacing: 0.3,
-                            //                             color: discountstatus
-                            //                                 ? Colors.black
-                            //                                 : whiteColor,
-                            //                           ),
-                            //                           textAlign:
-                            //                               TextAlign.start,
-                            //                         ),
-                            //                       ),
-                            //                       const SizedBox(
-                            //                         width: 0,
-                            //                       ),
-                            //                       SizedBox(
-                            //                         width: 60,
-                            //                         child: TextField(
-                            //                           onChanged: (value) {
-                            //                             if (value.isNotEmpty) {
-                            //                               setState(() {
-                            //                                 discount =
-                            //                                     int.parse(
-                            //                                         value);
-                            //                               });
-                            //                             } else {
-                            //                               setState(() {
-                            //                                 discountController
-                            //                                     .clear();
-                            //                                 discountstatus =
-                            //                                     true;
-                            //                                 discount = 0;
-                            //                               });
-                            //                             }
-                            //                             log("hjlksdgfljkhdsgflhjksd $value");
-                            //                           },
-                            //                           keyboardType:
-                            //                               TextInputType.number,
-                            //                           inputFormatters: [
-                            //                             LengthLimitingTextInputFormatter(
-                            //                                 3)
-                            //                           ],
-                            //                           controller:
-                            //                               discountController,
-                            //                           decoration: InputDecoration(
-                            //                               contentPadding:
-                            //                                   EdgeInsets.all(
-                            //                                       10),
-                            //                               isDense: true,
-                            //                               hintText:
-                            //                                   discountController
-                            //                                       .text,
-                            //                               border:
-                            //                                   OutlineInputBorder()),
-                            //                         ),
-                            //                       ),
-                            //                       const SizedBox(
-                            //                         width: 3,
-                            //                       ),
-                            //                       MaterialButton(
-                            //                         minWidth: 60,
-                            //                         shape:
-                            //                             RoundedRectangleBorder(
-                            //                           borderRadius:
-                            //                               BorderRadius.circular(
-                            //                                   10),
-                            //                         ),
-                            //                         color: discountstatus
-                            //                             ? greenShadeColor
-                            //                             : whiteColor,
-                            //                         onPressed: () {
-                            //                           setState(() {
-                            //                             discountController
-                            //                                 .clear();
-                            //                             discountstatus = true;
-                            //                             discount = 0;
-                            //                           });
-                            //                         },
-                            //                         child: Text(
-                            //                           // ignore: unnecessary_string_interpolations
-                            //                           '$rupeeSign ',
-                            //                           style: TextStyle(
-                            //                             fontWeight:
-                            //                                 FontWeight.w600,
-                            //                             letterSpacing: 0.3,
-                            //                             color: discountstatus
-                            //                                 ? whiteColor
-                            //                                 : Colors.black,
-                            //                           ),
-                            //                           textAlign:
-                            //                               TextAlign.start,
-                            //                         ),
-                            //                       ),
-                            //                     ],
-                            //                   ),
-                            //             Padding(
-                            //               padding:
-                            //                   const EdgeInsets.only(right: 5),
-                            //               child: SizedBox(
-                            //                   width: 120,
-                            //                   child: discountstatus
-                            //                       ? Text(
-                            //                           '$rupeeSign $discount',
-                            //                           style: TextStyle(
-                            //                             fontWeight:
-                            //                                 FontWeight.bold,
-                            //                             letterSpacing: 0.3,
-                            //                           ),
-                            //                           textAlign: TextAlign.end,
-                            //                         )
-                            //                       : Text(
-                            //                           '$discount${"%"}',
-                            //                           style: TextStyle(
-                            //                             fontSize: 10,
-                            //                             fontWeight:
-                            //                                 FontWeight.bold,
-                            //                             letterSpacing: 0.3,
-                            //                           ),
-                            //                           textAlign: TextAlign.end,
-                            //                         )),
-                            //             ),
-                            //           ],
-                            //         ),
-                            //       )
-                            //     : Container(
-                            //         padding: const EdgeInsets.symmetric(
-                            //           horizontal: 10,
-                            //           vertical: 16,
-                            //         ),
-                            //       ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: greenShadeColor,
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 5,
-                                vertical: 10,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 1),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Grand Total',
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 5),
+                                  child: SizedBox(
+                                    child: Text(
+                                      'Item Count : ${snapshot.data!.docs.length}',
                                       style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: whiteColor,
-                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
                                         letterSpacing: 0.3,
+                                        fontSize: 12,
+                                        color: Colors.black.withOpacity(0.5),
+                                      ),
+                                      textAlign: TextAlign.start,
+                                    ),
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    SizedBox(
+                                      child: Text(
+                                        'Sub Total :  ',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black.withOpacity(0.5),
+                                          letterSpacing: 0.3,
+                                        ),
+                                        textAlign: TextAlign.center,
                                       ),
                                     ),
-                                    Text(
-                                      "$rupeeSign${grandtotal.toString()}",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.3,
-                                        color: whiteColor,
-                                        fontSize: 14,
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 5),
+                                      child: SizedBox(
+                                        child: Text(
+                                          '$rupeeSign $totalprice',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.3,
+                                          ),
+                                          textAlign: TextAlign.end,
+                                        ),
                                       ),
-                                      textAlign: TextAlign.end,
                                     ),
                                   ],
                                 ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: greenShadeColor,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 10,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 1),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Grand Total',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: whiteColor,
+                                      fontSize: 14,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                                  Text(
+                                    "$rupeeSign${grandtotal.toString()}",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.3,
+                                      color: whiteColor,
+                                      fontSize: 14,
+                                    ),
+                                    textAlign: TextAlign.end,
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      );
-                    }
-                    return Container();
-                  },
-                ),
-              ],
-            ),
-            StreamBuilder(
-              stream: FirebaseFirestore.instance
-                  .collection('tablesraw')
-                  .where('table_id', isEqualTo: _tableSelected)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  for (var v = 0; v < snapshot.data!.docs.length;) {
-                    DocumentSnapshot documentSnapshot = snapshot.data!.docs[v];
-                    // Adjusting for a Row inside a fixed width Container.
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 2),
-                      child: SizedBox(
-                        width: 260, // Fixed width for the Row
-                        child: Row(
-                          children: [
-                            // Assuming clearButton, paymentsButton, kotPrintDone, and printBillButton are widget builder functions.
-                            if (documentSnapshot['kot_done'] == 'true' &&
-                                documentSnapshot['bill_done'] == 'false') ...[
-                              clearButton(context, documentSnapshot),
-                              paymentsButton(context, documentSnapshot),
-                              kotPrintDone(context, documentSnapshot),
-                              printBillButton(context, documentSnapshot),
-                            ] else if (documentSnapshot['bill_done'] ==
-                                    'true' &&
-                                documentSnapshot['kot_done'] == 'true') ...[
-                              clearButton(context, documentSnapshot),
-                              kotPrintDone(context, documentSnapshot),
-                              printBillButton(context, documentSnapshot),
-                              paymentsButton(context, documentSnapshot),
-                            ] else ...[
-                              //   clearButton(context, documentSnapshot),
-                              //   SizedBox(
-                              //     width: 2,
-                              //   ),
-                              //   paymentsButton(context, documentSnapshot),
-                              SizedBox(
-                                width: 2,
-                              ),
-                              printBillButton(context, documentSnapshot),
-                              SizedBox(
-                                width: 2,
-                              ),
-                              // kotPrintDone(context, documentSnapshot),
-                            ],
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     );
                   }
+                  return Container();
+                },
+              ),
+            ],
+          ),
+          StreamBuilder(
+            stream: FirebaseFirestore.instance
+                .collection('tablesraw')
+                .where('table_id', isEqualTo: _tableSelected)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                for (var v = 0; v < snapshot.data!.docs.length;) {
+                  DocumentSnapshot documentSnapshot = snapshot.data!.docs[v];
+                  // Adjusting for a Row inside a fixed width Container.
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 2),
+                    child: SizedBox(
+                      width: 260, // Fixed width for the Row
+                      child: Row(
+                        children: [
+                          // Assuming clearButton, paymentsButton, kotPrintDone, and printBillButton are widget builder functions.
+                          if (documentSnapshot['kot_done'] == 'true' &&
+                              documentSnapshot['bill_done'] == 'false') ...[
+                            clearButton(context, documentSnapshot),
+                            paymentsButton(context, documentSnapshot),
+                            kotPrintDone(context, documentSnapshot),
+                            printBillButton(context, documentSnapshot),
+                          ] else if (documentSnapshot['bill_done'] == 'true' &&
+                              documentSnapshot['kot_done'] == 'true') ...[
+                            clearButton(context, documentSnapshot),
+                            kotPrintDone(context, documentSnapshot),
+                            printBillButton(context, documentSnapshot),
+                            paymentsButton(context, documentSnapshot),
+                          ] else ...[
+                            //   clearButton(context, documentSnapshot),
+                            //   SizedBox(
+                            //     width: 2,
+                            //   ),
+                            //   paymentsButton(context, documentSnapshot),
+                            SizedBox(
+                              width: 2,
+                            ),
+                            printBillButton(context, documentSnapshot),
+                            SizedBox(
+                              width: 2,
+                            ),
+                            // kotPrintDone(context, documentSnapshot),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
                 }
-                return Container(); // Fallback for no data.
-              },
-            ),
-          ],
-        ),
+              }
+              // ignore: avoid_unnecessary_containers
+              return Container(
+                child: Text("data"),
+              ); // Fallback for no data.
+            },
+          ),
+        ],
       ),
     );
   }
 
-  billingPreview(context) {
+  billingPreview(BuildContext context, documentSnapshot) {
     return showDialog(
       barrierDismissible: false,
       context: context,
-      builder: (context) {
+      builder: (
+        context,
+      ) {
         return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
+          ),
           titlePadding: EdgeInsets.zero,
           contentPadding: EdgeInsets.zero,
           title: Container(
-            padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: greenLightShadeColor,
+              color: Colors.green,
             ),
-            child: Row(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Bill Preview',
-                  style: TextStyle(
-                    color: whiteColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                MaterialButton(
-                  minWidth: 0,
-                  shape: CircleBorder(),
-                  color: whiteColor,
-                  onPressed: () {
-                    Navigator.pop(context);
-                    setState(() {
-                      cloudCgst = 0.0;
-                      cloudSgst = 0.0;
-                      cloudTotal = 0.0;
-                      cloudTotalQuantity = 0;
-                    });
-                  },
-                  child: Icon(
-                    Icons.close_rounded,
-                    color: greenLightShadeColor,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        'Bill Preview',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    MaterialButton(
+                      minWidth: 0,
+                      onPressed: () {
+                        Navigator.pop(context);
+                        setState(() {});
+                      },
+                      child: Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
           content: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 14,
-                horizontal: 10,
-              ),
+              padding: const EdgeInsets.all(8.0),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
+                  SizedBox(
+                    height: 5,
+                  ),
                   Text(
                     "Shri Umesh Son's Healthy Foods",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 17,
+                      fontSize: 16,
                     ),
                   ),
                   SizedBox(height: 10),
@@ -4009,7 +3722,7 @@ class _BillGenerationState extends State<BillGeneration> {
                       "shop no. 29, Hig market, Metro Rd, near Pani Tanki, Jamalpur, Ludhiana, Punjab 141010",
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
-                        fontSize: 16,
+                        fontSize: 14,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -4019,38 +3732,10 @@ class _BillGenerationState extends State<BillGeneration> {
                     "09988259798",
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
-                      fontSize: 16,
+                      fontSize: 14,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 10),
-                  Text(
-                    billType,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    '---------- INVOICE ----------',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    'Table No: $_tableSelected',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 14),
                   StreamBuilder(
                     stream: FirebaseFirestore.instance
                         .collection('tablesraw')
@@ -4072,71 +3757,58 @@ class _BillGenerationState extends State<BillGeneration> {
                       return Container();
                     },
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    child: Divider(
-                      thickness: 1,
-                      color: Colors.black,
-                    ),
+                  Divider(
+                    thickness: 1,
+                    color: Colors.black,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        SizedBox(
-                          width: 200,
-                          child: Text(
-                            "Item",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                            textAlign: TextAlign.start,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      SizedBox(
+                        child: Text(
+                          "Item",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
+                          textAlign: TextAlign.start,
                         ),
-                        SizedBox(
-                          width: 50,
-                          child: Text(
-                            "Rate",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                            textAlign: TextAlign.center,
+                      ),
+                      SizedBox(
+                        child: Text(
+                          "Rate",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                        SizedBox(
-                          width: 50,
-                          child: Text(
-                            "Qty",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                            textAlign: TextAlign.center,
+                      ),
+                      SizedBox(
+                        child: Text(
+                          "Qty",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                        SizedBox(
-                          width: 100,
-                          child: Text(
-                            "Amt",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                            textAlign: TextAlign.center,
+                      ),
+                      SizedBox(
+                        child: Text(
+                          "Amt",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    child: Divider(
-                      thickness: 1,
-                      color: Colors.black,
-                    ),
+                  Divider(
+                    thickness: 1,
+                    color: Colors.black,
                   ),
                   StreamBuilder(
                     stream: FirebaseFirestore.instance
@@ -4147,7 +3819,7 @@ class _BillGenerationState extends State<BillGeneration> {
                     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                       if (snapshot.hasData) {
                         for (var i = 0; i < snapshot.data!.docs.length; i++) {
-                          cloudTotalQuantity +=
+                          cloudTotalQuantity =
                               int.parse(snapshot.data!.docs[i]['quantity']);
                           cloudTotal += double.parse(
                               snapshot.data!.docs[i]['total_price']);
@@ -4158,7 +3830,7 @@ class _BillGenerationState extends State<BillGeneration> {
                         return Column(
                           children: [
                             SizedBox(
-                              height: 30 *
+                              height: 50 *
                                   double.parse(
                                     snapshot.data!.docs.length.toString(),
                                   ),
@@ -4172,55 +3844,68 @@ class _BillGenerationState extends State<BillGeneration> {
 
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 5,
+                                      horizontal: 2,
+                                      vertical: 3,
                                     ),
                                     child: Row(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         SizedBox(
-                                          width: 200,
+                                          width: 80,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "${prodSnapshot['product_name']}",
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12,
+                                                ),
+                                                textAlign: TextAlign.start,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 40,
                                           child: Text(
-                                            "${prodSnapshot['product_name']} ${prodSnapshot['product_type']}",
+                                            "${prodSnapshot['product_price']}",
                                             style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 17,
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 12,
                                             ),
                                             textAlign: TextAlign.start,
                                           ),
                                         ),
                                         SizedBox(
-                                          width: 50,
-                                          child: Text(
-                                            "${prodSnapshot['product_price']}",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 16,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
+                                          width: 20,
                                         ),
                                         SizedBox(
-                                          width: 50,
+                                          width: 70,
                                           child: Text(
                                             "${prodSnapshot['quantity']}",
                                             style: TextStyle(
                                               fontWeight: FontWeight.w500,
-                                              fontSize: 16,
+                                              fontSize: 12,
                                             ),
                                             textAlign: TextAlign.center,
                                           ),
                                         ),
                                         SizedBox(
-                                          width: 100,
+                                          width: 50,
                                           child: Text(
                                             "${prodSnapshot['total_price']}",
                                             style: TextStyle(
                                               fontWeight: FontWeight.w500,
-                                              fontSize: 16,
+                                              fontSize: 14,
                                             ),
-                                            textAlign: TextAlign.center,
+                                            textAlign: TextAlign.end,
                                           ),
                                         ),
                                       ],
@@ -4229,182 +3914,44 @@ class _BillGenerationState extends State<BillGeneration> {
                                 },
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 5),
-                              child: Divider(
-                                thickness: 1,
-                                color: Colors.black,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 5,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Total Quantity",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 17,
-                                    ),
-                                    textAlign: TextAlign.start,
-                                  ),
-                                  SizedBox(
-                                    width: 100,
-                                    child: Text(
-                                      "$cloudTotalQuantity",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 17,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 5,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Sub Total",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 17,
-                                    ),
-                                    textAlign: TextAlign.start,
-                                  ),
-                                  SizedBox(
-                                    width: 100,
-                                    child: Text(
-                                      "$cloudTotal",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 17,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            StreamBuilder(
-                              stream: FirebaseFirestore.instance
-                                  .collection('tablesraw')
-                                  .where('table_id', isEqualTo: _tableSelected)
-                                  .snapshots(),
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData) {
-                                  for (var i = 0;
-                                      i < snapshot.data!.docs.length;) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 5,
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            "Discount",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 17,
-                                            ),
-                                            textAlign: TextAlign.start,
-                                          ),
-                                          SizedBox(
-                                            width: 100,
-                                            child: Text(
-                                              "${snapshot.data!.docs[i]['discount']}",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 17,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }
-                                }
-                                return Container();
-                              },
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 5,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "CGST",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 17,
-                                    ),
-                                    textAlign: TextAlign.start,
-                                  ),
-                                  SizedBox(
-                                    width: 100,
-                                    child: Text(
-                                      "${cloudCgst / 2}",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 17,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 5,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "SGST",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 17,
-                                    ),
-                                    textAlign: TextAlign.start,
-                                  ),
-                                  SizedBox(
-                                    width: 100,
-                                    child: Text(
-                                      "${cloudCgst / 2}",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 17,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            // Padding(
+                            //   padding: const EdgeInsets.symmetric(vertical: 5),
+                            //   child: Divider(
+                            //     thickness: 1,
+                            //     color: Colors.black,
+                            //   ),
+                            // ),
+                            // Padding(
+                            //   padding: const EdgeInsets.symmetric(
+                            //     horizontal: 10,
+                            //     vertical: 5,
+                            //   ),
+                            //   child: Row(
+                            //     mainAxisAlignment:
+                            //         MainAxisAlignment.spaceBetween,
+                            //     children: [
+                            //       Text(
+                            //         "Total Quantity",
+                            //         style: TextStyle(
+                            //           fontWeight: FontWeight.w500,
+                            //           fontSize: 14,
+                            //         ),
+                            //         textAlign: TextAlign.start,
+                            //       ),
+                            //       SizedBox(
+                            //         width: 100,
+                            //         child: Text(
+                            //           "$cloudTotalQuantity",
+                            //           style: TextStyle(
+                            //             fontWeight: FontWeight.w400,
+                            //             fontSize: 14,
+                            //           ),
+                            //           textAlign: TextAlign.end,
+                            //         ),
+                            //       ),
+                            //     ],
+                            //   ),
+                            // ),
                           ],
                         );
                       }
@@ -4435,22 +3982,22 @@ class _BillGenerationState extends State<BillGeneration> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  "Grand Total",
+                                  "Grand Total :",
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 18,
+                                    fontSize: 15,
                                   ),
                                   textAlign: TextAlign.start,
                                 ),
                                 SizedBox(
                                   width: 100,
                                   child: Text(
-                                    "${snapshot.data!.docs[i]['amount']}",
+                                    "₹ ${snapshot.data!.docs[i]['amount']}",
                                     style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
                                     ),
-                                    textAlign: TextAlign.center,
+                                    textAlign: TextAlign.end,
                                   ),
                                 ),
                               ],
@@ -4468,11 +4015,60 @@ class _BillGenerationState extends State<BillGeneration> {
                       color: Colors.black,
                     ),
                   ),
-                  Text(
-                    'Thank You! Visit Again',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 18,
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8, bottom: 6),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        MaterialButton(
+                          minWidth: 0,
+                          color: Colors.green,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(17),
+                          ),
+                          onPressed: () {
+                            FirebaseFirestore.instance
+                                .collection('tablesraw')
+                                .doc(_tableSelected)
+                                .collection('productraw')
+                                .get()
+                                .then((value) {
+                              if (value.size > 0) {
+                                setState(() {
+                                  insertOrderbilling(
+                                    productNames,
+                                    categery,
+                                    productid,
+                                    productPrice,
+                                    grandtotal,
+                                    productType,
+                                    quantitytype,
+                                    discount,
+                                    itemcount,
+                                    _tableSelected,
+                                    paymenttype,
+                                    userId,
+                                    'bill done',
+                                    "",
+                                    '',
+                                    totalDiscount.toString(),
+                                  );
+                                });
+                              } else {
+                                Text("sad");
+                              }
+                            });
+                          },
+                          child: Text(
+                            'Print Pdf',
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.3,
+                                color: whiteColor),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -4821,51 +4417,43 @@ class _BillGenerationState extends State<BillGeneration> {
           borderRadius: BorderRadius.circular(17),
         ),
         onPressed: () {
-          FirebaseFirestore.instance
-              .collection('tablesraw')
-              .doc(_tableSelected)
-              .collection('productraw')
-              .get()
-              .then(
-            (value) {
-              if (value.size > 0) {
-                if (value.size > 0) {
-                  setState(() {
-                    updateBillStatus(
-                        securityKey, documentSnapshot['order_id'], '3');
-                  });
-                } else {
-                  insertOrderbilling(
-                    productNames,
-                    categery,
-                    productid,
-                    productPrice,
-                    grandtotal,
-                    productType,
-                    quantitytype,
-                    discount,
-                    itemcount,
-                    _tableSelected,
-                    paymenttype,
-                    userId,
-                    'bill done',
-                    documentSnapshot['instructions'],
-                    '',
-                    totalDiscount.toString(),
-                  );
-                }
-              } else {
-                alertDialogWidget(
-                  context,
-                  Colors.red,
-                  'Please add any product to continue',
-                );
-              }
-            },
-          );
+          billingPreview(context, documentSnapshot);
+          //   FirebaseFirestore.instance
+          //       .collection('tablesraw')
+          //       .doc(_tableSelected)
+          //       .collection('productraw')
+          //       .get()
+          //       .then((value) {
+          //     if (value.size > 0) {
+          //       setState(() {
+          //         insertOrderbilling(
+          //           productNames,
+          //           categery,
+          //           productid,
+          //           productPrice,
+          //           grandtotal,
+          //           productType,
+          //           quantitytype,
+          //           discount,
+          //           itemcount,
+          //           _tableSelected,
+          //           paymenttype,
+          //           userId,
+          //           'bill done',
+          //           documentSnapshot['instructions'],
+          //           '',
+          //           totalDiscount.toString(),
+          //         );
+          //         // updateBillStatus(
+          //         //     securityKey, documentSnapshot['order_id'], '3');
+          //       });
+          //     } else {
+          //       Text("sad");
+          //     }
+          //   });
         },
         child: Text(
-          'Generate PDF',
+          'Generate Bill',
           style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -4931,18 +4519,12 @@ class _BillGenerationState extends State<BillGeneration> {
                     paymenttype,
                     userId,
                     'payment done',
-                    documentSnapshot['instructions'],
+                    "",
                     documentSnapshot['kot_done'],
                     totalDiscount.toString(),
                   );
                 }
-              } else {
-                // alertDialogWidget(
-                //   context,
-                //   Colors.red,
-                //   'Please add any product to continue',
-                // );
-              }
+              } else {}
             },
           );
         },

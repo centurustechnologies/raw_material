@@ -58,7 +58,7 @@ class _ManageUserState extends State<ManageUser> {
       child: Scaffold(
         appBar: AppBar(
           flexibleSpace: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
                   Color.fromARGB(255, 245, 157, 157),
@@ -93,7 +93,7 @@ class _ManageUserState extends State<ManageUser> {
             Padding(
               padding: const EdgeInsets.only(
                   top: 10, left: 20, right: 20, bottom: 10),
-              child: Container(
+              child: SizedBox(
                 height: 60,
                 child: TextField(
                   controller: _searchController,
@@ -126,8 +126,8 @@ class _ManageUserState extends State<ManageUser> {
                   builder: (BuildContext context,
                       AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(
-                        child: const Padding(
+                      return const Center(
+                        child: Padding(
                           padding: EdgeInsets.all(10.0),
                           child: CircularProgressIndicator(),
                         ),
@@ -140,13 +140,12 @@ class _ManageUserState extends State<ManageUser> {
                         String userName = data['user_name'];
                         String userId = data['user_id'];
                         String userEmail = data['user_email'];
-                        String userNumber = data['user_number'];
 
                         return Card(
-                          color: Color.fromARGB(255, 255, 247, 247),
+                          color: const Color.fromARGB(255, 255, 247, 247),
                           child: Padding(
                             padding: const EdgeInsets.all(2.0),
-                            child: Container(
+                            child: SizedBox(
                               height: 65,
                               child: ListTile(
                                   leading: CircleAvatar(
@@ -161,7 +160,7 @@ class _ManageUserState extends State<ManageUser> {
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold),
                                       ),
-                                      SizedBox(
+                                      const SizedBox(
                                         width: 10,
                                       ),
                                       Text(
@@ -174,7 +173,6 @@ class _ManageUserState extends State<ManageUser> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text("contact: $userNumber"),
                                       Text("email: $userEmail"),
                                     ],
                                   ),

@@ -21,10 +21,11 @@ class _LoginPageState extends State<LoginPage> {
   String user = '';
   String pass = '';
   String id = '';
+  String usertype = '';
 
   Future getadmindata(String id) async {
     await FirebaseFirestore.instance
-        .collection('admins')
+        .collection('raw_user')
         .doc(id)
         .get()
         .then((value) {
@@ -32,6 +33,7 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           user = value.get('userid');
           pass = value.get('password');
+          usertype = value.get('usertype');
         });
         if (userid.text == user && password.text == pass) {
           LocalStorageHelper.saveValue('userid', user);
