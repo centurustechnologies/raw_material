@@ -20,13 +20,14 @@ class product_list extends StatefulWidget {
   State<product_list> createState() => _product_listState();
 }
 
-// ignore: camel_case_types
 class _product_listState extends State<product_list> {
-  // ignore: non_constant_identifier_names
   List category_List = [];
   String categorytype = "";
   String categoryname = "";
   String? selectedCategory;
+
+  String _selectedUnit = 'Select';
+  String selectedCategoryLabel = 'Select Category';
 
   TextEditingController productController = TextEditingController();
   TextEditingController priceController = TextEditingController();
@@ -76,6 +77,8 @@ class _product_listState extends State<product_list> {
           .doc(productId)
           .set({
         'categery': selectedCategory,
+        'product_unit': unitController.text,
+        'selected_unit': _selectedUnit,
         'product_name': productController.text,
         'product_price': priceController.text,
         'product_id': productId, // Set product ID same as document ID
@@ -120,6 +123,14 @@ class _product_listState extends State<product_list> {
     _streamController = StreamController<List<DocumentSnapshot>>();
     getData();
     super.initState();
+
+    unitController.addListener(() {
+      if (unitController.text.isEmpty && _selectedUnit != 'Select') {
+        setState(() {
+          _selectedUnit = 'Select';
+        });
+      }
+    });
   }
 
   @override
@@ -127,8 +138,6 @@ class _product_listState extends State<product_list> {
     super.dispose();
     _streamController.close();
   }
-
-  Future<void> addProductToFirestore() async {}
 
   @override
   Widget build(context) {
@@ -157,7 +166,9 @@ class _product_listState extends State<product_list> {
             Icons.arrow_back,
             color: Colors.white, // Change the color here
           ),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
       ),
       body: Column(
@@ -166,7 +177,7 @@ class _product_listState extends State<product_list> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                   color: Colors.blueGrey,
                   borderRadius: BorderRadius.all(Radius.circular(10))),
               child: MaterialButton(
@@ -174,7 +185,7 @@ class _product_listState extends State<product_list> {
                   showAddProductDialog(context);
                 },
                 textColor: Colors.white,
-                child: Text('Add New Product'),
+                child: const Text('Add New Product'),
               ),
             ),
           ),
@@ -184,7 +195,7 @@ class _product_listState extends State<product_list> {
                 builder: (BuildContext context,
                     AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator());
                   }
                   return Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -277,7 +288,8 @@ class _product_listState extends State<product_list> {
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
                                               Text(
-                                                productPrice,
+                                                '₹ $productPrice',
+
                                                 // documentSnapshot['time'],
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -305,6 +317,7 @@ class _product_listState extends State<product_list> {
   showAddProductDialog(BuildContext context) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return SingleChildScrollView(
           child: StatefulBuilder(
@@ -371,48 +384,75 @@ class _product_listState extends State<product_list> {
                           Column(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              ButtonTheme(
-                                alignedDropdown: true,
-                                child: StreamBuilder<QuerySnapshot>(
-                                  stream: FirebaseFirestore.instance
-                                      .collection('raw_categery')
-                                      .snapshots(),
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasError) {
-                                      print(
-                                          'Some Error Occured ${snapshot.error}');
-                                    }
-                                    List<DropdownMenuItem> rawCategory = [];
-                                    if (!snapshot.hasData) {
-                                      const CircularProgressIndicator();
-                                    } else {
-                                      final selectProgram =
-                                          snapshot.data?.docs.reversed.toList();
+                              StreamBuilder<QuerySnapshot>(
+                                stream: FirebaseFirestore.instance
+                                    .collection('raw_categery')
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasError) {
+                                    print(
+                                        'Some Error Occured ${snapshot.error}');
+                                    return Text('Error: ${snapshot.error}');
+                                  }
 
-                                      if (selectProgram != null) {
-                                        for (var data in selectProgram) {
-                                          rawCategory.add(
-                                            DropdownMenuItem(
-                                              value: data.id,
-                                              child: Text(
-                                                data['raw_categery'],
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      }
-                                    }
-                                    return DropdownButton(
-                                        value: selectedCategory,
-                                        items: rawCategory,
-                                        hint: const Text('Select Category'),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            selectedCategory = value;
-                                          });
+                                  if (!snapshot.hasData) {
+                                    return const CircularProgressIndicator();
+                                  }
+
+                                  List<PopupMenuItem<String>> categoryItems =
+                                      [];
+                                  final documents =
+                                      snapshot.data!.docs.reversed.toList();
+
+                                  for (var doc in documents) {
+                                    var categoryName = doc['categery_name'];
+                                    categoryItems.add(
+                                      PopupMenuItem<String>(
+                                        value: doc.id,
+                                        child: Text(categoryName),
+                                      ),
+                                    );
+                                  }
+
+                                  return Container(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 8),
+                                    decoration: const BoxDecoration(
+                                      border: Border(
+                                          bottom:
+                                              BorderSide(color: Colors.grey)),
+                                    ),
+                                    child: PopupMenuButton<String>(
+                                      onSelected: (String value) {
+                                        setState(() {
+                                          selectedCategory = value;
+                                          var selectedDoc =
+                                              documents.firstWhere(
+                                                  (doc) => doc.id == value);
+                                          selectedCategoryLabel =
+                                              selectedDoc['categery_name'];
                                         });
-                                  },
-                                ),
+                                      },
+                                      itemBuilder: (BuildContext context) =>
+                                          categoryItems,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            selectedCategoryLabel,
+                                            style: const TextStyle(
+                                              color: Color.fromARGB(
+                                                  255, 124, 124, 124),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          const Icon(Icons.arrow_drop_down),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                               Padding(
                                 padding: const EdgeInsets.only(left: 10),
@@ -429,15 +469,49 @@ class _product_listState extends State<product_list> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 0),
                               Padding(
                                 padding: const EdgeInsets.only(left: 10),
                                 child: TextField(
                                   controller: unitController,
-                                  keyboardType: TextInputType.text,
-                                  decoration: const InputDecoration(
-                                    isDense: true,
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
                                     hintText: 'Item Unit',
+                                    suffixIcon: PopupMenuButton<String>(
+                                      onSelected: (String value) {
+                                        setState(() {
+                                          if (value != 'Select') {
+                                            _selectedUnit = value;
+                                          }
+                                        });
+                                      },
+                                      itemBuilder: (BuildContext context) =>
+                                          <PopupMenuEntry<String>>[
+                                        const PopupMenuItem<String>(
+                                          value: 'Select',
+                                          child: Text('Select'),
+                                        ),
+                                        const PopupMenuItem<String>(
+                                          value: 'kg',
+                                          child: Text('kg'),
+                                        ),
+                                        const PopupMenuItem<String>(
+                                          value: 'litre',
+                                          child: Text('litre'),
+                                        ),
+                                        const PopupMenuItem<String>(
+                                          value: 'pieces',
+                                          child: Text('pieces'),
+                                        ),
+                                      ],
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+                                          Text(_selectedUnit),
+                                          const Icon(Icons.arrow_drop_down),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                   style: const TextStyle(
                                     color: Colors.black54,

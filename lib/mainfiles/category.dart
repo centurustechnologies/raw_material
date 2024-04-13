@@ -83,7 +83,7 @@ class _CategoryPageState extends State<CategoryPage> {
           .collection('raw_categery')
           .doc(nextCategoryId)
           .set({
-        'raw_categery': categoryNameController.text,
+        'categery_name': categoryNameController.text,
         'categery_id': nextCategoryId,
       }).then((value) {
         setState(() {
@@ -247,7 +247,7 @@ class _CategoryPageState extends State<CategoryPage> {
                                     document.data() as Map<String, dynamic>;
                                 String categoryId =
                                     data['categery_id'].toString();
-                                String category = data['raw_categery'];
+                                String category = data['categery_name'];
 
                                 return Padding(
                                   padding: const EdgeInsets.only(
@@ -314,7 +314,7 @@ class _CategoryPageState extends State<CategoryPage> {
               right: 0,
               child: Align(
                 child: Card(
-                  color: Color.fromARGB(255, 76, 240, 161),
+                  color: Colors.blueGrey,
                   child: MaterialButton(
                     minWidth: 160,
                     padding: const EdgeInsets.all(10),

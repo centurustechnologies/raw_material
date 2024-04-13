@@ -2,28 +2,19 @@
 
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:lottie/lottie.dart';
 import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:raw_material/helpers/app_constants.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
-
-import 'NewApp/alertdialog.dart';
 
 class BillGeneration extends StatefulWidget {
   const BillGeneration({super.key});
@@ -123,7 +114,7 @@ class _BillGenerationState extends State<BillGeneration> {
   String categoryid = "";
 
   String selectedCartProductName = '',
-      selectedCartProductType = '',
+      selectedCartProducunit = '',
       selectedCartProductPrice = '0',
       selectedCartProductId = '';
 
@@ -217,7 +208,7 @@ class _BillGenerationState extends State<BillGeneration> {
             'product_id': documentSnapshot['product_id'],
             'product_price': documentSnapshot['product_price'],
             'total_price': documentSnapshot['product_price'],
-            'product_type': documentSnapshot['product_type'],
+            'selected_unit': documentSnapshot['selected_unit'],
             'quantity': '1',
           },
         );
@@ -915,19 +906,10 @@ class _BillGenerationState extends State<BillGeneration> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.fromARGB(255, 245, 157, 157),
-                Color.fromARGB(255, 255, 90, 78),
-                Color.fromARGB(255, 245, 157, 157),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
+          decoration: const BoxDecoration(color: Colors.red),
         ),
         title: const Text(
           'New Bill',
@@ -947,26 +929,24 @@ class _BillGenerationState extends State<BillGeneration> {
         }),
       ),
       body: StreamBuilder(
-          stream: Stream.periodic(
-            Duration(seconds: 1),
-          ).asyncMap(
-            (event) => getBillPrintingData(securityKey),
-          ),
-          builder: (context, snapshot) {
-            return Column(
+        stream: Stream.periodic(Duration(seconds: 1))
+            .asyncMap((event) => getBillPrintingData(securityKey)),
+        builder: (context, snapshot) {
+          return Scaffold(
+            body: Column(
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            top: 15, bottom: 10, left: 10, right: 10),
+                Expanded(
+                  // This Expanded ensures the Column's children cover all available space
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        // This Expanded ensures the Container fills the horizontal space in the Row
                         child: Container(
-                          height: MediaQuery.of(context).size.height - 121,
+                          // The height is no longer needed here because Expanded in Column takes care of vertical space
                           decoration: BoxDecoration(
-                            color: whiteColor,
+                            color: Colors
+                                .white, // Assuming whiteColor is Colors.white
                             borderRadius: BorderRadius.circular(10),
                             boxShadow: [
                               BoxShadow(
@@ -984,12 +964,14 @@ class _BillGenerationState extends State<BillGeneration> {
                                   : billingTables(),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
-            );
-          }),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -1930,216 +1912,210 @@ class _BillGenerationState extends State<BillGeneration> {
                     },
                   ),
                 ),
-                // _buildTextAndImageList(),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 2),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 80,
-                    height: MediaQuery.of(context).size.height - 259,
-                    child: StreamBuilder(
-                      stream: categoryid.isEmpty
-                          ? FirebaseFirestore.instance
-                              .collection('raw_billing_product')
-                              .where('product_price', isNotEqualTo: "0")
-                              .snapshots()
-                          : FirebaseFirestore.instance
-                              .collection('raw_billing_product')
-                              .where('categery', isEqualTo: categoryid)
-                              .snapshots(),
-                      builder: (context,
-                          AsyncSnapshot<QuerySnapshot> streamSnapshot) {
-                        if (streamSnapshot.hasData) {
-                          return ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: streamSnapshot.data!.docs
-                                .where((element) =>
-                                    element['product_name']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains(search) ||
-                                    element['product_type']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains(search))
-                                .length,
-                            itemBuilder: (context, index) {
-                              final filteredData =
-                                  streamSnapshot.data!.docs.where(
-                                (element) =>
-                                    element['product_name']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains(search) ||
-                                    element['product_type']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains(search),
-                              );
-                              final documentSnapshot =
-                                  filteredData.elementAt(index);
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 80,
+                  height: MediaQuery.of(context).size.height - 259,
+                  child: StreamBuilder(
+                    stream: categoryid.isEmpty
+                        ? FirebaseFirestore.instance
+                            .collection('raw_billing_product')
+                            .where('product_price', isNotEqualTo: "0")
+                            .snapshots()
+                        : FirebaseFirestore.instance
+                            .collection('raw_billing_product')
+                            .where('categery', isEqualTo: categoryid)
+                            .snapshots(),
+                    builder:
+                        (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+                      if (streamSnapshot.hasData) {
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: streamSnapshot.data!.docs
+                              .where((element) =>
+                                  element['product_name']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains(search) ||
+                                  element['selected_unit']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains(search))
+                              .length,
+                          itemBuilder: (context, index) {
+                            final filteredData =
+                                streamSnapshot.data!.docs.where(
+                              (element) =>
+                                  element['product_name']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains(search) ||
+                                  element['selected_unit']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains(search),
+                            );
+                            final documentSnapshot =
+                                filteredData.elementAt(index);
 
-                              return InkWell(
-                                onTap: () {
-                                  addNewTableProduct(
-                                    _tableSelected.toString(),
-                                    documentSnapshot,
-                                  );
-                                },
-                                onHover: (value) {
-                                  if (value) {
-                                    setState(() {
-                                      _productHover = index.toString();
-                                    });
-                                  } else {
-                                    setState(() {
-                                      _productHover = '';
-                                    });
-                                  }
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      bottom: 3, right: 5, top: 2),
-                                  child: Container(
-                                    // Increase the size of the Container to make the InkWell tappable
-                                    height: 90,
+                            return InkWell(
+                              onTap: () {
+                                addNewTableProduct(
+                                  _tableSelected.toString(),
+                                  documentSnapshot,
+                                );
+                              },
+                              onHover: (value) {
+                                if (value) {
+                                  setState(() {
+                                    _productHover = index.toString();
+                                  });
+                                } else {
+                                  setState(() {
+                                    _productHover = '';
+                                  });
+                                }
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    bottom: 3, right: 2, top: 2),
+                                child: Container(
+                                  // Increase the size of the Container to make the InkWell tappable
+                                  height: 90,
 
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        width: _productHover == index.toString()
-                                            ? 2
-                                            : 1,
-                                        color: _productHover == index.toString()
-                                            ? Colors.greenAccent
-                                            : Colors.grey, // Border color
-                                      ),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      width: _productHover == index.toString()
+                                          ? 2
+                                          : 1,
+                                      color: _productHover == index.toString()
+                                          ? Colors.greenAccent
+                                          : Colors.grey,
                                     ),
-                                    child: Column(
-                                      children: [
-                                        Column(
-                                          children: [
-                                            imagebool
-                                                ? Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            2.0),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        SizedBox(
-                                                          height: 64,
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .only(
-                                                                    left: 10,
-                                                                    top: 5),
-                                                            child: Text(
-                                                              documentSnapshot[
-                                                                  'product_name'],
-                                                              style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                color: Colors
-                                                                    .black,
-                                                                fontSize: 10,
-                                                              ),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Column(
+                                        children: [
+                                          imagebool
+                                              ? Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(2.0),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      SizedBox(
+                                                        height: 64,
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  left: 5,
+                                                                  right: 5,
+                                                                  top: 5),
+                                                          child: Text(
+                                                            documentSnapshot[
+                                                                'product_name'],
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color:
+                                                                  Colors.black,
+                                                              fontSize: 10,
                                                             ),
                                                           ),
                                                         ),
-                                                        Container(
-                                                          height: 20,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .only(
-                                                                    bottomLeft:
-                                                                        Radius.circular(
-                                                                            8),
-                                                                    bottomRight:
-                                                                        Radius.circular(
-                                                                            8),
-                                                                  ),
-                                                                  color: Colors
-                                                                      .greenAccent),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  )
-                                                : Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            2.0),
-                                                    child: Column(
-                                                      children: [
-                                                        ClipRRect(
-                                                          borderRadius:
-                                                              BorderRadius.only(
-                                                                  topLeft: Radius
+                                                      ),
+                                                      Container(
+                                                        height: 20,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .only(
+                                                                  bottomLeft: Radius
                                                                       .circular(
                                                                           8),
-                                                                  topRight: Radius
+                                                                  bottomRight: Radius
                                                                       .circular(
-                                                                          8)), // Rounded corners for the image
-                                                          child: Image.network(
-                                                            documentSnapshot[
-                                                                'product_image'],
-                                                            width:
-                                                                MediaQuery.of(
-                                                                        context)
-                                                                    .size
-                                                                    .width,
-                                                            height:
-                                                                64, // Adjust height as needed
-                                                            fit: BoxFit.cover,
-                                                          ),
-                                                        ),
-                                                        Container(
-                                                          height: 20,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .only(
-                                                                    bottomLeft:
-                                                                        Radius.circular(
-                                                                            8),
-                                                                    bottomRight:
-                                                                        Radius.circular(
-                                                                            8),
-                                                                  ),
-                                                                  color: Colors
-                                                                      .greenAccent),
-                                                        )
-                                                      ],
-                                                    ),
+                                                                          8),
+                                                                ),
+                                                                color: Colors
+                                                                    .greenAccent),
+                                                      )
+                                                    ],
                                                   ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                                )
+                                              : Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(2.0),
+                                                  child: Column(
+                                                    children: [
+                                                      ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius.only(
+                                                                topLeft: Radius
+                                                                    .circular(
+                                                                        8),
+                                                                topRight: Radius
+                                                                    .circular(
+                                                                        8)), // Rounded corners for the image
+                                                        child: Image.network(
+                                                          documentSnapshot[
+                                                              'product_image'],
+                                                          width: MediaQuery.of(
+                                                                  context)
+                                                              .size
+                                                              .width,
+                                                          height:
+                                                              64, // Adjust height as needed
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        height: 20,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .only(
+                                                                  bottomLeft: Radius
+                                                                      .circular(
+                                                                          8),
+                                                                  bottomRight: Radius
+                                                                      .circular(
+                                                                          8),
+                                                                ),
+                                                                color: Colors
+                                                                    .greenAccent),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              );
-                            },
-                          );
-                        }
-                        return Container();
-                      },
-                    ),
+                              ),
+                            );
+                          },
+                        );
+                      }
+                      return Container();
+                    },
                   ),
-                  billingCart(context),
-                ],
-              ),
+                ),
+                billingCart(context),
+              ],
             ),
           ],
         ),
@@ -3149,19 +3125,9 @@ class _BillGenerationState extends State<BillGeneration> {
   }
 
   billingCart(context) {
-    return Container(
-      height: MediaQuery.of(context).size.height - 258,
+    return SizedBox(
+      height: MediaQuery.of(context).size.height - 259,
       width: MediaQuery.of(context).size.width - 107,
-      decoration: BoxDecoration(
-          // color: _tableSelected == '0' ? Colors.black : whiteColor,
-          // boxShadow: [
-          //   BoxShadow(
-          //     color: Colors.green.withOpacity(0.2),
-          //     blurRadius: 10,
-          //     spreadRadius: 1,
-          //   ),
-          // ],
-          ),
       child: Column(
         children: [
           Column(
@@ -3178,19 +3144,17 @@ class _BillGenerationState extends State<BillGeneration> {
                     topRight: Radius.circular(10),
                   ),
                 ),
-                child: Expanded(
-                  child: InkWell(
-                    onTap: () => setState(() => billType = 'Eat'),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: billType == "Eat" ? mainColor : whiteColor,
-                      ),
-                      padding: const EdgeInsets.all(6),
-                      child: Center(
-                        child: billingHeaderWidget(
-                          'Product Cart',
-                          billType,
-                        ),
+                child: InkWell(
+                  onTap: () => setState(() => billType = 'Eat'),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: billType == "Eat" ? mainColor : whiteColor,
+                    ),
+                    padding: const EdgeInsets.all(6),
+                    child: Center(
+                      child: billingHeaderWidget(
+                        'Product Cart',
+                        billType,
                       ),
                     ),
                   ),
@@ -3211,7 +3175,7 @@ class _BillGenerationState extends State<BillGeneration> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Order Details',
+                          'Order Details :',
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
@@ -3248,7 +3212,7 @@ class _BillGenerationState extends State<BillGeneration> {
                                   productDocumentSnapshot['product_price']
                                       .toString());
                               productType.add(
-                                  productDocumentSnapshot['product_type']
+                                  productDocumentSnapshot['selected_unit']
                                       .toString());
 
                               quantitytype
@@ -3275,35 +3239,28 @@ class _BillGenerationState extends State<BillGeneration> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      SizedBox(
-                                        width: 100,
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            SizedBox(
-                                              width: 100,
-                                              child: Row(
-                                                children: [
-                                                  Text(
-                                                    " ${productDocumentSnapshot['product_name']} ",
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.black,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    " ${productDocumentSnapshot['product_type']}",
-                                                    style: TextStyle(
-                                                      color: Colors.black,
-                                                    ),
-                                                  ),
-                                                ],
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                " ${productDocumentSnapshot['product_name']} ",
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
+                                              Text(
+                                                " ${productDocumentSnapshot['selected_unit']}",
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.only(left: 5),
@@ -3500,7 +3457,7 @@ class _BillGenerationState extends State<BillGeneration> {
                                   padding: const EdgeInsets.only(left: 5),
                                   child: SizedBox(
                                     child: Text(
-                                      'Item Count 5 : ${snapshot.data!.docs.length}',
+                                      'Item Count : ${snapshot.data!.docs.length}',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         letterSpacing: 0.3,
@@ -4117,7 +4074,7 @@ class _BillGenerationState extends State<BillGeneration> {
                           setState(
                             () {
                               selectedCartProductName = '';
-                              selectedCartProductType = '';
+                              selectedCartProducunit = '';
                               selectedCartProductPrice = '0';
                             },
                           );
@@ -4178,7 +4135,7 @@ class _BillGenerationState extends State<BillGeneration> {
                                                   BorderRadius.circular(5),
                                             ),
                                             child: Text(
-                                              docSnapshot['product_type'],
+                                              docSnapshot['selected_unit'],
                                               style: TextStyle(
                                                 color: greenShadeColor,
                                               ),
@@ -4198,8 +4155,8 @@ class _BillGenerationState extends State<BillGeneration> {
                                         setState(() {
                                           selectedCartProductName =
                                               docSnapshot['product_name'];
-                                          selectedCartProductType =
-                                              docSnapshot['product_type'];
+                                          selectedCartProducunit =
+                                              docSnapshot['selected_unit'];
                                           selectedCartProductPrice =
                                               docSnapshot['product_price'];
                                         });
@@ -4215,8 +4172,8 @@ class _BillGenerationState extends State<BillGeneration> {
                                         child: selectedCartProductName ==
                                                     docSnapshot[
                                                         'product_name'] &&
-                                                selectedCartProductType ==
-                                                    docSnapshot['product_type']
+                                                selectedCartProducunit ==
+                                                    docSnapshot['selected_unit']
                                             ? Icon(
                                                 Icons.done_all_rounded,
                                                 color: Colors.green,
@@ -4265,7 +4222,7 @@ class _BillGenerationState extends State<BillGeneration> {
                               Row(
                                 children: [
                                   Text(
-                                    selectedCartProductType,
+                                    selectedCartProducunit,
                                     style: TextStyle(
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -4301,7 +4258,7 @@ class _BillGenerationState extends State<BillGeneration> {
                               .doc(cartProductId)
                               .update(
                             {
-                              'product_type': selectedCartProductType,
+                              'selected_unit': selectedCartProducunit,
                               'product_price': selectedCartProductPrice,
                               'total_price':
                                   selectedCartProductTotal.toString(),
@@ -4310,7 +4267,7 @@ class _BillGenerationState extends State<BillGeneration> {
                           setState(
                             () {
                               selectedCartProductName = '';
-                              selectedCartProductType = '';
+                              selectedCartProducunit = '';
                               selectedCartProductPrice = '0';
                             },
                           );

@@ -8,97 +8,137 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: SignUpScreen(),
-    );
-  }
-}
-
-class SignUpScreen extends StatefulWidget {
-  @override
-  _SignUpScreenState createState() => _SignUpScreenState();
-}
-
-class _SignUpScreenState extends State<SignUpScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-
-  void _createUser(BuildContext context) {
-    String email = _emailController.text;
-    String password = _passwordController.text;
-    String confirmPassword = _confirmPasswordController.text;
-
-    if (!_validateEmail(email)) {
-      _showSnackBar(context, 'Invalid email format');
-      return;
-    }
-
-    if (!_validatePassword(password)) {
-      _showSnackBar(context, 'Password does not meet criteria');
-      return;
-    }
-
-    if (password != confirmPassword) {
-      _showSnackBar(context, 'Passwords do not match');
-      return;
-    }
-
-    // If all validations pass
-    _showSnackBar(context, 'User created successfully!', color: Colors.green);
-    // Here you can add your logic to create the user, for example, calling your backend
-  }
-
-  bool _validateEmail(String email) {
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    return emailRegex.hasMatch(email);
-  }
-
-  bool _validatePassword(String password) {
-    // Example validation: Password needs to be at least 8 characters long
-    // You can add more conditions here according to your requirements
-    return password.length >= 8;
-  }
-
-  void _showSnackBar(BuildContext context, String message,
-      {Color color = Colors.red}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Sign Up')),
-      body: Container(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            TextField(
-              controller: _confirmPasswordController,
-              decoration: InputDecoration(labelText: 'Confirm Password'),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _createUser(context),
-              child: Text('Create Account'),
-            ),
-          ],
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Example'),
+        ),
+        body: Center(
+          child: TextFieldWithPopupMenu(),
         ),
       ),
     );
   }
 }
+
+class TextFieldWithPopupMenu extends StatefulWidget {
+  @override
+  _TextFieldWithPopupMenuState createState() => _TextFieldWithPopupMenuState();
+}
+
+class _TextFieldWithPopupMenuState extends State<TextFieldWithPopupMenu> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Expanded(
+                flex: 2,
+                child: Container(
+                  height: 100,
+                  color: Colors.green,
+                )),
+            Expanded(
+                flex: 2,
+                child: Container(
+                  height: 100,
+                  color: Colors.amber,
+                )),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import 'package:flutter/material.dart';
+
+// void main() {
+//   runApp(MyApp());
+// }
+
+// class MyApp extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       home: Scaffold(
+//         resizeToAvoidBottomInset: false,
+//         appBar: AppBar(
+//           title: Text('Example'),
+//         ),
+//         body: Center(
+//           child: TextFieldWithPopupMenu(),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+// class TextFieldWithPopupMenu extends StatefulWidget {
+//   @override
+//   _TextFieldWithPopupMenuState createState() => _TextFieldWithPopupMenuState();
+// }
+
+// class _TextFieldWithPopupMenuState extends State<TextFieldWithPopupMenu> {
+//   final TextEditingController _controller = TextEditingController();
+//   String? _selectedUnit; // Make it nullable and not initialized
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Row(
+//       mainAxisAlignment: MainAxisAlignment.center,
+//       children: <Widget>[
+//         Expanded(
+//           child: TextField(
+//             controller: _controller,
+//             decoration: InputDecoration(
+//               hintText: 'Enter value',
+//               suffixIcon: PopupMenuButton<String>(
+//                 onSelected: (String value) {
+//                   setState(() {
+//                     _selectedUnit = value;
+//                   });
+//                 },
+//                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+//                   const PopupMenuItem<String>(
+//                     value: 'Select',
+//                     child: Text('Select'),
+//                   ),
+//                   const PopupMenuItem<String>(
+//                     value: 'kg',
+//                     child: Text('kg'),
+//                   ),
+//                   const PopupMenuItem<String>(
+//                     value: 'litter',
+//                     child: Text('litter'),
+//                   ),
+//                 ],
+//                 child: Row(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: <Widget>[
+//                     // Use the conditional expression here
+//                     Text(_selectedUnit ?? 'Select'),
+//                     Icon(Icons.arrow_drop_down),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }

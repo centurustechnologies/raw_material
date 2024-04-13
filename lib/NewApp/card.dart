@@ -509,9 +509,11 @@ class __productTabState extends State<_productTab> {
   // ignore: non_constant_identifier_names
   List category_List = [];
   String categorytype = "";
+  bool _isLoading = false;
   String categoryname = "";
+  String _selectedUnit = 'Select';
   String? selectedCategory;
-
+  String selectedCategoryLabel = 'Select Category';
   TextEditingController productController = TextEditingController();
   TextEditingController priceController = TextEditingController();
   TextEditingController unitController = TextEditingController();
@@ -546,6 +548,9 @@ class __productTabState extends State<_productTab> {
     Reference referenceImageToUpload = referenceDireImages.child(fileName);
 
     try {
+      setState(() {
+        _isLoading = true;
+      });
       await referenceImageToUpload.putFile(File(pickedFile.path));
       String imageUrl = await referenceImageToUpload.getDownloadURL();
 
@@ -560,6 +565,8 @@ class __productTabState extends State<_productTab> {
           .doc(productId)
           .set({
         'categery': selectedCategory,
+        'product_unit': unitController.text,
+        'selected_unit': _selectedUnit,
         'product_name': productController.text,
         'product_price': priceController.text,
         'product_id': productId, // Set product ID same as document ID
@@ -570,31 +577,40 @@ class __productTabState extends State<_productTab> {
       print("Data added successfully");
 
       setState(() {
+        _isLoading = false;
         productController.clear();
         priceController.clear();
         unitController.clear();
         _Image = null;
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const product_list()),
-        );
       });
     } catch (error) {
       print("Error occurred while uploading image and data: $error");
+
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   Future<void> getData() async {
     try {
+      setState(() {
+        _isLoading = true;
+      });
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('raw_billing_product')
           .get();
-
-      _document = querySnapshot.docs;
-      _streamController.add(_document);
+      setState(() {
+        _document = querySnapshot.docs;
+        _streamController.add(_document);
+        _isLoading = false;
+      });
     } catch (e) {
       print('error i fetching data: $e');
+
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -604,6 +620,13 @@ class __productTabState extends State<_productTab> {
     _streamController = StreamController<List<DocumentSnapshot>>();
     getData();
     super.initState();
+    unitController.addListener(() {
+      if (unitController.text.isEmpty && _selectedUnit != 'Select') {
+        setState(() {
+          _selectedUnit = 'Select';
+        });
+      }
+    });
   }
 
   @override
@@ -614,69 +637,82 @@ class __productTabState extends State<_productTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Stack(
       children: [
-        Expanded(
-          child: StreamBuilder(
-              stream: _streamController.stream,
-              builder: (BuildContext context,
-                  AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ListView(
-                        shrinkWrap: true,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        children:
-                            snapshot.data!.map((DocumentSnapshot document) {
-                          Map<String, dynamic> data =
-                              document.data() as Map<String, dynamic>;
-                          String productId = data['product_id'];
-                          String productType = data['product_type'];
-                          String productName = data['product_name'];
-                          String productPrice = data['product_price'];
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: StreamBuilder(
+                  stream: _streamController.stream,
+                  builder: (BuildContext context,
+                      AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+                    return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListView(
+                            shrinkWrap: true,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children:
+                                snapshot.data!.map((DocumentSnapshot document) {
+                              Map<String, dynamic> data =
+                                  document.data() as Map<String, dynamic>;
+                              String productId = data['product_id'];
+                              String productType = data['product_type'];
+                              String productName = data['product_name'];
+                              String productPrice = data['product_price'];
 
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: InkWell(
-                              onTap: () {
-                                setState(() {});
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    width: 2,
-                                    color: Colors.greenAccent,
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {});
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        width: 2,
+                                        color: Colors.greenAccent,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(10),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                productName,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 16,
-                                                  color: Colors.black,
-                                                ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    productName,
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 16,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    productId,
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 16,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                               Text(
-                                                productId,
+                                                productType,
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 16,
@@ -685,99 +721,101 @@ class __productTabState extends State<_productTab> {
                                               ),
                                             ],
                                           ),
-                                          Text(
-                                            productType,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                              color: Colors.black,
+                                        ),
+                                        const SizedBox(height: 20),
+                                        Container(
+                                          height: 30,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.purple,
+                                            borderRadius: BorderRadius.only(
+                                              bottomLeft: Radius.circular(8),
+                                              bottomRight: Radius.circular(8),
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    Container(
-                                      height: 30,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.grey,
-                                        borderRadius: BorderRadius.only(
-                                          bottomLeft: Radius.circular(8),
-                                          bottomRight: Radius.circular(8),
-                                        ),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 10),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              '₹ $productPrice',
-                                              // documentSnapshot['time'],
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: whiteColor,
-                                                fontSize: 16,
-                                              ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                  '₹ $productPrice',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: whiteColor,
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                          ],
+                                          ),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            ),
-                          );
-                        }).toList()));
-              }),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 2, right: 10, left: 10),
-          child: Center(
-            child: Container(
-              height: 44,
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(26),
-              ),
-              child: MaterialButton(
-                onPressed: () {
-                  showAddProductDialog(context);
-                },
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(26),
-                ),
-                child: const Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Add New Bill',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
+                              );
+                            }).toList()));
+                  }),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 2, right: 10, left: 10),
+              child: Center(
+                child: Container(
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(26),
+                  ),
+                  child: MaterialButton(
+                    onPressed: () {
+                      showAddProductDialog(context, () {
+                        getData();
+                      });
+                    },
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(26),
                     ),
-                  ],
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Add New Bill',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
+        if (_isLoading)
+          Positioned(
+            child: Container(
+              color: Colors.black45,
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          ),
       ],
     );
   }
 
-  showAddProductDialog(BuildContext context) {
+  void showAddProductDialog(BuildContext context, VoidCallback onDataAdded) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return SingleChildScrollView(
-          physics: const NeverScrollableScrollPhysics(),
           child: StatefulBuilder(
             builder: (BuildContext context,
                 void Function(void Function()) setState) {
@@ -842,48 +880,75 @@ class __productTabState extends State<_productTab> {
                           Column(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              ButtonTheme(
-                                alignedDropdown: true,
-                                child: StreamBuilder<QuerySnapshot>(
-                                  stream: FirebaseFirestore.instance
-                                      .collection('raw_categery')
-                                      .snapshots(),
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasError) {
-                                      print(
-                                          'Some Error Occured ${snapshot.error}');
-                                    }
-                                    List<DropdownMenuItem> rawCategory = [];
-                                    if (!snapshot.hasData) {
-                                      const CircularProgressIndicator();
-                                    } else {
-                                      final selectProgram =
-                                          snapshot.data?.docs.reversed.toList();
+                              StreamBuilder<QuerySnapshot>(
+                                stream: FirebaseFirestore.instance
+                                    .collection('raw_categery')
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasError) {
+                                    print(
+                                        'Some Error Occured ${snapshot.error}');
+                                    return Text('Error: ${snapshot.error}');
+                                  }
 
-                                      if (selectProgram != null) {
-                                        for (var data in selectProgram) {
-                                          rawCategory.add(
-                                            DropdownMenuItem(
-                                              value: data.id,
-                                              child: Text(
-                                                data['raw_categery'],
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      }
-                                    }
-                                    return DropdownButton(
-                                        value: selectedCategory,
-                                        items: rawCategory,
-                                        hint: const Text('Select Category'),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            selectedCategory = value;
-                                          });
+                                  if (!snapshot.hasData) {
+                                    return const CircularProgressIndicator();
+                                  }
+
+                                  List<PopupMenuItem<String>> categoryItems =
+                                      [];
+                                  final documents =
+                                      snapshot.data!.docs.reversed.toList();
+
+                                  for (var doc in documents) {
+                                    var categoryName = doc['categery_name'];
+                                    categoryItems.add(
+                                      PopupMenuItem<String>(
+                                        value: doc.id,
+                                        child: Text(categoryName),
+                                      ),
+                                    );
+                                  }
+
+                                  return Container(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 8),
+                                    decoration: const BoxDecoration(
+                                      border: Border(
+                                          bottom:
+                                              BorderSide(color: Colors.grey)),
+                                    ),
+                                    child: PopupMenuButton<String>(
+                                      onSelected: (String value) {
+                                        setState(() {
+                                          selectedCategory = value;
+                                          var selectedDoc =
+                                              documents.firstWhere(
+                                                  (doc) => doc.id == value);
+                                          selectedCategoryLabel =
+                                              selectedDoc['categery_name'];
                                         });
-                                  },
-                                ),
+                                      },
+                                      itemBuilder: (BuildContext context) =>
+                                          categoryItems,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            selectedCategoryLabel,
+                                            style: const TextStyle(
+                                              color: Color.fromARGB(
+                                                  255, 124, 124, 124),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          const Icon(Icons.arrow_drop_down),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                               Padding(
                                 padding: const EdgeInsets.only(left: 10),
@@ -900,15 +965,49 @@ class __productTabState extends State<_productTab> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 0),
                               Padding(
                                 padding: const EdgeInsets.only(left: 10),
                                 child: TextField(
                                   controller: unitController,
-                                  keyboardType: TextInputType.text,
-                                  decoration: const InputDecoration(
-                                    isDense: true,
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
                                     hintText: 'Item Unit',
+                                    suffixIcon: PopupMenuButton<String>(
+                                      onSelected: (String value) {
+                                        setState(() {
+                                          if (value != 'Select') {
+                                            _selectedUnit = value;
+                                          }
+                                        });
+                                      },
+                                      itemBuilder: (BuildContext context) =>
+                                          <PopupMenuEntry<String>>[
+                                        const PopupMenuItem<String>(
+                                          value: 'Select',
+                                          child: Text('Select'),
+                                        ),
+                                        const PopupMenuItem<String>(
+                                          value: 'kg',
+                                          child: Text('kg'),
+                                        ),
+                                        const PopupMenuItem<String>(
+                                          value: 'litre',
+                                          child: Text('litre'),
+                                        ),
+                                        const PopupMenuItem<String>(
+                                          value: 'pieces',
+                                          child: Text('pieces'),
+                                        ),
+                                      ],
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+                                          Text(_selectedUnit),
+                                          const Icon(Icons.arrow_drop_down),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                   style: const TextStyle(
                                     color: Colors.black54,
@@ -964,8 +1063,11 @@ class __productTabState extends State<_productTab> {
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: MaterialButton(
-                          onPressed: () {
-                            uploadDataToStorage(_Image);
+                          onPressed: () async {
+                            await uploadDataToStorage(
+                                _Image); // Ensure this function is async and properly handles the upload
+                            Navigator.of(context).pop(); // Closes the dialog
+                            onDataAdded();
                           },
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(26),
