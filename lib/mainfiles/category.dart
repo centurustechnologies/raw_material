@@ -63,41 +63,31 @@ class _CategoryPageState extends State<CategoryPage> {
 
   @override
   void dispose() {
-    super.dispose();
     _streamController.close();
+    categoryNameController.dispose();
+    super.dispose();
   }
 
   void addCategoryToFirestore() async {
     try {
-      // Get the current count from Firestore
       var snapshot =
           await FirebaseFirestore.instance.collection('raw_categery').get();
-      int currentCount =
-          snapshot.size; // Get the number of documents as the current count
-
-      // Increment the count for the next category ID
+      int currentCount = snapshot.size;
       String nextCategoryId = (currentCount + 1).toString();
 
-      // Add the new category with incremented count
       await FirebaseFirestore.instance
           .collection('raw_categery')
           .doc(nextCategoryId)
           .set({
         'categery_name': categoryNameController.text,
         'categery_id': nextCategoryId,
-      }).then((value) {
-        setState(() {
-          categoryNameController.clear();
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CategoryPage()),
-          );
-        });
+      }).then((value) async {
+        categoryNameController.clear();
+        getData();
+        if (kDebugMode) {
+          print("Data added successfully!");
+        }
       });
-
-      if (kDebugMode) {
-        print("Data added successfully!");
-      }
     } catch (error) {
       if (kDebugMode) {
         print("Failed to add data: $error");
@@ -105,47 +95,10 @@ class _CategoryPageState extends State<CategoryPage> {
     }
   }
 
-  // bool TextListVisible = true;
-  // void toggleList() {
-  //   setState(() {
-  //     TextListVisible = !TextListVisible;
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      // appBar: AppBar(
-      //   flexibleSpace: Container(
-      //     decoration: BoxDecoration(
-      //       gradient: LinearGradient(
-      //         colors: [
-      //           Color.fromARGB(255, 245, 157, 157),
-      //           Color.fromARGB(255, 255, 90, 78),
-      //           Color.fromARGB(255, 245, 157, 157),
-      //         ],
-      //         begin: Alignment.topLeft,
-      //         end: Alignment.bottomRight,
-      //       ),
-      //     ),
-      //   ),
-      //   title: const Text(
-      //     "Category List",
-      //     style: TextStyle(color: Colors.white),
-      //   ),
-      //   leading: Builder(builder: (BuildContext context) {
-      //     return IconButton(
-      //       icon: const Icon(
-      //         Icons.menu,
-      //         color: Colors.white, // Change the color here
-      //       ),
-      //       onPressed: () {
-      //         Scaffold.of(context).openDrawer();
-      //       },
-      //     );
-      //   }),
-      // ),
       drawer: const MyDrawer(),
       body: Container(
         decoration: const BoxDecoration(color: Colors.red),

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,8 +18,6 @@ import 'package:raw_material/mainfiles/homepage.dart';
 import 'package:raw_material/mainfiles/my_order.dart';
 
 import '../lastoption.dart';
-
-// Assuming MyDrawer is defined in another file
 
 class NewHome extends StatefulWidget {
   const NewHome({Key? key}) : super(key: key);
@@ -590,23 +589,18 @@ class __productTabState extends State<_productTab> {
         'product_id': productId, // Set product ID same as document ID
         'product_image': imageUrl,
         'product_type': 'full',
-      });
-
-      print("Data added successfully");
-
-      setState(() {
-        // _isLoading = false;
+      }).then((value) async {
         productController.clear();
         priceController.clear();
         unitController.clear();
         _Image = null;
+        getData();
+        if (kDebugMode) {
+          print("Data added successfully!");
+        }
       });
     } catch (error) {
       print("Error occurred while uploading image and data: $error");
-
-      setState(() {
-        // _isLoading = false;
-      });
     }
   }
 
@@ -649,7 +643,11 @@ class __productTabState extends State<_productTab> {
 
   @override
   void dispose() {
+    productController.dispose();
+    priceController.dispose();
+    unitController.dispose();
     super.dispose();
+
     _streamController.close();
   }
 
@@ -1075,15 +1073,7 @@ class __productTabState extends State<_productTab> {
                         height: 44,
                         width: 120,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              Color.fromARGB(255, 255, 90, 78),
-                              Color.fromARGB(255, 245, 157, 157),
-                              Color.fromARGB(255, 253, 77, 64),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
+                          color: Colors.redAccent,
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: MaterialButton(
@@ -1147,8 +1137,12 @@ class MenuTab extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => const CategoryPage()),
+                        PageTransition(
+                          type: PageTransitionType.rightToLeft,
+                          duration: Duration(milliseconds: 600),
+                          isIos: true,
+                          child: CategoryPage(),
+                        ),
                       );
                     },
                   ),
@@ -1179,8 +1173,12 @@ class MenuTab extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => const MyOrder()),
+                        PageTransition(
+                          type: PageTransitionType.rightToLeft,
+                          duration: Duration(milliseconds: 600),
+                          isIos: true,
+                          child: MyOrder(),
+                        ),
                       );
                     },
                   ),

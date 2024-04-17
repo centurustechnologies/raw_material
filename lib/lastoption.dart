@@ -1588,6 +1588,14 @@ class _BillGenerationState extends State<BillGeneration> {
               physics: AlwaysScrollableScrollPhysics(),
               itemCount: listtables.length,
               itemBuilder: (BuildContext context, int index) {
+                //  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                //   return const Center(
+                //     child: Padding(
+                //       padding: EdgeInsets.all(10.0),
+                //       child: CircularProgressIndicator(),
+                //     ),
+                //   );
+                // }
                 DocumentSnapshot documentSnapshot = listtables[index];
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
