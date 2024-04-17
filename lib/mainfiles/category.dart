@@ -283,14 +283,6 @@ class _CategoryPageState extends State<CategoryPage> {
                                           ),
                                         ],
                                       ),
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const CategoryPage()),
-                                        );
-                                      },
                                     ),
                                   ),
                                 );

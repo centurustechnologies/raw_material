@@ -27,17 +27,7 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               Container(
                 padding: const EdgeInsets.all(20.0),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color.fromARGB(255, 245, 157, 157),
-                      Color.fromARGB(255, 255, 90, 78),
-                      Color.fromARGB(255, 245, 157, 157),
-                    ],
-                    begin: Alignment.bottomLeft,
-                    end: Alignment.topRight,
-                  ),
-                ),
+                decoration: BoxDecoration(color: Colors.redAccent),
                 child: const Column(
                   children: [
                     SizedBox(

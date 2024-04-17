@@ -159,15 +159,7 @@ class _MyOrderStateState extends State<MyOrder> {
       appBar: AppBar(
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.fromARGB(255, 245, 157, 157),
-                Color.fromARGB(255, 255, 90, 78),
-                Color.fromARGB(255, 245, 157, 157),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: Colors.red,
           ),
         ),
         title: const Text(
@@ -390,15 +382,7 @@ class _MyOrderStateState extends State<MyOrder> {
         child: Container(
           height: 39,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.fromARGB(255, 245, 157, 157),
-                Color.fromARGB(255, 255, 90, 78),
-                Color.fromARGB(255, 245, 157, 157),
-              ],
-              begin: Alignment.bottomLeft,
-              end: Alignment.topRight,
-            ),
+            color: Colors.red,
             borderRadius: BorderRadius.circular(26),
           ),
           child: MaterialButton(
