@@ -123,14 +123,6 @@ class _product_listState extends State<product_list> {
     _streamController = StreamController<List<DocumentSnapshot>>();
     getData();
     super.initState();
-
-    unitController.addListener(() {
-      if (unitController.text.isEmpty && _selectedUnit != 'Select') {
-        setState(() {
-          _selectedUnit = 'Select';
-        });
-      }
-    });
   }
 
   @override
@@ -181,9 +173,7 @@ class _product_listState extends State<product_list> {
                   color: Colors.blueGrey,
                   borderRadius: BorderRadius.all(Radius.circular(10))),
               child: MaterialButton(
-                onPressed: () {
-                  showAddProductDialog(context);
-                },
+                onPressed: () => showAddProductDialog(context),
                 textColor: Colors.white,
                 child: const Text('Add New Product'),
               ),

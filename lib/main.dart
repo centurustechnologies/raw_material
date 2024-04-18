@@ -28,3 +28,22 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false, home: NewHome());
   }
 }
+
+// fade
+// rightToLeft
+// leftToRight
+// upToDown
+// downToUp
+// scale
+// rotate
+// size
+// rightToLeftWithFade
+// leftToRightWithFade
+// rightToLeftJoined
+// leftToRightJoined
+// rightToLeftPop
+// leftToRightPop
+// topToBottomJoined
+// bottomToTopJoined
+// topToBottomPop
+// bottomToTopPop
