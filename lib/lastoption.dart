@@ -209,6 +209,7 @@ class _BillGenerationState extends State<BillGeneration> {
             'product_price': documentSnapshot['product_price'],
             'total_price': documentSnapshot['product_price'],
             'selected_unit': documentSnapshot['selected_unit'],
+            'product_unit': documentSnapshot['product_unit'],
             'quantity': '1',
           },
         );
@@ -3216,9 +3217,13 @@ class _BillGenerationState extends State<BillGeneration> {
                               productNames.add(
                                   productDocumentSnapshot['product_name']
                                       .toString());
+                              productNames.add(
+                                  productDocumentSnapshot['product_unit']
+                                      .toString());
                               productPrice.add(
                                   productDocumentSnapshot['product_price']
                                       .toString());
+
                               productType.add(
                                   productDocumentSnapshot['selected_unit']
                                       .toString());
@@ -3227,6 +3232,16 @@ class _BillGenerationState extends State<BillGeneration> {
                                   .add(productDocumentSnapshot['quantity']);
 
                               log("ljiksdldfsljksdf $productType");
+
+                              TextEditingController unitController =
+                                  TextEditingController(
+                                      text: productDocumentSnapshot[
+                                              'product_unit']
+                                          .toString());
+
+                              // double basePrice = double.parse(
+                              //     productDocumentSnapshot['base_price']
+                              //         .toString());
 
                               return Container(
                                 decoration: BoxDecoration(
@@ -3248,16 +3263,106 @@ class _BillGenerationState extends State<BillGeneration> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
+                                          Text(
+                                            " ${productDocumentSnapshot['product_name']} ",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
                                           Row(
                                             children: [
-                                              Text(
-                                                " ${productDocumentSnapshot['product_name']} ",
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black,
+                                              GestureDetector(
+                                                onTap: () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return AlertDialog(
+                                                        title: Text(
+                                                            "Edit Product Unit"),
+                                                        content: TextField(
+                                                          controller:
+                                                              unitController,
+                                                          keyboardType:
+                                                              TextInputType
+                                                                  .number,
+                                                          autofocus: true,
+                                                          decoration:
+                                                              InputDecoration(
+                                                            hintText:
+                                                                "Enter new unit",
+                                                          ),
+                                                        ),
+                                                        actions: [
+                                                          TextButton(
+                                                            child:
+                                                                Text("Cancel"),
+                                                            onPressed: () {
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                            },
+                                                          ),
+                                                          TextButton(
+                                                            child:
+                                                                Text("Update"),
+                                                            onPressed: () {
+                                                              int newUnit =
+                                                                  int.tryParse(
+                                                                          unitController
+                                                                              .text) ??
+                                                                      0;
+                                                              // double newPrice =
+                                                              //     basePrice *
+                                                              //         newUnit;
+                                                              // double
+                                                              //     newTotalPrice =
+                                                              //     newPrice; // Update logic if needed
+
+                                                              // Update Firebase
+                                                              FirebaseFirestore
+                                                                  .instance
+                                                                  .collection(
+                                                                      'tablesraw')
+                                                                  .doc(
+                                                                      _tableSelected)
+                                                                  .collection(
+                                                                      'productraw')
+                                                                  .doc(
+                                                                      productDocumentSnapshot
+                                                                          .id)
+                                                                  .update({
+                                                                'product_unit':
+                                                                    newUnit
+                                                                        .toString(),
+                                                                // 'product_price':
+                                                                //     newPrice
+                                                                //         .toString(),
+                                                                // 'total_price':
+                                                                //     newTotalPrice
+                                                                //         .toString()
+                                                              }).then((_) {
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              });
+                                                            },
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                                child: Text(
+                                                  "${productDocumentSnapshot['product_unit']}",
+                                                  style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontWeight:
+                                                          FontWeight.bold),
                                                 ),
                                               ),
                                               Text(

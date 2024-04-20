@@ -1076,7 +1076,7 @@ class _AddProductFormState extends State<AddProductForm> {
                       child: Text('litre'),
                     ),
                     const PopupMenuItem<String>(
-                      value: 'pieces',
+                      value: 'pcs',
                       child: Text('pieces'),
                     ),
                   ],

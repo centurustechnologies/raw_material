@@ -7,10 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:raw_material/helpers/app_constants.dart';
-import 'package:raw_material/mainfiles/homepage.dart';
 
 // ignore: camel_case_types
 class product_list extends StatefulWidget {
@@ -59,7 +57,7 @@ class _product_listState extends State<product_list> {
     String fileName = DateTime.now().microsecondsSinceEpoch.toString() + '.png';
 
     Reference referenceRoot = FirebaseStorage.instance.ref();
-    Reference referenceDireImages = referenceRoot.child('product_Image');
+    Reference referenceDireImages = referenceRoot.child('product_image');
     Reference referenceImageToUpload = referenceDireImages.child(fileName);
 
     try {
@@ -81,6 +79,7 @@ class _product_listState extends State<product_list> {
         'selected_unit': _selectedUnit,
         'product_name': productController.text,
         'product_price': priceController.text,
+        'base_price': priceController.text,
         'product_id': productId, // Set product ID same as document ID
         'product_image': imageUrl,
         'product_type': 'full',
@@ -490,8 +489,8 @@ class _product_listState extends State<product_list> {
                                           child: Text('litre'),
                                         ),
                                         const PopupMenuItem<String>(
-                                          value: 'pieces',
-                                          child: Text('pieces'),
+                                          value: 'pcs',
+                                          child: Text('pcs'),
                                         ),
                                       ],
                                       child: Row(
