@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 void main() => runApp(App());
 
 ///Example App
@@ -19,384 +24,177 @@ class App extends StatelessWidget {
                   .matchingBuilder,
         }),
       ),
-      home: aaaa(),
-      onGenerateRoute: (settings) {
-        switch (settings.name) {
-          case '/second':
-            return PageTransition(
-              child: const SecondPage(),
-              type: PageTransitionType.theme,
-              settings: settings,
-              duration: const Duration(seconds: 1),
-              reverseDuration: const Duration(seconds: 1),
-            );
-          default:
-            return null;
-        }
-      },
+      home: ProductListScreen(
+        tableSelected: '',
+      ),
+      // onGenerateRoute: (settings) {
+      //   switch (settings.name) {
+      //     case '/second':
+      //       return PageTransition(
+      //         child: const SecondPage(),
+      //         type: PageTransitionType.theme,
+      //         settings: settings,
+      //         duration: const Duration(seconds: 1),
+      //         reverseDuration: const Duration(seconds: 1),
+      //       );
+      //     default:
+      //       return null;
+      //   }
+      // },
     );
   }
 }
 
-/// Example page
-class aaaa extends StatelessWidget {
+class ProductListScreen extends StatefulWidget {
+  final String tableSelected;
+  ProductListScreen({Key? key, required this.tableSelected}) : super(key: key);
+
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.blue,
-      appBar: AppBar(
-        title: const Text('Page Transition'),
-      ),
-      body: Center(
-        child: ListView(
-          children: <Widget>[
-            ElevatedButton(
-              child: const Text('Fade Second Page - Default'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SecondPage(),
-                  ),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Left To Right Transition Second Page'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                    type: PageTransitionType.leftToRight,
-                    child: const SecondPage(),
-                  ),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text(
-                  'Right To Left Transition Second Page Ios SwipeBack'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                    type: PageTransitionType.rightToLeft,
-                    isIos: true,
-                    child: const SecondPage(),
-                  ),
-                );
-              },
-            ),
-            ElevatedButton(
-              child:
-                  const Text('Left To Right with Fade Transition Second Page'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                    type: PageTransitionType.leftToRightWithFade,
-                    alignment: Alignment.topCenter,
-                    child: const SecondPage(),
-                  ),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Right To Left Transition Second Page'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                    type: PageTransitionType.leftToRight,
-                    child: const SecondPage(),
-                  ),
-                );
-              },
-            ),
-            ElevatedButton(
-              child:
-                  const Text('Right To Left with Fade Transition Second Page'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                    type: PageTransitionType.rightToLeftWithFade,
-                    child: const SecondPage(),
-                  ),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Top to Bottom Second Page'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                    curve: Curves.linear,
-                    type: PageTransitionType.topToBottom,
-                    child: const SecondPage(),
-                  ),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Bottom to Top Second Page'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                    curve: Curves.linear,
-                    type: PageTransitionType.bottomToTop,
-                    child: const SecondPage(),
-                  ),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Scale Transition Second Page'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                    type: PageTransitionType.scale,
-                    alignment: Alignment.topCenter,
-                    duration: const Duration(milliseconds: 400),
-                    isIos: true,
-                    child: const SecondPage(),
-                  ),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Rotate Transition Second Page'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                    curve: Curves.bounceOut,
-                    type: PageTransitionType.rotate,
-                    alignment: Alignment.topCenter,
-                    child: const SecondPage(),
-                  ),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Size Transition Second Page'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                    alignment: Alignment.bottomCenter,
-                    curve: Curves.bounceOut,
-                    type: PageTransitionType.size,
-                    child: const SecondPage(),
-                  ),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Right to Left Joined'),
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    PageTransition(
-                        alignment: Alignment.bottomCenter,
-                        curve: Curves.easeInOut,
-                        duration: const Duration(milliseconds: 600),
-                        reverseDuration: const Duration(milliseconds: 600),
-                        type: PageTransitionType.rightToLeftJoined,
-                        child: const SecondPage(),
-                        childCurrent: this));
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Left to Right Joined'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                      alignment: Alignment.bottomCenter,
-                      curve: Curves.easeInOut,
-                      duration: const Duration(milliseconds: 600),
-                      reverseDuration: const Duration(milliseconds: 600),
-                      type: PageTransitionType.leftToRightJoined,
-                      child: const SecondPage(),
-                      childCurrent: this),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Top to Bottom Joined'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                      alignment: Alignment.bottomCenter,
-                      curve: Curves.easeInOut,
-                      duration: const Duration(milliseconds: 600),
-                      reverseDuration: const Duration(milliseconds: 600),
-                      type: PageTransitionType.topToBottomJoined,
-                      child: const SecondPage(),
-                      childCurrent: this),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Bottom to Top Joined'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                      alignment: Alignment.bottomCenter,
-                      curve: Curves.easeInOut,
-                      duration: const Duration(milliseconds: 600),
-                      reverseDuration: const Duration(milliseconds: 600),
-                      type: PageTransitionType.bottomToTopJoined,
-                      child: const SecondPage(),
-                      childCurrent: this),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Right to Left Pop'),
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    PageTransition(
-                        alignment: Alignment.bottomCenter,
-                        curve: Curves.easeInOut,
-                        duration: const Duration(milliseconds: 600),
-                        reverseDuration: const Duration(milliseconds: 600),
-                        type: PageTransitionType.rightToLeftPop,
-                        child: const SecondPage(),
-                        childCurrent: this));
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Left to Right Pop'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                      alignment: Alignment.bottomCenter,
-                      curve: Curves.easeInOut,
-                      duration: const Duration(milliseconds: 600),
-                      reverseDuration: const Duration(milliseconds: 600),
-                      type: PageTransitionType.leftToRightPop,
-                      child: const SecondPage(),
-                      childCurrent: this),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Top to Bottom Pop'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                      alignment: Alignment.bottomCenter,
-                      curve: Curves.easeInOut,
-                      duration: const Duration(milliseconds: 600),
-                      reverseDuration: const Duration(milliseconds: 600),
-                      type: PageTransitionType.topToBottomPop,
-                      child: const SecondPage(),
-                      childCurrent: this),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Bottom to Top Pop'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                      alignment: Alignment.bottomCenter,
-                      curve: Curves.easeInOut,
-                      duration: const Duration(milliseconds: 600),
-                      reverseDuration: const Duration(milliseconds: 600),
-                      type: PageTransitionType.bottomToTopPop,
-                      child: const SecondPage(),
-                      childCurrent: this),
-                );
-              },
-            ),
-            ElevatedButton(
-              child: const Text('PushNamed With arguments'),
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  "/second",
-                  arguments: "with Arguments",
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  _ProductListScreenState createState() => _ProductListScreenState();
 }
 
-///Example second page
-class SecondPage extends StatelessWidget {
-  /// Page Title
-  final String? title;
-
-  /// second page constructor
-  const SecondPage({Key? key, this.title}) : super(key: key);
+class _ProductListScreenState extends State<ProductListScreen> {
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
     return Scaffold(
       appBar: AppBar(
-        title: Text(args.toString()),
+        title: Text("Product List"),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Text('Second Page'),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageTransition(
-                    duration: const Duration(milliseconds: 300),
-                    reverseDuration: const Duration(milliseconds: 300),
-                    type: PageTransitionType.topToBottom,
-                    child: const ThirdPage(
-                      title: '',
+      body: SizedBox(
+        height: MediaQuery.of(context).size.height / 2.35,
+        child: StreamBuilder(
+          stream: FirebaseFirestore.instance
+              .collection('tablesraw')
+              .doc(widget.tableSelected)
+              .collection('productraw')
+              .snapshots(),
+          builder: (context, AsyncSnapshot<QuerySnapshot> productSnapshot) {
+            if (productSnapshot.hasData) {
+              return ListView.builder(
+                itemCount: productSnapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  DocumentSnapshot productDocumentSnapshot =
+                      productSnapshot.data!.docs[index];
+                  TextEditingController unitController = TextEditingController(
+                      text: productDocumentSnapshot['product_unit'].toString());
+
+                  double productPrice = double.parse(
+                      productDocumentSnapshot['product_price'].toString());
+                  int productUnit = int.parse(
+                      productDocumentSnapshot['product_unit'].toString());
+                  double basePrice = productPrice / productUnit;
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 235, 246, 254),
+                      border: Border.all(
+                          color: Colors.blue.withOpacity(0.05), width: 1),
                     ),
-                  ),
-                );
-              },
-              child: const Text('Go Third Page'),
-            )
-          ],
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 2),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                " ${productDocumentSnapshot['product_name']} ",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text("Edit Product Unit"),
+                                        content: TextField(
+                                          controller: unitController,
+                                          keyboardType: TextInputType.number,
+                                          autofocus: true,
+                                          decoration: InputDecoration(
+                                              hintText: "Enter new unit"),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            child: Text("Cancel"),
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                          ),
+                                          TextButton(
+                                            child: Text("Update"),
+                                            onPressed: () {
+                                              int newUnit = int.tryParse(
+                                                      unitController.text) ??
+                                                  productUnit;
+                                              double newBasePrice =
+                                                  productPrice / newUnit;
+                                              FirebaseFirestore.instance
+                                                  .collection('tablesraw')
+                                                  .doc(widget.tableSelected)
+                                                  .collection('productraw')
+                                                  .doc(productDocumentSnapshot
+                                                      .id)
+                                                  .update({
+                                                'product_unit':
+                                                    newUnit.toString(),
+                                                'base_price':
+                                                    newBasePrice.toString(),
+                                              }).then((_) {
+                                                Navigator.of(context).pop();
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Text(
+                                  "${productDocumentSnapshot['product_unit']}",
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Text(
+                                " ${productDocumentSnapshot['selected_unit']}",
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: 40,
+                                  child: Text(
+                                    '\$${basePrice.toStringAsFixed(2)}',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10),
+                                  ),
+                                ),
+                                // Additional Widgets...
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            }
+            return Center(child: CircularProgressIndicator());
+          },
         ),
-      ),
-    );
-  }
-}
-
-/// third page
-class ThirdPage extends StatelessWidget {
-  /// Page Title
-  final String title;
-
-  /// second page constructor
-  const ThirdPage({Key? key, required this.title}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Page Transition Plugin"),
-      ),
-      body: const Center(
-        child: Text('ThirdPage Page'),
       ),
     );
   }

@@ -17,55 +17,28 @@ class CategoryPage extends StatefulWidget {
 }
 
 class _CategoryPageState extends State<CategoryPage> {
-  List items = [];
-  // File? _image;
-  // Uint8List webImage = Uint8List(8);
+  List<DocumentSnapshot> _document = [];
+  StreamController<List<DocumentSnapshot>> _streamController =
+      StreamController<List<DocumentSnapshot>>();
   TextEditingController categoryNameController = TextEditingController();
-
-  // ignore: unused_field
-  late StreamController<List<DocumentSnapshot>> _streamController;
-  // ignore: unused_field
-  late List<DocumentSnapshot> _document;
-
-  // Future getImageFromGallery() async {
-  //   final picker = ImagePicker();
-  //   final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-  //   setState(() {
-  //     if (pickedFile != null) {
-  //       _image = File(pickedFile.path);
-  //     } else {
-  //       if (kDebugMode) {
-  //         print('No image selected.');
-  //       }
-  //     }
-  //   });
-  // }
 
   @override
   void initState() {
-    _document = [];
-    _streamController = StreamController<List<DocumentSnapshot>>();
-    getData();
     super.initState();
+    getData();
   }
 
   Future<void> getData() async {
     try {
       QuerySnapshot querySnapshot =
           await FirebaseFirestore.instance.collection('raw_categery').get();
-
       _document = querySnapshot.docs;
       _streamController.add(_document);
     } catch (e) {
-      print('error i fetching data: $e');
+      if (kDebugMode) {
+        print('Error in fetching data: $e');
+      }
     }
-  }
-
-  @override
-  void dispose() {
-    _streamController.close();
-    categoryNameController.dispose();
-    super.dispose();
   }
 
   void addCategoryToFirestore() async {
@@ -83,7 +56,7 @@ class _CategoryPageState extends State<CategoryPage> {
         'categery_id': nextCategoryId,
       }).then((value) async {
         categoryNameController.clear();
-        getData();
+        getData(); // Refresh list after adding
         if (kDebugMode) {
           print("Data added successfully!");
         }
@@ -93,6 +66,32 @@ class _CategoryPageState extends State<CategoryPage> {
         print("Failed to add data: $error");
       }
     }
+  }
+
+  void removeCategoryFromFirestore(String categoryId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('raw_categery')
+          .doc(categoryId)
+          .delete()
+          .then((_) {
+        if (kDebugMode) {
+          print("Category successfully removed from Firestore!");
+        }
+        getData();
+      });
+    } catch (error) {
+      if (kDebugMode) {
+        print("Failed to remove category: $error");
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _streamController.close();
+    categoryNameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -227,7 +226,9 @@ class _CategoryPageState extends State<CategoryPage> {
                                             padding: const EdgeInsets.all(6.0),
                                             minWidth: 0,
                                             height: 0,
-                                            onPressed: () {},
+                                            onPressed: () =>
+                                                removeCategoryFromFirestore(
+                                                    categoryId),
                                             child: const Icon(
                                               Icons.delete,
                                               size: 18,

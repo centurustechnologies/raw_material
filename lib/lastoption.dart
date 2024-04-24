@@ -58,7 +58,6 @@ class _BillGenerationState extends State<BillGeneration> {
   double tax = 0.0;
   double taxAfterCalculation = 0.0;
   double totalTax = 0.0;
-  String _errorMessage = '';
 
   bool discountstatus = true;
   String _productHover = '';
@@ -183,7 +182,11 @@ class _BillGenerationState extends State<BillGeneration> {
         String basePrice = documentSnapshot['product_price'];
         String totalPrice = doc.get('total_price');
         String total = "${int.parse(totalPrice) + int.parse(basePrice)}";
+        // String BasePrice = documentSnapshot['base_price'];
+        // String ProductUnit = doc.get('product_unit');
+        // String Price = "${int.parse(ProductUnit) * int.parse(BasePrice)}";
         String quantity = doc.get('quantity');
+
         await FirebaseFirestore.instance
             .collection('tablesraw')
             .doc(id)
@@ -193,6 +196,7 @@ class _BillGenerationState extends State<BillGeneration> {
           {
             'total_price': total,
             'quantity': '${int.parse(quantity) + 1}',
+            // 'product_price': Price,
           },
         );
       } else {
@@ -208,6 +212,7 @@ class _BillGenerationState extends State<BillGeneration> {
             'product_id': documentSnapshot['product_id'],
             'product_price': documentSnapshot['product_price'],
             'total_price': documentSnapshot['product_price'],
+            'base_price': documentSnapshot['base_price'],
             'selected_unit': documentSnapshot['selected_unit'],
             'product_unit': documentSnapshot['product_unit'],
             'quantity': '1',
@@ -942,9 +947,7 @@ class _BillGenerationState extends State<BillGeneration> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        // This Expanded ensures the Container fills the horizontal space in the Row
                         child: Container(
-                          // The height is no longer needed here because Expanded in Column takes care of vertical space
                           decoration: BoxDecoration(
                             color: Colors
                                 .white, // Assuming whiteColor is Colors.white
@@ -1621,25 +1624,40 @@ class _BillGenerationState extends State<BillGeneration> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      documentSnapshot['customer_name'],
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    MaterialButton(
+                                      minWidth: 0,
+                                      onPressed: () {},
+                                      child: FaIcon(
+                                        FontAwesomeIcons.ellipsisVertical,
+                                        color: _tableSelected ==
+                                                documentSnapshot.id
+                                            ? whiteColor.withOpacity(0.8)
+                                            : Colors.black.withOpacity(0.5),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 Text(
-                                  documentSnapshot['customer_name'],
+                                  documentSnapshot['amount'],
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                     color: Colors.black,
-                                  ),
-                                ),
-                                MaterialButton(
-                                  minWidth: 0,
-                                  onPressed: () {},
-                                  child: FaIcon(
-                                    FontAwesomeIcons.ellipsisVertical,
-                                    color: _tableSelected == documentSnapshot.id
-                                        ? whiteColor.withOpacity(0.8)
-                                        : Colors.black.withOpacity(0.5),
                                   ),
                                 ),
                               ],
@@ -1650,7 +1668,7 @@ class _BillGenerationState extends State<BillGeneration> {
                             height: 30,
                             decoration: BoxDecoration(
                               color: documentSnapshot['status'] == 'vacant'
-                                  ? Colors.blueGrey[100]!
+                                  ? Colors.blueGrey[100]
                                   : documentSnapshot['status'] == 'occupied'
                                       ? Colors.purple
                                       : documentSnapshot['status'] ==
@@ -1991,7 +2009,7 @@ class _BillGenerationState extends State<BillGeneration> {
                               },
                               child: Padding(
                                 padding: const EdgeInsets.only(
-                                    bottom: 3, right: 2, top: 2),
+                                    bottom: 3, right: 0, top: 2),
                                 child: Container(
                                   // Increase the size of the Container to make the InkWell tappable
                                   height: 90,
@@ -2122,6 +2140,9 @@ class _BillGenerationState extends State<BillGeneration> {
                       return Container();
                     },
                   ),
+                ),
+                SizedBox(
+                  width: 10,
                 ),
                 billingCart(context),
               ],
@@ -3135,7 +3156,7 @@ class _BillGenerationState extends State<BillGeneration> {
 
   billingCart(context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height - 259,
+      height: MediaQuery.of(context).size.height - 260,
       width: MediaQuery.of(context).size.width - 107,
       child: Column(
         children: [
@@ -3239,10 +3260,6 @@ class _BillGenerationState extends State<BillGeneration> {
                                               'product_unit']
                                           .toString());
 
-                              // double basePrice = double.parse(
-                              //     productDocumentSnapshot['base_price']
-                              //         .toString());
-
                               return Container(
                                 decoration: BoxDecoration(
                                   color: const Color.fromARGB(
@@ -3316,12 +3333,19 @@ class _BillGenerationState extends State<BillGeneration> {
                                                                           unitController
                                                                               .text) ??
                                                                       0;
-                                                              // double newPrice =
-                                                              //     basePrice *
-                                                              //         newUnit;
-                                                              // double
-                                                              //     newTotalPrice =
-                                                              //     newPrice; // Update logic if needed
+
+                                                              double basePrice =
+                                                                  double.tryParse(
+                                                                          productDocumentSnapshot['base_price'] ??
+                                                                              '0') ??
+                                                                      0;
+
+                                                              double newPrice =
+                                                                  basePrice *
+                                                                      newUnit;
+                                                              int finalPrice =
+                                                                  newPrice
+                                                                      .ceil();
 
                                                               // Update Firebase
                                                               FirebaseFirestore
@@ -3339,12 +3363,12 @@ class _BillGenerationState extends State<BillGeneration> {
                                                                 'product_unit':
                                                                     newUnit
                                                                         .toString(),
-                                                                // 'product_price':
-                                                                //     newPrice
-                                                                //         .toString(),
-                                                                // 'total_price':
-                                                                //     newTotalPrice
-                                                                //         .toString()
+                                                                'product_price':
+                                                                    finalPrice
+                                                                        .toString(),
+                                                                'total_price':
+                                                                    finalPrice
+                                                                        .toString(),
                                                               }).then((_) {
                                                                 Navigator.of(
                                                                         context)

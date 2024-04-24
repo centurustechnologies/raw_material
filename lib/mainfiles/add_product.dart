@@ -23,7 +23,7 @@ class _product_listState extends State<product_list> {
   String categorytype = "";
   String categoryname = "";
   String? selectedCategory;
-
+  DocumentSnapshot? documentSnapshot;
   String _selectedUnit = 'Select';
   String selectedCategoryLabel = 'Select Category';
 
@@ -69,6 +69,10 @@ class _product_listState extends State<product_list> {
           .get();
       int currentCount = snapshot.size;
       String productId = (currentCount + 1).toString();
+      String productPrice = priceController.text;
+      String productUnit = unitController.text;
+      String basePrice =
+          (int.parse(productUnit) / int.parse(productPrice)).toString();
 
       await FirebaseFirestore.instance
           .collection('raw_billing_product')
@@ -79,10 +83,10 @@ class _product_listState extends State<product_list> {
         'selected_unit': _selectedUnit,
         'product_name': productController.text,
         'product_price': priceController.text,
-        'base_price': priceController.text,
-        'product_id': productId, // Set product ID same as document ID
+        'product_id': productId,
         'product_image': imageUrl,
         'product_type': 'full',
+        'base_price': basePrice,
       });
 
       print("Data added successfully");
@@ -169,11 +173,13 @@ class _product_listState extends State<product_list> {
             padding: const EdgeInsets.all(8.0),
             child: Container(
               decoration: const BoxDecoration(
-                  color: Colors.blueGrey,
+                  color: Colors.green,
                   borderRadius: BorderRadius.all(Radius.circular(10))),
               child: MaterialButton(
-                onPressed: () => showAddProductDialog(context),
-                textColor: Colors.white,
+                onPressed: () {
+                  showAddProductDialog(context);
+                },
+                textColor: Colors.red,
                 child: const Text('Add New Product'),
               ),
             ),
@@ -306,7 +312,6 @@ class _product_listState extends State<product_list> {
   showAddProductDialog(BuildContext context) {
     showDialog(
       context: context,
-      barrierDismissible: false,
       builder: (BuildContext context) {
         return SingleChildScrollView(
           child: StatefulBuilder(

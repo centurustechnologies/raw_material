@@ -11,7 +11,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:raw_material/helpers/app_constants.dart';
 import 'package:raw_material/logins/login.dart';
-import 'package:raw_material/mainfiles/add_product.dart';
 import 'package:raw_material/mainfiles/add_user.dart';
 import 'package:raw_material/mainfiles/bill_history.dart';
 import 'package:raw_material/mainfiles/category.dart';
@@ -541,89 +540,17 @@ class __productTabState extends State<_productTab> {
   // ignore: unused_field
   late List<DocumentSnapshot> _document;
 
-  File? _Image;
-  Future pickImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    setState(() {
-      if (pickedFile != null) {
-        _Image = File(pickedFile.path);
-      } else {
-        print('No image selected.');
-      }
-    });
-  }
-
-  Future uploadDataToStorage(pickedFile) async {
-    if (pickedFile == null) {
-      print('No image selected.');
-      return;
-    }
-    String fileName = DateTime.now().microsecondsSinceEpoch.toString() + '.png';
-
-    Reference referenceRoot = FirebaseStorage.instance.ref();
-    Reference referenceDireImages = referenceRoot.child('product_Image');
-    Reference referenceImageToUpload = referenceDireImages.child(fileName);
-
-    try {
-      // setState(() {
-      //   // _isLoading = true;
-      // });
-      await referenceImageToUpload.putFile(File(pickedFile.path));
-      String imageUrl = await referenceImageToUpload.getDownloadURL();
-
-      var snapshot = await FirebaseFirestore.instance
-          .collection('raw_billing_product')
-          .get();
-      int currentCount = snapshot.size;
-      String productId = (currentCount + 1).toString();
-
-      await FirebaseFirestore.instance
-          .collection('raw_billing_product')
-          .doc(productId)
-          .set({
-        'categery': selectedCategory,
-        'product_unit': unitController.text,
-        'selected_unit': _selectedUnit,
-        'product_name': productController.text,
-        'product_price': priceController.text,
-        'product_id': productId, // Set product ID same as document ID
-        'product_image': imageUrl,
-        'product_type': 'full',
-      }).then((value) async {
-        productController.clear();
-        priceController.clear();
-        unitController.clear();
-        _Image = null;
-        getData();
-        if (kDebugMode) {
-          print("Data added successfully!");
-        }
-      });
-    } catch (error) {
-      print("Error occurred while uploading image and data: $error");
-    }
-  }
-
   Future<void> getData() async {
     try {
-      // setState(() {
-      //   // _isLoading = true;
-      // });
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('raw_billing_product')
           .get();
       setState(() {
         _document = querySnapshot.docs;
         _streamController.add(_document);
-        // _isLoading = false;
       });
     } catch (e) {
       print('error i fetching data: $e');
-
-      // setState(() {
-      //   // _isLoading = false;
-      // });
     }
   }
 
@@ -796,34 +723,32 @@ class __productTabState extends State<_productTab> {
         ),
         Padding(
           padding: const EdgeInsets.only(top: 2, right: 10, left: 10),
-          child: Center(
-            child: Container(
-              height: 44,
-              decoration: BoxDecoration(
-                color: Colors.red,
+          child: Container(
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(26),
+            ),
+            child: MaterialButton(
+              onPressed: () => showAddProductDialog(context, () {
+                getData();
+              }),
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(26),
               ),
-              child: MaterialButton(
-                onPressed: () => showAddProductDialog(context, () {
-                  getData();
-                }),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(26),
-                ),
-                child: const Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Add New Bill',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
+              child: const Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Add New Bill',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -889,31 +814,71 @@ class _AddProductFormState extends State<AddProductForm> {
           .get();
       int currentCount = snapshot.size;
       String productId = (currentCount + 1).toString();
+      String productPrice = priceController.text;
+      String productUnit = unitController.text;
+      String basePrice =
+          (int.parse(productPrice) / int.parse(productUnit)).toStringAsFixed(2);
 
       await FirebaseFirestore.instance
           .collection('raw_billing_product')
           .doc(productId)
           .set({
-        'categery': selectedCategory,
+        'categery': selectedCategoryLabel,
         'product_unit': unitController.text,
         'selected_unit': _selectedUnit,
         'product_name': productController.text,
         'product_price': priceController.text,
-        'product_id': productId, // Set product ID same as document ID
-        'product_Image': imageUrl,
+        'product_id': productId,
+        'product_image': imageUrl,
+        'base_price': basePrice,
         'product_type': 'full',
-      });
-
-      print("Data added successfully");
-
-      setState(() {
+      }).then((value) async {
         productController.clear();
         priceController.clear();
         unitController.clear();
         _Image = null;
+        getData();
+        if (kDebugMode) {
+          print("Data added successfully!");
+        }
       });
     } catch (error) {
       print("Error occurred while uploading image and data: $error");
+      print(error);
+    }
+  }
+
+  StreamController<List<DocumentSnapshot>> _streamController =
+      StreamController<List<DocumentSnapshot>>();
+  TextEditingController categoryNameController = TextEditingController();
+
+  @override
+  void initState() {
+    _document = [];
+    _streamController = StreamController<List<DocumentSnapshot>>();
+    getData();
+    super.initState();
+    unitController.addListener(() {
+      if (unitController.text.isEmpty && _selectedUnit != 'Select') {
+        setState(() {
+          _selectedUnit = 'Select';
+        });
+      }
+    });
+  }
+
+  List<DocumentSnapshot> _document = [];
+  Future<void> getData() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('raw_billing_product')
+          .get();
+      _document = querySnapshot.docs;
+      _streamController.add(_document);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error in fetching data: $e');
+      }
     }
   }
 
@@ -936,206 +901,194 @@ class _AddProductFormState extends State<AddProductForm> {
     } catch (e) {
       print('Failed to pick image: $e');
     }
-
-    unitController.addListener(() {
-      if (unitController.text.isEmpty && _selectedUnit != 'Select') {
-        setState(() {
-          _selectedUnit = 'Select';
-        });
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      physics: NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(20),
-      child: Expanded(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Add Product',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Add Product',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
             ),
-            SizedBox(height: 20),
-            GestureDetector(
-              onTap: pickImage,
-              child: CircleAvatar(
-                radius: 60,
-                backgroundColor: Colors.grey[300],
-                backgroundImage: _Image != null ? FileImage(_Image!) : null,
-                child: _Image == null
-                    ? Icon(
-                        Icons.camera_alt,
-                        size: 50,
-                      )
-                    : null,
-              ),
+          ),
+          SizedBox(height: 20),
+          GestureDetector(
+            onTap: pickImage,
+            child: CircleAvatar(
+              radius: 60,
+              backgroundColor: Colors.grey[300],
+              backgroundImage: _Image != null ? FileImage(_Image!) : null,
+              child: _Image == null
+                  ? Icon(
+                      Icons.camera_alt,
+                      size: 50,
+                    )
+                  : null,
             ),
-            StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('raw_categery')
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  print('Some Error Occured ${snapshot.error}');
-                  return Text('Error: ${snapshot.error}');
-                }
+          ),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('raw_categery')
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                print('Some Error Occured ${snapshot.error}');
+                return Text('Error: ${snapshot.error}');
+              }
 
-                if (!snapshot.hasData) {
-                  return const CircularProgressIndicator();
-                }
+              if (!snapshot.hasData) {
+                return const CircularProgressIndicator();
+              }
 
-                List<PopupMenuItem<String>> categoryItems = [];
-                final documents = snapshot.data!.docs.reversed.toList();
+              List<PopupMenuItem<String>> categoryItems = [];
+              final documents = snapshot.data!.docs.reversed.toList();
 
-                for (var doc in documents) {
-                  var categoryName = doc['categery_name'];
-                  categoryItems.add(
-                    PopupMenuItem<String>(
-                      value: doc.id,
-                      child: Text(categoryName),
-                    ),
-                  );
-                }
-
-                return Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  decoration: const BoxDecoration(
-                    border: Border(bottom: BorderSide(color: Colors.grey)),
-                  ),
-                  child: PopupMenuButton<String>(
-                    onSelected: (String value) {
-                      setState(() {
-                        selectedCategory = value;
-                        var selectedDoc =
-                            documents.firstWhere((doc) => doc.id == value);
-                        selectedCategoryLabel = selectedDoc['categery_name'];
-                      });
-                    },
-                    itemBuilder: (BuildContext context) => categoryItems,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          child: Text(
-                            selectedCategoryLabel,
-                            style: const TextStyle(
-                              color: Color.fromARGB(255, 124, 124, 124),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        const Icon(Icons.arrow_drop_down),
-                      ],
-                    ),
+              for (var doc in documents) {
+                var categoryName = doc['categery_name'];
+                categoryItems.add(
+                  PopupMenuItem<String>(
+                    value: doc.id,
+                    child: Text(categoryName),
                   ),
                 );
-              },
-            ),
-            TextField(
-              controller: productController,
-              keyboardType: TextInputType.text,
-              decoration: InputDecoration(
-                labelText: 'Product Name',
-                isDense: true,
-              ),
-            ),
-            TextField(
-              controller: unitController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Unit',
-                isDense: true,
-                suffixIcon: PopupMenuButton<String>(
+              }
+
+              return Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: const BoxDecoration(
+                  border: Border(bottom: BorderSide(color: Colors.grey)),
+                ),
+                child: PopupMenuButton<String>(
                   onSelected: (String value) {
                     setState(() {
-                      if (value != 'Select') {
-                        _selectedUnit = value;
-                      }
+                      selectedCategory = value;
+                      var selectedDoc =
+                          documents.firstWhere((doc) => doc.id == value);
+                      selectedCategoryLabel = selectedDoc['categery_name'];
                     });
                   },
-                  itemBuilder: (BuildContext context) =>
-                      <PopupMenuEntry<String>>[
-                    const PopupMenuItem<String>(
-                      value: 'Select',
-                      child: Text('Select'),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'kg',
-                      child: Text('kg'),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'litre',
-                      child: Text('litre'),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'pcs',
-                      child: Text('pieces'),
-                    ),
-                  ],
+                  itemBuilder: (BuildContext context) => categoryItems,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Text(_selectedUnit),
+                    children: [
+                      Container(
+                        child: Text(
+                          selectedCategoryLabel,
+                          style: const TextStyle(
+                            color: Color.fromARGB(255, 124, 124, 124),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
                       const Icon(Icons.arrow_drop_down),
                     ],
                   ),
                 ),
-              ),
+              );
+            },
+          ),
+          TextField(
+            controller: productController,
+            keyboardType: TextInputType.text,
+            decoration: InputDecoration(
+              labelText: 'Product Name',
+              isDense: true,
             ),
-            TextField(
-              controller: priceController,
-              decoration: InputDecoration(
-                labelText: 'Price',
-                isDense: true,
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  height: 44,
-                  width: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.purple,
-                    borderRadius: BorderRadius.circular(15),
+          ),
+          TextField(
+            controller: unitController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'Unit',
+              isDense: true,
+              suffixIcon: PopupMenuButton<String>(
+                onSelected: (String value) {
+                  setState(() {
+                    if (value != 'Select') {
+                      _selectedUnit = value;
+                    }
+                  });
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    value: 'Select',
+                    child: Text('Select'),
                   ),
-                  child: MaterialButton(
-                    onPressed: () {
-                      uploadDataToStorage(_Image);
-                      Navigator.of(context).pop();
-                    },
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(26),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text(
-                          'Save',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
+                  const PopupMenuItem<String>(
+                    value: 'kg',
+                    child: Text('kg'),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'litre',
+                    child: Text('litre'),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'pcs',
+                    child: Text('pieces'),
+                  ),
+                ],
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(_selectedUnit),
+                    const Icon(Icons.arrow_drop_down),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          TextField(
+            controller: priceController,
+            decoration: InputDecoration(
+              labelText: 'Price',
+              isDense: true,
+            ),
+            keyboardType: TextInputType.number,
+          ),
+          SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                height: 44,
+                width: 120,
+                decoration: BoxDecoration(
+                  color: Colors.purple,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: MaterialButton(
+                  onPressed: () {
+                    uploadDataToStorage(_Image);
+                    Navigator.of(context).pop();
+                  },
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(26),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Text(
+                        'Save',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
