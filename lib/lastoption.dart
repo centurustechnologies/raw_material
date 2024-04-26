@@ -61,6 +61,7 @@ class _BillGenerationState extends State<BillGeneration> {
 
   bool discountstatus = true;
   String _productHover = '';
+  // ignore: unused_field
   String _tableHover = '';
   String _tableSelected = '0';
   String menuItemHover = 'Billing';
@@ -3274,7 +3275,9 @@ class _BillGenerationState extends State<BillGeneration> {
                                   ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.only(left: 2),
+                                  padding: const EdgeInsets.only(
+                                    left: 2,
+                                  ),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -3290,117 +3293,123 @@ class _BillGenerationState extends State<BillGeneration> {
                                               color: Colors.black,
                                             ),
                                           ),
-                                          Row(
-                                            children: [
-                                              GestureDetector(
-                                                onTap: () {
-                                                  showDialog(
-                                                    context: context,
-                                                    builder:
-                                                        (BuildContext context) {
-                                                      return AlertDialog(
-                                                        title: Text(
-                                                            "Edit Product Unit"),
-                                                        content: TextField(
-                                                          controller:
-                                                              unitController,
-                                                          keyboardType:
-                                                              TextInputType
-                                                                  .number,
-                                                          autofocus: true,
-                                                          decoration:
-                                                              InputDecoration(
-                                                            hintText:
-                                                                "Enter new unit",
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(right: 4),
+                                            child: Row(
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (BuildContext
+                                                          context) {
+                                                        return AlertDialog(
+                                                          title: Text(
+                                                              "Edit Product Unit"),
+                                                          content: TextField(
+                                                            controller:
+                                                                unitController,
+                                                            keyboardType:
+                                                                TextInputType
+                                                                    .number,
+                                                            autofocus: true,
+                                                            decoration:
+                                                                InputDecoration(
+                                                              hintText:
+                                                                  "Enter new unit",
+                                                            ),
                                                           ),
-                                                        ),
-                                                        actions: [
-                                                          TextButton(
-                                                            child:
-                                                                Text("Cancel"),
-                                                            onPressed: () {
-                                                              Navigator.of(
-                                                                      context)
-                                                                  .pop();
-                                                            },
-                                                          ),
-                                                          TextButton(
-                                                            child:
-                                                                Text("Update"),
-                                                            onPressed: () {
-                                                              int newUnit =
-                                                                  int.tryParse(
-                                                                          unitController
-                                                                              .text) ??
-                                                                      0;
-
-                                                              double basePrice =
-                                                                  double.tryParse(
-                                                                          productDocumentSnapshot['base_price'] ??
-                                                                              '0') ??
-                                                                      0;
-
-                                                              double newPrice =
-                                                                  basePrice *
-                                                                      newUnit;
-                                                              int finalPrice =
-                                                                  newPrice
-                                                                      .ceil();
-
-                                                              // Update Firebase
-                                                              FirebaseFirestore
-                                                                  .instance
-                                                                  .collection(
-                                                                      'tablesraw')
-                                                                  .doc(
-                                                                      _tableSelected)
-                                                                  .collection(
-                                                                      'productraw')
-                                                                  .doc(
-                                                                      productDocumentSnapshot
-                                                                          .id)
-                                                                  .update({
-                                                                'product_unit':
-                                                                    newUnit
-                                                                        .toString(),
-                                                                'product_price':
-                                                                    finalPrice
-                                                                        .toString(),
-                                                                'total_price':
-                                                                    finalPrice
-                                                                        .toString(),
-                                                              }).then((_) {
+                                                          actions: [
+                                                            TextButton(
+                                                              child: Text(
+                                                                  "Cancel"),
+                                                              onPressed: () {
                                                                 Navigator.of(
                                                                         context)
                                                                     .pop();
-                                                              });
-                                                            },
-                                                          ),
-                                                        ],
-                                                      );
-                                                    },
-                                                  );
-                                                },
-                                                child: Text(
-                                                  "${productDocumentSnapshot['product_unit']}",
+                                                              },
+                                                            ),
+                                                            TextButton(
+                                                              child: Text(
+                                                                  "Update"),
+                                                              onPressed: () {
+                                                                int newUnit =
+                                                                    int.tryParse(
+                                                                            unitController.text) ??
+                                                                        0;
+
+                                                                double
+                                                                    basePrice =
+                                                                    double.tryParse(productDocumentSnapshot['base_price'] ??
+                                                                            '0') ??
+                                                                        0;
+
+                                                                double
+                                                                    newPrice =
+                                                                    basePrice *
+                                                                        newUnit;
+                                                                int finalPrice =
+                                                                    newPrice
+                                                                        .ceil();
+
+                                                                // Update Firebase
+                                                                FirebaseFirestore
+                                                                    .instance
+                                                                    .collection(
+                                                                        'tablesraw')
+                                                                    .doc(
+                                                                        _tableSelected)
+                                                                    .collection(
+                                                                        'productraw')
+                                                                    .doc(
+                                                                        productDocumentSnapshot
+                                                                            .id)
+                                                                    .update({
+                                                                  'product_unit':
+                                                                      newUnit
+                                                                          .toString(),
+                                                                  'product_price':
+                                                                      finalPrice
+                                                                          .toString(),
+                                                                  'total_price':
+                                                                      finalPrice
+                                                                          .toString(),
+                                                                }).then((_) {
+                                                                  Navigator.of(
+                                                                          context)
+                                                                      .pop();
+                                                                });
+                                                              },
+                                                            ),
+                                                          ],
+                                                        );
+                                                      },
+                                                    );
+                                                  },
+                                                  child: Text(
+                                                    "${productDocumentSnapshot['product_unit']}",
+                                                    style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ),
+                                                Text(
+                                                  " ${productDocumentSnapshot['selected_unit']}",
                                                   style: TextStyle(
-                                                      color: Colors.black,
-                                                      fontWeight:
-                                                          FontWeight.bold),
+                                                    color: Colors.black,
+                                                  ),
                                                 ),
-                                              ),
-                                              Text(
-                                                " ${productDocumentSnapshot['selected_unit']}",
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                         ],
                                       ),
                                       Padding(
-                                        padding: const EdgeInsets.only(left: 5),
+                                        padding: const EdgeInsets.only(
+                                          left: 5,
+                                        ),
                                         child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.start,
@@ -3418,8 +3427,8 @@ class _BillGenerationState extends State<BillGeneration> {
                                             MaterialButton(
                                               padding:
                                                   const EdgeInsets.all(6.0),
-                                              minWidth: 0,
-                                              height: 0,
+                                              minWidth: 4,
+                                              height: 4,
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
                                                     BorderRadius.circular(5),
@@ -3503,8 +3512,8 @@ class _BillGenerationState extends State<BillGeneration> {
                                             ),
                                             MaterialButton(
                                               padding: const EdgeInsets.all(5),
-                                              minWidth: 4,
-                                              height: 4,
+                                              minWidth: 2,
+                                              height: 2,
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
                                                     BorderRadius.circular(5),
@@ -4009,44 +4018,6 @@ class _BillGenerationState extends State<BillGeneration> {
                                 },
                               ),
                             ),
-                            // Padding(
-                            //   padding: const EdgeInsets.symmetric(vertical: 5),
-                            //   child: Divider(
-                            //     thickness: 1,
-                            //     color: Colors.black,
-                            //   ),
-                            // ),
-                            // Padding(
-                            //   padding: const EdgeInsets.symmetric(
-                            //     horizontal: 10,
-                            //     vertical: 5,
-                            //   ),
-                            //   child: Row(
-                            //     mainAxisAlignment:
-                            //         MainAxisAlignment.spaceBetween,
-                            //     children: [
-                            //       Text(
-                            //         "Total Quantity",
-                            //         style: TextStyle(
-                            //           fontWeight: FontWeight.w500,
-                            //           fontSize: 14,
-                            //         ),
-                            //         textAlign: TextAlign.start,
-                            //       ),
-                            //       SizedBox(
-                            //         width: 100,
-                            //         child: Text(
-                            //           "$cloudTotalQuantity",
-                            //           style: TextStyle(
-                            //             fontWeight: FontWeight.w400,
-                            //             fontSize: 14,
-                            //           ),
-                            //           textAlign: TextAlign.end,
-                            //         ),
-                            //       ),
-                            //     ],
-                            //   ),
-                            // ),
                           ],
                         );
                       }
@@ -4116,7 +4087,6 @@ class _BillGenerationState extends State<BillGeneration> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         MaterialButton(
-                          minWidth: 0,
                           color: Colors.green,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(17),
@@ -4128,30 +4098,68 @@ class _BillGenerationState extends State<BillGeneration> {
                                 .collection('productraw')
                                 .get()
                                 .then((value) {
+                              print("Fetched ${value.size} items");
                               if (value.size > 0) {
+                                // setState(() {
+                                //   insertOrderbilling(
+                                //     productNames,
+                                //     categery,
+                                //     productid,
+                                //     productPrice,
+                                //     grandtotal,
+                                //     productType,
+                                //     quantitytype,
+                                //     discount,
+                                //     itemcount,
+                                //     _tableSelected,
+                                //     paymenttype,
+                                //     userId,
+                                //     'bill done',
+                                //     "",
+                                //     '',
+                                //     totalDiscount.toString(),
+                                //   );
+                                // });
+
                                 setState(() {
-                                  insertOrderbilling(
-                                    productNames,
-                                    categery,
-                                    productid,
-                                    productPrice,
-                                    grandtotal,
-                                    productType,
-                                    quantitytype,
-                                    discount,
-                                    itemcount,
-                                    _tableSelected,
-                                    paymenttype,
-                                    userId,
-                                    'bill done',
-                                    "",
-                                    '',
-                                    totalDiscount.toString(),
-                                  );
+                                  const name = "Item Name";
+                                  const qty = "1";
+                                  const qtyType = "kg";
+                                  const orderNumber = "1234";
+                                  final punchDate = DateTime.now().toString();
+                                  const rate = "100";
+                                  const amt = "100";
+                                  const subTotal = "100";
+                                  const grandTotal = "95";
+                                  const packagingCharges = "0";
+                                  const discount = "5";
+                                  const tax = "10";
+                                  const qtyTotal = "1";
+                                  const paymentType = "Cash";
+                                  const billType = "billing";
+
+                                  generateBillPdf(
+                                      name,
+                                      qty,
+                                      qtyType,
+                                      orderNumber,
+                                      punchDate,
+                                      rate,
+                                      amt,
+                                      subTotal,
+                                      grandTotal,
+                                      packagingCharges,
+                                      discount,
+                                      tax,
+                                      qtyTotal,
+                                      paymentType,
+                                      billType);
                                 });
                               } else {
-                                Text("sad");
+                                print("No data found");
                               }
+                            }).catchError((error) {
+                              print("Error fetching data: $error");
                             });
                           },
                           child: Text(
