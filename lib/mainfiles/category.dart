@@ -56,7 +56,7 @@ class _CategoryPageState extends State<CategoryPage> {
         'categery_id': nextCategoryId,
       }).then((value) async {
         categoryNameController.clear();
-        getData(); // Refresh list after adding
+        getData();
         if (kDebugMode) {
           print("Data added successfully!");
         }

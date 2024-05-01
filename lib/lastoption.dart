@@ -4091,7 +4091,7 @@ class _BillGenerationState extends State<BillGeneration> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(17),
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             FirebaseFirestore.instance
                                 .collection('tablesraw')
                                 .doc(_tableSelected)
@@ -4100,60 +4100,25 @@ class _BillGenerationState extends State<BillGeneration> {
                                 .then((value) {
                               print("Fetched ${value.size} items");
                               if (value.size > 0) {
-                                // setState(() {
-                                //   insertOrderbilling(
-                                //     productNames,
-                                //     categery,
-                                //     productid,
-                                //     productPrice,
-                                //     grandtotal,
-                                //     productType,
-                                //     quantitytype,
-                                //     discount,
-                                //     itemcount,
-                                //     _tableSelected,
-                                //     paymenttype,
-                                //     userId,
-                                //     'bill done',
-                                //     "",
-                                //     '',
-                                //     totalDiscount.toString(),
-                                //   );
-                                // });
-
                                 setState(() {
-                                  const name = "Item Name";
-                                  const qty = "1";
-                                  const qtyType = "kg";
-                                  const orderNumber = "1234";
-                                  final punchDate = DateTime.now().toString();
-                                  const rate = "100";
-                                  const amt = "100";
-                                  const subTotal = "100";
-                                  const grandTotal = "95";
-                                  const packagingCharges = "0";
-                                  const discount = "5";
-                                  const tax = "10";
-                                  const qtyTotal = "1";
-                                  const paymentType = "Cash";
-                                  const billType = "billing";
-
-                                  generateBillPdf(
-                                      name,
-                                      qty,
-                                      qtyType,
-                                      orderNumber,
-                                      punchDate,
-                                      rate,
-                                      amt,
-                                      subTotal,
-                                      grandTotal,
-                                      packagingCharges,
-                                      discount,
-                                      tax,
-                                      qtyTotal,
-                                      paymentType,
-                                      billType);
+                                  insertOrderbilling(
+                                    productNames,
+                                    categery,
+                                    productid,
+                                    productPrice,
+                                    grandtotal,
+                                    productType,
+                                    quantitytype,
+                                    discount,
+                                    itemcount,
+                                    _tableSelected,
+                                    paymenttype,
+                                    userId,
+                                    'bill done',
+                                    "",
+                                    '',
+                                    totalDiscount.toString(),
+                                  );
                                 });
                               } else {
                                 print("No data found");

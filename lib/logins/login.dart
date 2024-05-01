@@ -20,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
 
   String user = '';
   String pass = '';
-  String id = '';
+
   String usertype = '';
 
   Future getadmindata(String id) async {

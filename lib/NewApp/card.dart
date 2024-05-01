@@ -534,6 +534,7 @@ class __productTabState extends State<_productTab> {
   TextEditingController productController = TextEditingController();
   TextEditingController priceController = TextEditingController();
   TextEditingController unitController = TextEditingController();
+  TextEditingController passcodeController = TextEditingController();
 
   // ignore: unused_field
   late StreamController<List<DocumentSnapshot>> _streamController;
@@ -616,7 +617,79 @@ class __productTabState extends State<_productTab> {
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: InkWell(
                               onTap: () {
-                                setState(() {});
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text("Enter Passcode"),
+                                      content: TextField(
+                                        controller: passcodeController,
+                                        obscureText: true, // Hide entered text
+                                        decoration: InputDecoration(
+                                            hintText: "Passcode"),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text("Cancel"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            String enteredPasscode =
+                                                passcodeController.text;
+                                            String correctPasscode =
+                                                "1234"; // Replace with your passcode
+                                            if (enteredPasscode ==
+                                                correctPasscode) {
+                                              // Navigator.push(
+                                              //     context,
+                                              // MaterialPageRoute(
+                                              //     builder: (context) =>
+                                              // updateProduct(
+                                              //   productID:
+                                              //       productId,
+                                              //   // productUNIT:
+                                              //   //     productUnit,
+                                              //   // productNAME:
+                                              //   //     productName,
+                                              //   // productPRICE:
+                                              //   //     productPrice,
+                                              //   // selectedUNIT:
+                                              //   //     selectedUnit,
+                                              // )));
+                                              Navigator.pop(context);
+                                              showEditProductPage(productId);
+                                            } else {
+                                              showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: Text("Error"),
+                                                    content: Text(
+                                                        "Incorrect passcode. Please try again."),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                        child: Text("OK"),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            }
+                                          },
+                                          child: Text("Submit"),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
                               },
                               child: Container(
                                 decoration: BoxDecoration(
@@ -741,7 +814,7 @@ class __productTabState extends State<_productTab> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Add New Bill',
+                    'Add Product',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -767,6 +840,22 @@ class __productTabState extends State<_productTab> {
         );
       },
     );
+  }
+
+  void showEditProductPage(String productID) {
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: updateProduct(
+              productID: productID,
+              onRefresh: () {
+                Navigator.pop(context);
+              },
+            ),
+          );
+        });
   }
 }
 
@@ -1094,9 +1183,340 @@ class _AddProductFormState extends State<AddProductForm> {
   }
 }
 
+class updateProduct extends StatefulWidget {
+  final VoidCallback onRefresh;
+  final String productID;
+  updateProduct({
+    Key? key,
+    required this.onRefresh,
+    required this.productID,
+  }) : super(key: key);
+
+  @override
+  _updateProductState createState() => _updateProductState();
+}
+
+class _updateProductState extends State<updateProduct> {
+  File? _Image;
+  final ImagePicker _picker = ImagePicker();
+  List category_List = [];
+  String categorytype = "";
+  String categoryname = "";
+  String? selectedCategory;
+
+  String _selectedUnit = '';
+  String selectedCategoryLabel = 'Select Category';
+
+  TextEditingController productController = TextEditingController();
+  TextEditingController priceController = TextEditingController();
+  TextEditingController unitController = TextEditingController();
+
+  Future updateData(pickedFile) async {
+    if (pickedFile == null) {
+      print('No image selected.');
+      return;
+    }
+    String fileName = DateTime.now().microsecondsSinceEpoch.toString() + '.png';
+
+    Reference referenceRoot = FirebaseStorage.instance.ref();
+    Reference referenceDireImages = referenceRoot.child('product_image');
+    Reference referenceImageToUpload = referenceDireImages.child(fileName);
+
+    try {
+      await referenceImageToUpload.putFile(File(pickedFile.path));
+      String imageUrl = await referenceImageToUpload.getDownloadURL();
+
+      var snapshot = await FirebaseFirestore.instance
+          .collection('raw_billing_product')
+          .get();
+      int currentCount = snapshot.size;
+      String productId = (currentCount + 1).toString();
+      String productPrice = priceController.text;
+      String productUnit = unitController.text;
+      String basePrice =
+          (int.parse(productPrice) / int.parse(productUnit)).toStringAsFixed(2);
+
+      await FirebaseFirestore.instance
+          .collection('raw_billing_product')
+          .doc(productId)
+          .update({
+        'categery': selectedCategoryLabel,
+        'product_unit': unitController.text,
+        'selected_unit': _selectedUnit,
+        'product_name': productController.text,
+        'product_price': priceController.text,
+        'product_id': productId,
+        'product_image': imageUrl,
+        'base_price': basePrice,
+        'product_type': 'full',
+      }).then((value) async {
+        productController.clear();
+        priceController.clear();
+        unitController.clear();
+        _Image = null;
+        getData();
+        if (kDebugMode) {
+          print("Data added successfully!");
+        }
+      });
+    } catch (error) {
+      print("Error occurred while uploading image and data: $error");
+      print(error);
+    }
+  }
+
+  StreamController<List<DocumentSnapshot>> _streamController =
+      StreamController<List<DocumentSnapshot>>();
+  TextEditingController categoryNameController = TextEditingController();
+
+  List<DocumentSnapshot> _document = [];
+  Future<void> getData() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('raw_billing_product')
+          .get();
+      _document = querySnapshot.docs;
+      _streamController.add(_document);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error in fetching data: $e');
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    productController.dispose();
+    priceController.dispose();
+    unitController.dispose();
+    super.dispose();
+  }
+
+  Future pickImage() async {
+    try {
+      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _Image = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      print('Failed to pick image: $e');
+    }
+  }
+
+  @override
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: 20,
+        ),
+        Text(
+          'Add Product',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(
+          height: 10,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(
+            left: 15,
+            right: 15,
+          ),
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('raw_billing_product')
+                .where('product_id', isEqualTo: widget.productID)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              if (snapshot.data!.docs.isEmpty) {
+                return Center(child: Text('No product found'));
+              }
+
+              var document = snapshot.data!.docs.first;
+              var data = document.data() as Map<String, dynamic>;
+              if (productController.text.isEmpty &&
+                  priceController.text.isEmpty &&
+                  unitController.text.isEmpty) {
+                productController.text = data['product_name'];
+                priceController.text = data['product_price'].toString();
+                unitController.text = data['product_unit'];
+                selectedCategory = data['categery'];
+                _selectedUnit = data['selected_unit'];
+              }
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: pickImage,
+                    child: CircleAvatar(
+                      radius: 60,
+                      backgroundColor: Colors.grey[300],
+                      backgroundImage: NetworkImage(data['product_image']),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('raw_categery')
+                        .where('categery_id', isEqualTo: widget.productID)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        print('Some Error Occured ${snapshot.error}');
+                        return Text('Error: ${snapshot.error}');
+                      }
+
+                      if (!snapshot.hasData) {
+                        return const CircularProgressIndicator();
+                      }
+
+                      List<PopupMenuItem<String>> categoryItems = [];
+                      final documents = snapshot.data!.docs.reversed.toList();
+
+                      for (var doc in documents) {
+                        var categoryName = doc['categery_name'];
+                        categoryItems.add(
+                          PopupMenuItem<String>(
+                            value: doc.id,
+                            child: Text(categoryName),
+                          ),
+                        );
+                      }
+
+                      return Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: const BoxDecoration(
+                          border:
+                              Border(bottom: BorderSide(color: Colors.grey)),
+                        ),
+                        child: PopupMenuButton<String>(
+                          onSelected: (String value) {
+                            setState(() {
+                              selectedCategory = value;
+                              var selectedDoc = documents
+                                  .firstWhere((doc) => doc.id == value);
+                              selectedCategoryLabel =
+                                  selectedDoc['categery_name'];
+                            });
+                          },
+                          itemBuilder: (BuildContext context) => categoryItems,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                child: Text(
+                                  data['categery']?.toString() ??
+                                      'Not available',
+                                  style: const TextStyle(
+                                    color: Color.fromARGB(255, 124, 124, 124),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              const Icon(Icons.arrow_drop_down),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  TextField(
+                    controller: productController,
+                    decoration: InputDecoration(
+                      labelText: 'Product Name',
+                    ),
+                  ),
+                  TextField(
+                    controller: unitController,
+                    decoration: InputDecoration(
+                      labelText: 'Unit',
+                      suffixIcon: PopupMenuButton<String>(
+                        onSelected: (String value) {
+                          setState(() {
+                            if (value != 'Select') {
+                              _selectedUnit = value;
+                            }
+                          });
+                        },
+                        itemBuilder: (BuildContext context) =>
+                            <PopupMenuEntry<String>>[
+                          const PopupMenuItem<String>(
+                            value: 'Select',
+                            child: Text('Select'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'kg',
+                            child: Text('kg'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'litre',
+                            child: Text('litre'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'pcs',
+                            child: Text('pieces'),
+                          ),
+                        ],
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text(_selectedUnit),
+                            const Icon(Icons.arrow_drop_down),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  TextField(
+                    controller: priceController,
+                    decoration: InputDecoration(labelText: 'Price'),
+                    keyboardType: TextInputType.number,
+                  ),
+                  SizedBox(height: 40),
+                  ElevatedButton(
+                    onPressed: () => updateData(_Image),
+                    child: Text('Update Product'),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.purple, // foreground
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 //    Menu Bills
 
 class MenuTab extends StatelessWidget {
+  const MenuTab({super.key});
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(

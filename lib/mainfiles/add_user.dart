@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ class AddNewUser extends StatefulWidget {
 }
 
 class _AddNewUserState extends State<AddNewUser> {
+  late String _generatedPasscode;
   List items = [];
   UploadTask? uploadTask;
 
@@ -25,11 +27,9 @@ class _AddNewUserState extends State<AddNewUser> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
   TextEditingController dateController = TextEditingController();
-  TextEditingController _emailTextController = TextEditingController();
 
   String imageURL = "";
 
-  // ignore: unused_field
   File? _image;
   Future<void> pickImage() async {
     final pickedFile =
@@ -43,7 +43,16 @@ class _AddNewUserState extends State<AddNewUser> {
     });
   }
 
-  Future uploadImageToStorage(pickedFile) async {
+  String _generatePasscode() {
+    Random random = Random();
+    String passcode = '';
+    for (int i = 0; i < 6; i++) {
+      passcode += random.nextInt(10).toString();
+    }
+    return passcode;
+  }
+
+  Future uploadImageToStorage(File? pickedFile) async {
     if (pickedFile == null) {
       print('No image selected.');
       return;
@@ -64,14 +73,18 @@ class _AddNewUserState extends State<AddNewUser> {
 
       String productId = (currentCount + 1).toString();
 
-      FirebaseFirestore.instance.collection('raw_user').doc(productId).set({
+      await FirebaseFirestore.instance
+          .collection('raw_user')
+          .doc(productId)
+          .set({
         'user_name': nameController.text,
         'user_id': productId,
+        'passcode': _generatedPasscode,
         'user_password': passwordController.text,
         'user_email': eMailController.text,
         'user_image': imageURL,
       }).then((value) {
-        print("data added sucessfully");
+        print("data added successfully");
       }).catchError((error) {
         print("failed to add data: $error");
       }).whenComplete(() {
@@ -82,51 +95,34 @@ class _AddNewUserState extends State<AddNewUser> {
           eMailController.clear();
           _image = null;
 
-          print("data added sucessfully");
+          print("data added successfully");
 
           _showSnackBar(context, 'User created successfully!',
               color: Colors.green);
-          Future.delayed(const Duration(seconds: 2), () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => ManageUser()),
-            );
-          });
+          Navigator.pop(context);
         });
       });
     } catch (error) {
+      _showSnackBar(context, "Please fill all the details and select an image");
       print('Error occurred while uploading: $error');
     }
   }
 
-  void _createUser(BuildContext context) {
-    // Check for empty fields and provide specific feedback
-    String imageURL = ""; // Replace with your actual way to get the imageURL
+  @override
+  void initState() {
+    super.initState();
+    _generatedPasscode = _generatePasscode();
+  }
 
-    // Check for empty fields and provide specific feedback
+  void _createUser(BuildContext context) {
+    String imageURL = "";
+
     if (eMailController.text.isEmpty ||
         passwordController.text.isEmpty ||
         confirmPasswordController.text.isEmpty ||
         imageURL.isEmpty) {
-      _showSnackBar(context, "Please fill all the details and select an image");
       return;
     }
-    // if (eMailController.text.isEmpty) {
-    //   _showSnackBar(context, "Email is required");
-    //   return;
-    // }
-    // if (passwordController.text.isEmpty) {
-    //   _showSnackBar(context, "Please enter a password");
-    //   return;
-    // }
-    // if (confirmPasswordController.text.isEmpty) {
-    //   _showSnackBar(context, "Please confirm your password");
-    //   return;
-    // }
-    // if (imageURL.isEmpty) {
-    //   _showSnackBar(context, "Please select an image");
-    //   return;
-    // }
   }
 
   bool _validateEmail(String email) {
@@ -242,7 +238,7 @@ class _AddNewUserState extends State<AddNewUser> {
                         ),
                         const SizedBox(height: 10),
                         TextFormField(
-                          controller: _emailTextController,
+                          controller: eMailController,
                           decoration: const InputDecoration(
                             filled: true,
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
@@ -263,9 +259,10 @@ class _AddNewUserState extends State<AddNewUser> {
                           },
                         ),
                         const SizedBox(
-                          height: 010,
+                          height: 10,
                         ),
                         TextFormField(
+                          controller: passwordController,
                           validator: (PassCurrentValue) {
                             RegExp regex = RegExp(
                                 r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$');
