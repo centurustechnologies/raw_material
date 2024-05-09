@@ -138,7 +138,10 @@ class _NewBillState extends State<NewBill> {
       onWillPop: () async {
         Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => const NewHome()),
+            MaterialPageRoute(
+                builder: (context) => const NewHome(
+                      isAdmin: false,
+                    )),
             (route) => false);
         return true;
       },

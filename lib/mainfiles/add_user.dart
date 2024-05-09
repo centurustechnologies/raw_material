@@ -75,10 +75,11 @@ class _AddNewUserState extends State<AddNewUser> {
 
       await FirebaseFirestore.instance
           .collection('raw_user')
-          .doc(productId)
+          .doc(nameController.text)
           .set({
         'user_name': nameController.text,
         'user_id': productId,
+        'user_type': 'user',
         'passcode': _generatedPasscode,
         'user_password': passwordController.text,
         'user_email': eMailController.text,

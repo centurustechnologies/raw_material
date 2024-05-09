@@ -102,7 +102,9 @@ class _ProfilePageState extends State<ProfilePage> {
               type: PageTransitionType.rightToLeft,
               duration: Duration(milliseconds: 200),
               alignment: Alignment.topCenter,
-              child: NewHome(),
+              child: NewHome(
+                isAdmin: false,
+              ),
             ),
             (route) => false);
         return true;
@@ -211,7 +213,9 @@ class HelpPage extends StatelessWidget {
               type: PageTransitionType.rightToLeft,
               duration: Duration(milliseconds: 200),
               alignment: Alignment.topCenter,
-              child: NewHome(),
+              child: NewHome(
+                isAdmin: false,
+              ),
             ),
             (route) => false);
         return true;
@@ -332,7 +336,9 @@ class _SettingsPageState extends State<SettingsPage> {
               type: PageTransitionType.rightToLeft,
               duration: Duration(milliseconds: 200),
               alignment: Alignment.topCenter,
-              child: NewHome(),
+              child: NewHome(
+                isAdmin: false,
+              ),
             ),
             (route) => false);
         return true;

@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:raw_material/NewApp/card.dart';
+import 'package:raw_material/logins/authprovider.dart';
 
 import '../helpers/app_constants.dart';
 import '../helpers/controller.dart';
@@ -23,49 +25,87 @@ class _LoginPageState extends State<LoginPage> {
 
   String usertype = '';
 
-  Future getadmindata(String id) async {
-    await FirebaseFirestore.instance
-        .collection('raw_user')
-        .doc(id)
-        .get()
-        .then((value) {
-      if (value.exists) {
-        setState(() {
-          user = value.get('userid');
-          pass = value.get('password');
-          usertype = value.get('usertype');
-        });
-        if (userid.text == user && password.text == pass) {
-          LocalStorageHelper.saveValue('userid', user);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const NewHome()),
-          );
+  Future<void> getadmindata(String id) async {
+    try {
+      DocumentSnapshot userSnapshot =
+          await FirebaseFirestore.instance.collection('raw_user').doc(id).get();
+
+      if (userSnapshot.exists) {
+        String userId = userSnapshot.get('user_name');
+        String pass = userSnapshot.get('user_password');
+        String userRole = userSnapshot.get('user_type');
+
+        if (userid.text == userId && password.text == pass) {
+          if (userRole == 'user') {
+            Provider.of<AuthProvider>(context, listen: false).login();
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => NewHome(isAdmin: true),
+              ),
+            );
+          } else {
+            Provider.of<AuthProvider>(context, listen: false).login();
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => NewHome(isAdmin: false),
+              ),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('User login Successfull.'),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+                margin: const EdgeInsets.all(10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            );
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Please fill correct all mandatory fields'),
+              content: const Text('Invalid credentials'),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
               margin: const EdgeInsets.all(10),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
           );
+          return;
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Please fill correct all mandatory fields'),
+            content: const Text('User not found'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(10),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
+        return;
       }
-    });
+    } catch (e) {
+      print('Error logging in: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('An error occurred'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    }
   }
 
   @override

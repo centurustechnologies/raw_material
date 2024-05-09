@@ -1,417 +1,282 @@
-// class updateProduct extends StatefulWidget {
-//   final String productID;
-//   // final String productUNIT;
-//   // final String productNAME;
-//   // final String productPRICE;
-//   // final String selectedUNIT;
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:raw_material/NewApp/card.dart';
 
-//   const updateProduct({
-//     super.key,
-//     required this.productID,
-//     // required this.productUNIT,
-//     // required this.productNAME,
-//     // required this.productPRICE,
-//     // required this.selectedUNIT,
-//   });
+import '../helpers/app_constants.dart';
+import '../helpers/controller.dart';
 
-//   @override
-//   State<updateProduct> createState() => _updateProductState();
-// }
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
 
+class _LoginPageState extends State<LoginPage> {
+  TextEditingController userid = TextEditingController();
+  TextEditingController password = TextEditingController();
 
+  String user = '';
+  String pass = '';
 
+  String usertype = '';
 
-// File? _Image;
-// final ImagePicker _picker = ImagePicker();
-// List category_List = [];
-// String categorytype = "";
-// String categoryname = "";
-// String? selectedCategory;
+  Future getadmindata(String id) async {
+    await FirebaseFirestore.instance
+        .collection('raw_user')
+        .doc(id)
+        .get()
+        .then((value) {
+      if (value.exists) {
+        setState(() {
+          user = value.get('user_name');
+          pass = value.get('user_password');
+          usertype = value.get('user_type');
+        });
+        if (userid.text == user && password.text == pass) {
+          LocalStorageHelper.saveValue('user_name', user);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const NewHome(
+                      isAdmin: false,
+                    )),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Please fill correct all mandatory fields'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(10),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Please fill correct all mandatory fields'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(10),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    });
+  }
 
-// String _selectedUnit = 'Select';
-// String selectedCategoryLabel = 'Select Category';
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {});
+    });
+  }
 
-// TextEditingController productController = TextEditingController();
-// TextEditingController priceController = TextEditingController();
-// TextEditingController unitController = TextEditingController();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: Column(
+        children: [
+          Container(
+            height: MediaQuery.of(context).size.height,
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/background1.jpg'),
+                fit: BoxFit.fitHeight,
+              ),
+            ),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: displayWidth(context),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 30, top: 140, right: 25),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Column(
+                                  children: [
+                                    Text(
+                                      'LOGIN',
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 40,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 40),
+                            loginField(
+                              ' Username',
+                              userid,
+                              'Enter username',
+                            ),
+                            const SizedBox(height: 25),
+                            loginField(
+                              ' Password',
+                              password,
+                              'Enter password',
+                            ),
+                            const SizedBox(height: 25),
+                            const SizedBox(height: 50),
 
-// Future updateDataToStorage(pickedFile) async {
-//   if (pickedFile == null) {
-//     print('No image selected.');
-//     return;
-//   }
-//   String fileName = DateTime.now().microsecondsSinceEpoch.toString() + '.png';
+                            Align(
+                              alignment: Alignment.center,
+                              child: Container(
+                                width: 280,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color.fromARGB(255, 255, 90, 78),
+                                      Color.fromARGB(255, 255, 155, 137),
+                                      Color.fromARGB(255, 255, 90, 78),
+                                    ],
+                                    begin: Alignment.bottomLeft,
+                                    end: Alignment.topRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: MaterialButton(
+                                  minWidth: 250,
+                                  padding: const EdgeInsets.all(15),
+                                  onPressed: () {
+                                    if (userid.text.isNotEmpty &&
+                                        password.text.isNotEmpty) {
+                                      // setState(() {
+                                      //   id = userid.text;
+                                      // });
+                                      getadmindata(userid.text);
+                                    }
+                                  },
+                                  child: Text(
+                                    'Sign In',
+                                    style: GoogleFonts.poppins(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Align(
+                            //   alignment: Alignment.center,
+                            //   child: MaterialButton(
+                            //     minWidth: 250,
+                            //     shape: RoundedRectangleBorder(
+                            //       borderRadius: BorderRadius.circular(10),
+                            //     ),
+                            //     padding: const EdgeInsets.all(20),
+                            //     color: greenLightShadeColor,
+                            //     child: Text(
+                            //       'Sign In',
+                            //       style: GoogleFonts.poppins(
+                            //         fontSize: 16,
+                            //         color: whiteColor,
+                            //         fontWeight: FontWeight.w600,
+                            //       ),
+                            //     ),
+                            //     onPressed: () {
+                            //       if (userid.text.isNotEmpty &&
+                            //           password.text.isNotEmpty) {
+                            //         // setState(() {
+                            //         //   id = userid.text;
+                            //         // });
+                            //         getadmindata(userid.text);
+                            //       }
+                            //     },
+                            //   ),
+                            // ),
+                          ],
+                        ),
+                      )
+                      // Align(
+                      //   alignment: Alignment.centerRight,
+                      //   child: MaterialButton(
+                      //     onPressed: () {},
+                      //     child: Text(
+                      //       'Forgot Password?',
+                      //       style: GoogleFonts.poppins(
+                      //         color: greenLightShadeColor,
+                      //         fontWeight: FontWeight.w600,
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-//   Reference referenceRoot = FirebaseStorage.instance.ref();
-//   Reference referenceDireImages = referenceRoot.child('product_Image');
-//   Reference referenceImageToUpload = referenceDireImages.child(fileName);
-
-//   try {
-//     await referenceImageToUpload.putFile(File(pickedFile.path));
-//     String imageUrl = await referenceImageToUpload.getDownloadURL();
-
-//     var snapshot = await FirebaseFirestore.instance
-//         .collection('raw_billing_product')
-//         .get();
-//     int currentCount = snapshot.size;
-//     String productId = (currentCount + 1).toString();
-//     String productPrice = priceController.text;
-//     String productUnit = unitController.text;
-//     String basePrice =
-//         (int.parse(productPrice) / int.parse(productUnit)).toStringAsFixed(2);
-
-//     await FirebaseFirestore.instance
-//         .collection('raw_billing_product')
-//         .doc(productId)
-//         .update({
-//       'categery': selectedCategoryLabel,
-//       'product_unit': unitController.text,
-//       'selected_unit': _selectedUnit,
-//       'product_name': productController.text,
-//       'product_price': priceController.text,
-//       'product_id': productId,
-//       'product_image': imageUrl,
-//       'base_price': basePrice,
-//       'product_type': 'full',
-//     }).then((value) async {
-//       productController.clear();
-//       priceController.clear();
-//       unitController.clear();
-//       _Image = null;
-//       getData();
-//       if (kDebugMode) {
-//         print("Data added successfully!");
-//       }
-//     });
-//   } catch (error) {
-//     print("Error occurred while uploading image and data: $error");
-//     print(error);
-//   }
-// }
-
-// StreamController<List<DocumentSnapshot>> _streamController =
-//     StreamController<List<DocumentSnapshot>>();
-// TextEditingController categoryNameController = TextEditingController();
-
-// @override
-// void initState() {
-//   _document = [];
-//   _streamController = StreamController<List<DocumentSnapshot>>();
-//   getData();
-//   unitController.addListener(() {
-//     if (unitController.text.isEmpty && _selectedUnit != 'Select') {
-//       _selectedUnit = 'Select';
-//     }
-//   });
-// }
-
-// List<DocumentSnapshot> _document = [];
-// Future<void> getData() async {
-//   try {
-//     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-//         .collection('raw_billing_product')
-//         .get();
-//     _document = querySnapshot.docs;
-//     _streamController.add(_document);
-//   } catch (e) {
-//     if (kDebugMode) {
-//       print('Error in fetching data: $e');
-//     }
-//   }
-// }
-
-// @override
-// void dispose() {
-//   productController.dispose();
-//   priceController.dispose();
-//   unitController.dispose();
-// }
-
-// Future pickImage() async {
-//   try {
-//     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-//     if (pickedFile != null) {
-     
-//       _Image = File(pickedFile.path);
-//     }
-//   } catch (e) {
-//     print('Failed to pick image: $e');
-//   }
-// }
-
-// class _updateProductState extends State<updateProduct> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       resizeToAvoidBottomInset: false,
-//       appBar: AppBar(
-//         flexibleSpace: Container(
-//           decoration: const BoxDecoration(color: Colors.red),
-//         ),
-//         title: const Text(
-//           'Update Product',
-//           style: TextStyle(
-//               fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
-//         ),
-//         leading: Builder(builder: (BuildContext context) {
-//           return IconButton(
-//             icon: const Icon(
-//               Icons.arrow_back,
-//               color: Colors.white, // Change the color here
-//             ),
-//             onPressed: () {
-//               Navigator.pop(context);
-//             },
-//           );
-//         }),
-//       ),
-//       body: StreamBuilder(
-//         stream: FirebaseFirestore.instance
-//             .collection('raw_billing_product')
-//             .where('product_id', isEqualTo: widget.productID)
-//             // .where('product_unit', isEqualTo: widget.productUNIT)
-//             // .where('product_name', isEqualTo: widget.productNAME)
-//             // .where('product_price', isEqualTo: widget.productPRICE)
-//             .snapshots(),
-//         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-//           if (snapshot.hasError) {
-//             return Text('Error: ${snapshot.error}');
-//           }
-
-//           if (snapshot.connectionState == ConnectionState.waiting) {
-//             return const Center(child: CircularProgressIndicator());
-//           }
-
-//           if (snapshot.data!.docs.isEmpty) {
-//             return const Center(child: Text('No products found'));
-//           }
-
-//           final DocumentSnapshot document = snapshot.data!.docs.first;
-//           final Map<String, dynamic> data =
-//               document.data() as Map<String, dynamic>;
-//           return Padding(
-//             padding: const EdgeInsets.all(20.0),
-//             child: Column(
-//               mainAxisSize: MainAxisSize.min,
-//               children: [
-//                 SizedBox(height: 20),
-//                 GestureDetector(
-//                   onTap: pickImage,
-//                   child: CircleAvatar(
-//                     radius: 60,
-//                     backgroundImage: NetworkImage(data['product_image']),
-//                   ),
-//                 ),
-//                 SizedBox(
-//                   height: 20,
-//                 ),
-//                 StreamBuilder<QuerySnapshot>(
-//                   stream: FirebaseFirestore.instance
-//                       .collection('raw_categery')
-//                       .snapshots(),
-//                   builder: (context, snapshot) {
-//                     if (snapshot.hasError) {
-//                       print('Some Error Occured ${snapshot.error}');
-//                       return Text('Error: ${snapshot.error}');
-//                     }
-
-//                     if (!snapshot.hasData) {
-//                       return const CircularProgressIndicator();
-//                     }
-
-//                     List<PopupMenuItem<String>> categoryItems = [];
-//                     final documents = snapshot.data!.docs.reversed.toList();
-
-//                     for (var doc in documents) {
-//                       var categoryName = doc['categery_name'];
-//                       categoryItems.add(
-//                         PopupMenuItem<String>(
-//                           value: doc.id,
-//                           child: Text(categoryName),
-//                         ),
-//                       );
-//                     }
-
-//                     return Container(
-//                       padding: const EdgeInsets.symmetric(vertical: 8),
-//                       decoration: const BoxDecoration(
-//                         border: Border(bottom: BorderSide(color: Colors.grey)),
-//                       ),
-//                       child: PopupMenuButton<String>(
-//                         onSelected: (String value) {
-//                           setState(() {
-//                             selectedCategory = value;
-//                             var selectedDoc =
-//                                 documents.firstWhere((doc) => doc.id == value);
-//                             selectedCategoryLabel =
-//                                 selectedDoc['categery_name'];
-//                           });
-//                         },
-//                         itemBuilder: (BuildContext context) => categoryItems,
-//                         child: Row(
-//                           mainAxisSize: MainAxisSize.min,
-//                           children: [
-//                             Container(
-//                               child: Text(
-//                                 data['categery']?.toString() ?? 'Not available',
-//                                 style: const TextStyle(
-//                                   color: Color.fromARGB(255, 124, 124, 124),
-//                                   fontWeight: FontWeight.bold,
-//                                   fontSize: 16,
-//                                 ),
-//                               ),
-//                             ),
-//                             const Icon(Icons.arrow_drop_down),
-//                           ],
-//                         ),
-//                       ),
-//                     );
-//                   },
-//                 ),
-//                 SizedBox(
-//                   height: 20,
-//                 ),
-//                 TextField(
-//                   controller: productController,
-//                   keyboardType: TextInputType.text,
-//                   decoration: InputDecoration(
-//                     hintText: data['product_name'] ?? 'Not available',
-//                     isDense: true,
-//                   ),
-//                 ),
-//                 SizedBox(
-//                   height: 10,
-//                 ),
-//                 TextField(
-//                   controller: unitController,
-//                   keyboardType: TextInputType.number,
-//                   decoration: InputDecoration(
-//                     hintText: data['product_unit'] ?? 'Not available',
-//                     isDense: true,
-//                     suffixIcon: PopupMenuButton<String>(
-//                       onSelected: (String value) {
-//                         setState(() {
-//                           if (value != data['product_unit']) {
-//                             _selectedUnit = value;
-//                           }
-//                         });
-//                       },
-//                       itemBuilder: (BuildContext context) =>
-//                           <PopupMenuEntry<String>>[
-//                         const PopupMenuItem<String>(
-//                           value: 'Select',
-//                           child: Text('Select'),
-//                         ),
-//                         const PopupMenuItem<String>(
-//                           value: 'kg',
-//                           child: Text('kg'),
-//                         ),
-//                         const PopupMenuItem<String>(
-//                           value: 'litre',
-//                           child: Text('litre'),
-//                         ),
-//                         const PopupMenuItem<String>(
-//                           value: 'pcs',
-//                           child: Text('pieces'),
-//                         ),
-//                       ],
-//                       child: Row(
-//                         mainAxisSize: MainAxisSize.min,
-//                         children: <Widget>[
-//                           Text(_selectedUnit),
-//                           const Icon(Icons.arrow_drop_down),
-//                         ],
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//                 SizedBox(
-//                   height: 20,
-//                 ),
-//                 TextField(
-//                   controller: priceController,
-//                   decoration: InputDecoration(
-//                     hintText:
-//                         data['product_price']?.toString() ?? 'Not available',
-//                     isDense: true,
-//                   ),
-//                   keyboardType: TextInputType.number,
-//                 ),
-//                 SizedBox(height: 50),
-//                 Row(
-//                   mainAxisAlignment: MainAxisAlignment.center,
-//                   children: [
-//                     Container(
-//                       height: 44,
-//                       width: 120,
-//                       decoration: BoxDecoration(
-//                         color: Colors.purple,
-//                         borderRadius: BorderRadius.circular(15),
-//                       ),
-//                       child: MaterialButton(
-//                         onPressed: () {
-//                           updateDataToStorage(_Image);
-//                           Navigator.of(context).pop();
-//                         },
-//                         shape: RoundedRectangleBorder(
-//                           borderRadius: BorderRadius.circular(26),
-//                         ),
-//                         child: const Row(
-//                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                           children: [
-//                             Text(
-//                               'Update',
-//                               style: TextStyle(
-//                                 fontSize: 14,
-//                                 fontWeight: FontWeight.w700,
-//                                 color: Colors.white,
-//                               ),
-//                             ),
-//                           ],
-//                         ),
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           );
-//           // return ListView(
-//           //   children: <Widget>[
-//           //     if (data['product_image'] != null)
-//           //       Image.network(
-//           //         data['product_image'],
-//           //         fit: BoxFit.cover,
-//           //         errorBuilder: (context, error, stackTrace) {
-//           //           return const Text('Failed to load image');
-//           //         },
-//           //       ),
-//           //     ListTile(
-//           //       title: Text('Product ID'),
-//           //       subtitle: Text(data['product_id'] ?? 'Not available'),
-//           //     ),
-//           //     ListTile(
-//           //       title: Text('Product Unit'),
-//           //       subtitle: Text(data['product_unit'] ?? 'Not available'),
-//           //     ),
-//           //     ListTile(
-//           //       title: Text('Product Name'),
-//           //       subtitle: Text(data['product_name'] ?? 'Not available'),
-//           //     ),
-//           //     ListTile(
-//           //       title: Text('Product Price'),
-//           //       subtitle:
-//           //           Text(data['product_price']?.toString() ?? 'Not available'),
-//           //     ),
-//           //     ListTile(
-//           //       title: Text('category'),
-//           //       subtitle: Text(data['categery']?.toString() ?? 'Not available'),
-//           //     ),
-//           //   ],
-//           // );
-//         },
-//       ),
-//     );
-//   }
-
+  loginField(heading, controller, hint) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          heading,
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+            // fontSize: 26,
+          ),
+        ),
+        const SizedBox(height: 5),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 2, top: 2, right: 10),
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.black.withOpacity(0.1),
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(10),
+              color: whiteColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 1,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: TextFormField(
+              controller: controller,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                isDense: true,
+                hintText: hint,
+                hintStyle: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black.withOpacity(0.4),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

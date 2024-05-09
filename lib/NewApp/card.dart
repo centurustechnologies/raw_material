@@ -20,14 +20,14 @@ import 'package:raw_material/mainfiles/my_order.dart';
 import '../lastoption.dart';
 
 class NewHome extends StatefulWidget {
-  const NewHome({Key? key}) : super(key: key);
+  const NewHome({Key? key, required bool isAdmin}) : super(key: key);
 
   @override
   State<NewHome> createState() => _NewHomeState();
 }
 
 class _NewHomeState extends State<NewHome> {
-  bool usertype = true;
+  bool isAdmin = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final TextEditingController _searchText = TextEditingController();
@@ -35,24 +35,28 @@ class _NewHomeState extends State<NewHome> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: usertype ? 4 : 3,
+      length: isAdmin ? 4 : 3,
       child: Scaffold(
         key: _scaffoldKey,
         appBar: _appBar(context),
         drawer: const MyDrawer(),
-        body: usertype
-            ? TabBarView(
+        body: isAdmin
+            ? const TabBarView(
                 children: [
-                  const _HomeBody(),
-                  const ManageUser(),
-                  const _productTab(),
+                  _HomeBody(),
+                  ManageUser(),
+                  _productTab(
+                    isAdmin: false,
+                  ),
                   MenuTab(),
                 ],
               )
-            : TabBarView(
+            : const TabBarView(
                 children: [
-                  const _HomeBody(),
-                  const _productTab(),
+                  _HomeBody(),
+                  _productTab(
+                    isAdmin: false,
+                  ),
                   MenuTab(),
                 ],
               ),
@@ -90,7 +94,7 @@ class _NewHomeState extends State<NewHome> {
               ),
               const SizedBox(height: 5),
               _searchBox(),
-              usertype ? _tabBar() : _tabBar2(),
+              isAdmin ? _tabBar() : _tabBar2(),
             ],
           ),
         ),
@@ -515,7 +519,7 @@ class _ManageUserState extends State<ManageUser> {
 // product Tab
 
 class _productTab extends StatefulWidget {
-  const _productTab({super.key});
+  const _productTab({super.key, required bool isAdmin});
 
   @override
   State<_productTab> createState() => __productTabState();
@@ -524,6 +528,8 @@ class _productTab extends StatefulWidget {
 // ignore: camel_case_types
 class __productTabState extends State<_productTab> {
   // ignore: non_constant_identifier_names
+  bool isAdmin = false;
+
   List category_List = [];
   String categorytype = "";
   // bool _isLoading = false;
@@ -617,79 +623,85 @@ class __productTabState extends State<_productTab> {
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: InkWell(
                               onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: Text("Enter Passcode"),
-                                      content: TextField(
-                                        controller: passcodeController,
-                                        obscureText: true, // Hide entered text
-                                        decoration: InputDecoration(
-                                            hintText: "Passcode"),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: Text("Cancel"),
+                                if (isAdmin) {
+                                  showEditProductPage(productId);
+                                } else {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text("Enter Passcode"),
+                                        content: TextField(
+                                          controller: passcodeController,
+                                          obscureText:
+                                              true, // Hide entered text
+                                          decoration: InputDecoration(
+                                              hintText: "Passcode"),
                                         ),
-                                        TextButton(
-                                          onPressed: () {
-                                            String enteredPasscode =
-                                                passcodeController.text;
-                                            String correctPasscode =
-                                                "1234"; // Replace with your passcode
-                                            if (enteredPasscode ==
-                                                correctPasscode) {
-                                              // Navigator.push(
-                                              //     context,
-                                              // MaterialPageRoute(
-                                              //     builder: (context) =>
-                                              // updateProduct(
-                                              //   productID:
-                                              //       productId,
-                                              //   // productUNIT:
-                                              //   //     productUnit,
-                                              //   // productNAME:
-                                              //   //     productName,
-                                              //   // productPRICE:
-                                              //   //     productPrice,
-                                              //   // selectedUNIT:
-                                              //   //     selectedUnit,
-                                              // )));
-                                              Navigator.pop(context);
-                                              showEditProductPage(productId);
-                                            } else {
-                                              showDialog(
-                                                context: context,
-                                                builder:
-                                                    (BuildContext context) {
-                                                  return AlertDialog(
-                                                    title: Text("Error"),
-                                                    content: Text(
-                                                        "Incorrect passcode. Please try again."),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () {
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                        child: Text("OK"),
-                                                      ),
-                                                    ],
-                                                  );
-                                                },
-                                              );
-                                            }
-                                          },
-                                          child: Text("Submit"),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text("Cancel"),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              String enteredPasscode =
+                                                  passcodeController.text;
+                                              String correctPasscode =
+                                                  "1234"; // Replace with your passcode
+                                              if (enteredPasscode ==
+                                                  correctPasscode) {
+                                                // Navigator.push(
+                                                //     context,
+                                                // MaterialPageRoute(
+                                                //     builder: (context) =>
+                                                // updateProduct(
+                                                //   productID:
+                                                //       productId,
+                                                //   // productUNIT:
+                                                //   //     productUnit,
+                                                //   // productNAME:
+                                                //   //     productName,
+                                                //   // productPRICE:
+                                                //   //     productPrice,
+                                                //   // selectedUNIT:
+                                                //   //     selectedUnit,
+                                                // )));
+                                                Navigator.pop(context);
+                                                showEditProductPage(productId);
+                                              } else {
+                                                showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                      title: Text("Error"),
+                                                      content: Text(
+                                                          "Incorrect passcode. Please try again."),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          },
+                                                          child: Text("OK"),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              }
+                                            },
+                                            child: Text("Submit"),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                }
                               },
                               child: Container(
                                 decoration: BoxDecoration(
